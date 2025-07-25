@@ -1,0 +1,25 @@
+#!/bin/bash
+
+echo "Executando pre-commit: convertendo Int32 para Int64 em parâmetros..."
+
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.frx$')
+
+if [ -z "$FILES" ]; then
+  echo "Nenhum arquivo .frx modificado encontrado."
+  exit 0
+fi
+
+for FILE in $FILES; do
+  cp "$FILE" "$FILE.bak"
+  sed -i -E 's/<Parameter([^>]*)DataType="System\.Int32"/<Parameter\1DataType="System\.Int64"/g' "$FILE"
+  
+  if ! diff -q "$FILE" "$FILE.bak" > /dev/null; then
+    git add "$FILE"
+    echo "Arquivo modificado: $FILE"
+  fi
+  
+  rm -f "$FILE.bak"
+done
+
+echo "Substituição concluída."
+exit 0
