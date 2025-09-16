@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<inherited ParentReport="Retrato" PreviewOptions.AllowEdit="False" PreviewOptions.Buttons="1535" ReportOptions.Name="Sumário da Folha" ReportOptions.LastChange="44719,0807513079" ScriptText.Text="begin&#13;&#10;&#13;&#10;end." StoreInDFM="False">
+  <Datasets>
+    <item DataSet="SqlCliente" DataSetName="SqlCliente"/>
+    <item DataSet="SqlUsuario" DataSetName="SqlUsuario"/>
+    <item DataSet="SqlModulo" DataSetName="SqlModulo"/>
+    <item DataSet="SqlSumario" DataSetName="SqlSumario"/>
+    <item DataSet="SqlSuplementar" DataSetName="SqlSuplementar"/>
+  </Datasets>
+  <Variables>
+    <item InheritedName=" Internas"/>
+    <item InheritedName="IdModulo" Value="12"/>
+    <item InheritedName="Personalizado"/>
+    <item InheritedName="Formato"/>
+    <item InheritedName="CodigoRelatorio"/>
+    <item InheritedName=" Disponiveis"/>
+    <item InheritedName="IdEntidade"/>
+    <item InheritedName="IdRelatorioFiltro"/>
+    <item InheritedName="Competencia" Value="''"/>
+    <item InheritedName=" Utilizadas"/>
+    <item InheritedName="IdUsuario"/>
+    <item Name="CpAno" Value="2022"/>
+    <item Name="CpMesInicial" Value="01"/>
+    <item Name="CpMesFinal" Value="04"/>
+    <item Name="Suplementar" Value="0"/>
+    <item Name="IdEstabelecimento" Value="1"/>
+    <item Name="CompInicial" Value="202101"/>
+    <item Name="CompFinal" Value="202101"/>
+  </Variables>
+  <inherited Name="Data">
+    <inherited Name="SqlCliente"/>
+    <inherited Name="SqlUsuario"/>
+    <inherited Name="SqlModulo"/>
+    <TfrxADOQuery Name="SqlSumario" UserName="SqlSumario" CloseDataSource="True" FieldAliases.Text="" BCDToCurrency="False" IgnoreDupParams="True" SQL.Text="select B.NUMERO_CONTA&#13;&#10;     , B.DESCRICAO&#13;&#10;     , B.TIPO&#13;&#10;     , CAST(COUNT(C.C001) AS INTEGER) AS QUANTIDADE&#13;&#10;     , ROUND(SUM(CASE WHEN B.TIPO = 3 THEN A.VALOR ELSE 0 END), 2) AS VL_VENCIMENTO&#13;&#10;     , ROUND(SUM(CASE WHEN B.TIPO = 2 THEN A.VALOR ELSE 0 END), 2) AS VL_DESCONTO&#13;&#10;     , ROUND(SUM(CASE WHEN B.TIPO = 1 THEN A.VALOR ELSE 0 END), 2) AS VL_CALCULO     &#13;&#10;from grh_movimentos a&#13;&#10;inner join grh_plano_contas b on a.conta = b.numero_conta AND B.RESUMO = 'S'&#13;&#10;inner join grh_dados_mes c on a.chapa = c.c000 and a.competencia = c.competencia and a.suplementar = c.suplementar and c.id_estabelecimento = :id_estabelecimento                                                                                                  &#13;&#10;where a.competencia &#62;= :competencia_inicial and a.competencia &#60;= :competencia_final&#13;&#10;and a.suplementar = coalesce(:suplementar, 0)&#13;&#10;AND ROUND(A.VALOR, 2) &#60;&#62; 0&#13;&#10;AND A.VALOR IS NOT NULL&#13;&#10;AND B.NUMERO_CONTA &#62; 0&#13;&#10; GROUP BY&#13;&#10;       B.NUMERO_CONTA&#13;&#10;     , B.DESCRICAO&#13;&#10;     , B.TIPO&#13;&#10;ORDER BY&#13;&#10;       B.TIPO DESC&#13;&#10;     , B.NUMERO_CONTA     &#13;&#10;  " CommandTimeout="30" LockType="ltReadOnly" PropData="05704C656674027C0470546F70027F0A506172616D657465727301010658204E616D653D2269645F6573746162656C6563696D656E746F222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B49644573746162656C6563696D656E746F262336323B2200010652204E616D653D22636F6D706574656E6369615F696E696369616C222044617461547970653D226674537472696E67222045787072657373696F6E3D22262336303B436F6D70496E696369616C262336323B220001064E204E616D653D22636F6D706574656E6369615F66696E616C222044617461547970653D226674537472696E67222045787072657373696F6E3D22262336303B436F6D7046696E616C262336323B220001064B204E616D653D227375706C656D656E746172222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B5375706C656D656E746172262336323B220000"/>
+    <TfrxADOQuery Name="SqlSuplementar" UserName="SqlSuplementar" CloseDataSource="True" FieldAliases.Text="" BCDToCurrency="False" IgnoreDupParams="True" SQL.Text="SELECT TRIM(A.TITULO) AS TITULO                          &#13;&#10;  FROM AAC_SUPLEMENTAR A&#13;&#10; WHERE A.MODULO = 'FOLW'&#13;&#10;   AND A.COMPETENCIA &#62;= CAST(:CP_ANO AS VARCHAR(4)) || LPAD(CAST(:CP_MES_INICIAL AS VARCHAR(2)), 2, '0')&#13;&#10;   AND A.COMPETENCIA &#60;= CAST(:CP_ANO AS VARCHAR(4)) || LPAD(CAST(:CP_MES_FINAL   AS VARCHAR(2)), 2, '0')&#13;&#10;   AND A.NUM_SUPL     = COALESCE(CAST(:SUPLEMENTAR AS INTEGER), 0)&#13;&#10; ORDER BY&#13;&#10;       A.COMPETENCIA&#13;&#10;  ROWS 1  " CommandTimeout="30" LockType="ltReadOnly" PropData="05704C65667402300470546F70027F0A506172616D657465727301010640204E616D653D2243505F414E4F222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B4370416E6F262336323B220001064F204E616D653D2243505F4D45535F494E494349414C222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B43704D6573496E696369616C262336323B220001064B204E616D653D2243505F4D45535F46494E414C222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B43704D657346696E616C262336323B220001064B204E616D653D225355504C454D454E544152222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B5375706C656D656E746172262336323B220000"/>
+  </inherited>
+  <inherited Name="Page1" PaperSize="9">
+    <inherited Name="bndCabecalho" Height="80">
+      <inherited Name="Logo"/>
+      <inherited Name="Brasao"/>
+      <inherited Name="TxtNomeCliente"/>
+      <inherited Name="TxtTitulo1"/>
+      <inherited Name="TxtTitulo2"/>
+      <inherited Name="TxtTituloRelatorio" Width="104,13395591" Restrictions="8" Text="Sumário da Folha"/>
+      <inherited Name="Line1" Top="80,03149606" Restrictions="8"/>
+      <inherited Name="TxtData"/>
+      <inherited Name="TxtHora"/>
+      <inherited Name="TxtCompetencia" Left="442,16544709" Width="275,94488189" Restrictions="8" Text="[IIF(&#60;CpMesInicial&#62; = &#60;CpMesFinal&#62;, Mes(EncodeDate(&#60;CpAno&#62;,&#60;CpMesInicial&#62;,1)) + ' de ' + IntToStr(&#60;CpAno&#62;), Mes(EncodeDate(&#60;CpAno&#62;,&#60;CpMesInicial&#62;,1)) + ' a ' + Mes(EncodeDate(&#60;CpAno&#62;,&#60;CpMesFinal&#62;,1)) + ' de ' + IntToStr(&#60;CpAno&#62;))]"/>
+      <TfrxMemoView Name="TxtSuplementar" AllowVectorExport="True" Left="442" Top="65" Width="275,94488189" Height="11,33858268" Restrictions="8" Font.Charset="1" Font.Color="0" Font.Height="-8" Font.Name="Tahoma" Font.Style="1" Font.Quality="fqClearTypeNatural" Frame.Typ="0" HAlign="haRight" ParentFont="False" Text="[SqlSuplementar.&#34;TITULO&#34;]"/>
+    </inherited>
+    <inherited Name="bndRodape" Top="224">
+      <inherited Name="Line2"/>
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao"/>
+      <inherited Name="TxtDataHora"/>
+    </inherited>
+    <TfrxHeader Name="hdrSumario" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="15" Left="0" Top="116" Width="718,1107" ReprintOnNewPage="True">
+      <TfrxMemoView Name="Memo1" Align="baWidth" AllowVectorExport="True" Left="0" Top="0" Width="348,1107" Height="15" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="15" Fill.BackColor="-16777201" ParentFont="False" VAlign="vaCenter" Text="Conta"/>
+      <TfrxMemoView Name="Memo2" Align="baRight" AllowVectorExport="True" Left="618,1107" Top="0" Width="100" Height="15" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="15" Fill.BackColor="-16777201" ParentFont="False" VAlign="vaCenter" Text="Cálculos"/>
+      <TfrxMemoView Name="Memo3" Align="baRight" AllowVectorExport="True" Left="518,1107" Top="0" Width="100" Height="15" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="15" Fill.BackColor="-16777201" ParentFont="False" VAlign="vaCenter" Text="Descontos"/>
+      <TfrxMemoView Name="Memo4" Align="baRight" AllowVectorExport="True" Left="418,1107" Top="0" Width="100" Height="15" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="15" Fill.BackColor="-16777201" ParentFont="False" VAlign="vaCenter" Text="Vencimentos"/>
+      <TfrxMemoView Name="Memo5" Align="baRight" AllowVectorExport="True" Left="348,1107" Top="0" Width="70" Height="15" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="15" Fill.BackColor="-16777201" ParentFont="False" VAlign="vaCenter" Text="Quantidade"/>
+    </TfrxHeader>
+    <TfrxMasterData Name="mdtSumario" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="15" Left="0" Top="152" Width="718,1107" ColumnWidth="0" ColumnGap="0" DataSet="SqlSumario" DataSetName="SqlSumario" RowCount="0">
+      <TfrxMemoView Name="SqlSumarioNUMERO_CONTA" IndexTag="1" Align="baLeft" AllowVectorExport="True" Left="0" Top="0" Width="35" Height="15" DataField="NUMERO_CONTA" DataSet="SqlSumario" DataSetName="SqlSumario" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="1" ParentFont="False" VAlign="vaCenter" Text="[SqlSumario.&#34;NUMERO_CONTA&#34;]"/>
+      <TfrxMemoView Name="SqlSumarioDESCRICAO" IndexTag="1" Align="baWidth" AllowVectorExport="True" Left="35" Top="0" Width="313,1107" Height="15" DataField="DESCRICAO" DataSet="SqlSumario" DataSetName="SqlSumario" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="0" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlSumario.&#34;DESCRICAO&#34;]"/>
+      <TfrxMemoView Name="SqlSumarioVL_CALCULO" IndexTag="1" Align="baRight" AllowVectorExport="True" Left="618,1107" Top="0" Width="100" Height="15" DataField="VL_CALCULO" DataSet="SqlSumario" DataSetName="SqlSumario" DisplayFormat.DecimalSeparator="," DisplayFormat.FormatStr="%2.2n" DisplayFormat.Kind="fkNumeric" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="2" HAlign="haRight" HideZeros="True" ParentFont="False" VAlign="vaCenter" Text="[SqlSumario.&#34;VL_CALCULO&#34;]"/>
+      <TfrxMemoView Name="SqlSumarioVL_DESCONTO" IndexTag="1" Align="baRight" AllowVectorExport="True" Left="518,1107" Top="0" Width="100" Height="15" DataField="VL_DESCONTO" DataSet="SqlSumario" DataSetName="SqlSumario" DisplayFormat.DecimalSeparator="," DisplayFormat.FormatStr="%2.2n" DisplayFormat.Kind="fkNumeric" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="0" HAlign="haRight" HideZeros="True" ParentFont="False" VAlign="vaCenter" Text="[SqlSumario.&#34;VL_DESCONTO&#34;]"/>
+      <TfrxMemoView Name="SqlSumarioVL_VENCIMENTO" IndexTag="1" Align="baRight" AllowVectorExport="True" Left="418,1107" Top="0" Width="100" Height="15" DataField="VL_VENCIMENTO" DataSet="SqlSumario" DataSetName="SqlSumario" DisplayFormat.DecimalSeparator="," DisplayFormat.FormatStr="%2.2n" DisplayFormat.Kind="fkNumeric" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="0" HAlign="haRight" HideZeros="True" ParentFont="False" VAlign="vaCenter" Text="[SqlSumario.&#34;VL_VENCIMENTO&#34;]"/>
+      <TfrxMemoView Name="SqlSumarioQUANTIDADE" IndexTag="1" Align="baRight" AllowVectorExport="True" Left="348,1107" Top="0" Width="70" Height="15" DataField="QUANTIDADE" DataSet="SqlSumario" DataSetName="SqlSumario" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="0" HAlign="haRight" ParentFont="False" VAlign="vaCenter" Text="[SqlSumario.&#34;QUANTIDADE&#34;]"/>
+    </TfrxMasterData>
+    <TfrxFooter Name="Footer1" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="15" Left="0" Top="188" Width="718,1107">
+      <TfrxMemoView Name="Memo6" IndexTag="1" Align="baWidth" AllowVectorExport="True" Left="0" Top="0" Width="418,1107" Height="15" DataSet="SqlSumario" DataSetName="SqlSumario" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="15" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="TOTAL"/>
+      <TfrxMemoView Name="Memo7" IndexTag="1" Align="baRight" AllowVectorExport="True" Left="618,1107" Top="0" Width="100" Height="15" DataSet="SqlSumario" DataSetName="SqlSumario" DisplayFormat.DecimalSeparator="," DisplayFormat.FormatStr="%2.2n" DisplayFormat.Kind="fkNumeric" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="15" HAlign="haRight" HideZeros="True" ParentFont="False" VAlign="vaCenter" Text="[SUM(&#60;SqlSumario.&#34;VL_CALCULO&#34;&#62;,mdtSumario,3)]"/>
+      <TfrxMemoView Name="Memo8" IndexTag="1" Align="baRight" AllowVectorExport="True" Left="518,1107" Top="0" Width="100" Height="15" DataSet="SqlSumario" DataSetName="SqlSumario" DisplayFormat.DecimalSeparator="," DisplayFormat.FormatStr="%2.2n" DisplayFormat.Kind="fkNumeric" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="15" HAlign="haRight" HideZeros="True" ParentFont="False" VAlign="vaCenter" Text="[SUM(&#60;SqlSumario.&#34;VL_DESCONTO&#34;&#62;,mdtSumario,3)]"/>
+      <TfrxMemoView Name="Memo9" IndexTag="1" Align="baRight" AllowVectorExport="True" Left="418,1107" Top="0" Width="100" Height="15" DataSet="SqlSumario" DataSetName="SqlSumario" DisplayFormat.DecimalSeparator="," DisplayFormat.FormatStr="%2.2n" DisplayFormat.Kind="fkNumeric" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="15" HAlign="haRight" HideZeros="True" ParentFont="False" VAlign="vaCenter" Text="[SUM(&#60;SqlSumario.&#34;VL_VENCIMENTO&#34;&#62;,mdtSumario,3)]"/>
+    </TfrxFooter>
+  </inherited>
+</inherited>

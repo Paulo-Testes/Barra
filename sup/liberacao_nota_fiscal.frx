@@ -1,0 +1,355 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="C:\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="C:\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="06/04/2025 10:51:46" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+   
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }    
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O1Lte+sXkL+7Jsvr4qRqFtI=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlEmpenho" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.ID_AUTORIZACAO&#13;&#10;     , D.ID_PEDIDO_EMPENHO&#13;&#10;     , C.NR_EMPENHO&#13;&#10;     , C.DT_EMPENHO&#13;&#10;     , D.TP_EMPENHO&#13;&#10;     , X.DS_TP_EMPENHO&#13;&#10;     , C.VL_EMPENHO         AS VL_EMPENHADO&#13;&#10;     , SUM(F.VALOR - coalesce(f.vl_desconto, 0))         AS VL_UTILIZADO&#13;&#10;     , E.NR_FICHA_DESPESA   AS NR_FICHA&#13;&#10;     , E.CD_UN_EXECUTORA    AS CD_UE&#13;&#10;     , E.DS_UN_EXECUTORA    AS DS_UE&#13;&#10;     , E.CD_UN_ORCAMENTARIA AS CD_UO&#13;&#10;     , E.DS_UN_ORCAMENTARIA AS DS_UO&#13;&#10;     , E.CD_FUNCAO&#13;&#10;     , E.CD_SUBFUNCAO&#13;&#10;     , E.CD_PROGRAMA&#13;&#10;     , E.CD_ACAO&#13;&#10;     , E.CD_FONTE_RECURSO&#13;&#10;     , E.CD_FIXO&#13;&#10;     , E.CD_VARIAVEL&#13;&#10;     , E.CD_ELEMENTO        AS CD_CONTA&#13;&#10;  FROM  SUP_LIBERACAO_NF_FICHA F&#13;&#10;       left join SUP_AUTORIZACAO_FICHA    A on A.ID_AUTORIZACAO_FICHA = f.ID_AUTORIZACAO_FICHA&#13;&#10;       LEFT JOIN SUP_SOLIC_EMPENHO_FICHA  B ON B.ID_SOLIC_EMPENHO_FICHA         = A.ID_SOLIC_EMPENHO_FICHA&#13;&#10;       LEFT JOIN SUP_SOLIC_EMPENHO_ITEM   P ON P.ID_SOLIC_EMPENHO_ITEM          = B.ID_SOLIC_EMPENHO_ITEM&#13;&#10;       LEFT JOIN SUP_SOLIC_EMPENHO        C ON C.ID_SOLIC_EMPENHO               = P.ID_SOLIC_EMPENHO     &#13;&#10;       LEFT JOIN API_PEDIDO_EMPENHO_POR_ID(C.ID_PEDIDO_COMPOSICAO) D ON 1 = 1&#13;&#10;       LEFT JOIN API_DOTACAO_POR_ID(D.ID_CONTA_FUNCIONAL_1, D.ID_CONTA, D.ID_APLICACAO, D.ID_CENTRO_CUSTO, D.ID_TIPO_DESPESA, D.ID_RESPONSAVEL) E ON 1 = 1&#13;&#10;       LEFT JOIN (&#13;&#10;        SELECT D1.CD_TP_EMPENHO&#13;&#10;             , D1.DS_TP_EMPENHO&#13;&#10;        &#13;&#10;        FROM SIS_LICENCIADO A1&#13;&#10;             LEFT JOIN AAC_MUNICIPIOS B1 ON B1.ID_MUNICIPIO = A1.ID_MUNICIPIO&#13;&#10;             LEFT JOIN SIS_ESTADO C1 ON C1.UF = B1.UF&#13;&#10;             LEFT JOIN PEC_TP_EMPENHO D1 ON D1.ID_ESTADO = C1.ID_ESTADO&#13;&#10;       ) X ON X.CD_TP_EMPENHO = D.TP_EMPENHO           &#13;&#10; WHERE F.ID_LIBERACAO_NF = :ID_LIBERACAO_NF&#13;&#10; GROUP BY&#13;&#10;       A.ID_AUTORIZACAO,&#13;&#10;       D.ID_PEDIDO_EMPENHO,&#13;&#10;       C.NR_EMPENHO,&#13;&#10;       C.DT_EMPENHO,&#13;&#10;       D.TP_EMPENHO,&#13;&#10;       X.DS_TP_EMPENHO,&#13;&#10;       C.VL_EMPENHO,&#13;&#10;       E.NR_FICHA_DESPESA,&#13;&#10;       E.CD_UN_EXECUTORA,&#13;&#10;       E.DS_UN_EXECUTORA,&#13;&#10;       E.CD_UN_ORCAMENTARIA,&#13;&#10;       E.DS_UN_ORCAMENTARIA,&#13;&#10;       E.CD_FUNCAO,&#13;&#10;       E.CD_SUBFUNCAO,&#13;&#10;       E.CD_PROGRAMA,&#13;&#10;       E.CD_ACAO,&#13;&#10;       E.CD_FONTE_RECURSO,&#13;&#10;       E.CD_FIXO,&#13;&#10;       E.CD_VARIAVEL,&#13;&#10;       E.CD_ELEMENTO">
+        <Column Name="id_autorizacao" DataType="System.Int32"/>
+        <Column Name="id_pedido_empenho" DataType="System.Int32"/>
+        <Column Name="nr_empenho" DataType="System.Int32"/>
+        <Column Name="dt_empenho" DataType="System.DateTime"/>
+        <Column Name="tp_empenho" DataType="System.Int32"/>
+        <Column Name="ds_tp_empenho" DataType="System.String"/>
+        <Column Name="vl_empenhado" DataType="System.Double"/>
+        <Column Name="vl_utilizado" DataType="System.Double"/>
+        <Column Name="nr_ficha" DataType="System.Int32"/>
+        <Column Name="cd_ue" DataType="System.String"/>
+        <Column Name="ds_ue" DataType="System.String"/>
+        <Column Name="cd_uo" DataType="System.String"/>
+        <Column Name="ds_uo" DataType="System.String"/>
+        <Column Name="cd_funcao" DataType="System.String"/>
+        <Column Name="cd_subfuncao" DataType="System.String"/>
+        <Column Name="cd_programa" DataType="System.String"/>
+        <Column Name="cd_acao" DataType="System.String"/>
+        <Column Name="cd_fonte_recurso" DataType="System.String"/>
+        <Column Name="cd_fixo" DataType="System.String"/>
+        <Column Name="cd_variavel" DataType="System.String"/>
+        <Column Name="cd_conta" DataType="System.String"/>
+        <CommandParameter Name="ID_LIBERACAO_NF" DataType="9" Expression="[IdLiberacaoNf]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlLiberacao" DataType="System.Int32" Enabled="true" SelectCommand="select distinct&#13;&#10;    A.ID_LIBERACAO_NF,&#13;&#10;    A.DT_LIBERACAO_NF,&#13;&#10;    A.DT_VENCIMENTO,&#13;&#10;    A.OBS,                  &#13;&#10;    E.NR_AUTORIZACAO,&#13;&#10;    E.ANO_AUTORIZACAO,&#13;&#10;    E.DT_AUTORIZACAO,&#13;&#10;    E.COMPRADOR,&#13;&#10;    E.ESPECIFICACAO,&#13;&#10;    E.ID_PROCESSO_COMPRA,&#13;&#10;    E1.SIGLA,&#13;&#10;    F1.ID_SERIE_NF as TP_DOC_FISCAL,&#13;&#10;    F1.SERIE_NF as SR_DOC_FISCAL,&#13;&#10;    F.NR_NF as NR_DOC_FISCAL,&#13;&#10;    F.DS_NF as DS_DOC_FISCAL,&#13;&#10;    F.DT_EMISSAO as DT_EMISSAO_NF,&#13;&#10;    F.VL_NF,&#13;&#10;    F.VL_DESCONTO as VL_DESCONTO_NF,&#13;&#10;    ROUND(F.VL_NF - coalesce(F.VL_DESCONTO, 0), 2) as VL_LIQUIDO_NF,&#13;&#10;    F1.ID_TP_NF_ELETRONICA - 1 as ELETRONICA,&#13;&#10;    cast(&#13;&#10;    case&#13;&#10;      when F1.ID_TP_NF_ELETRONICA = 2 then SUBSTR(F.CHAVE, 1, 44)&#13;&#10;      else null&#13;&#10;    end as varchar(44)) as CHAVE,&#13;&#10;    cast(&#13;&#10;    case&#13;&#10;      when F1.ID_TP_NF_ELETRONICA = 3 then F.CHAVE&#13;&#10;      else null&#13;&#10;    end as varchar(60)) as CHAVE_MUNICIPAL,&#13;&#10;    F.AIDF,&#13;&#10;    TP.DS_TP_LOGRADOURO,&#13;&#10;    BC.DS_LOGRADOURO,&#13;&#10;    BC.NR_ENDERECO,&#13;&#10;    BC.BAIRRO,&#13;&#10;    BD.DS_MUNICIPIO,&#13;&#10;    BE.UF,&#13;&#10;    BC.CEP,&#13;&#10;    B.NOME_RAZAO,&#13;&#10;    z.CELULAR,&#13;&#10;    z.FONE1,&#13;&#10;    z.FONE2,&#13;&#10;    z.FAX,&#13;&#10;    z.EMAIL,&#13;&#10;    B.DOCUMENTO_FORMATADO,&#13;&#10;    B.ID_PESSOA,&#13;&#10;    SPRC.NR_PROCESSO_COMPRA,&#13;&#10;    SPRC.ANO_PROCESSO_COMPRA,&#13;&#10;    SPRC.DT_PROCESSO_COMPRA,&#13;&#10;    SMOD.SIGLA as SIGLA_MODALIDADE,&#13;&#10;    SMOD.DS_MODALIDADE,&#13;&#10;    SPRC.NR_MODALIDADE,&#13;&#10;    SPRC.ANO_MODALIDADE,&#13;&#10;    SART.DS_ARTIGO,&#13;&#10;&#13;&#10;    H.DS_ST_LIBERACAO_NF&#13;&#10;&#13;&#10;from SUP_LIBERACAO_NF A&#13;&#10;left join SUP_AUTORIZACAO E on E.ID_AUTORIZACAO = A.ID_AUTORIZACAO&#13;&#10;left join VET_TP_AUTORIZACAO E1 on E1.ID_TP_AUTORIZACAO = E.ID_TP_AUTORIZACAO&#13;&#10;left join SIS_PESSOA_NF F on F.ID_PESSOA_NF = A.ID_DOC_FISCAL&#13;&#10;left join SIS_SERIE_NF F1 on F1.ID_SERIE_NF = F.ID_SERIE_NF&#13;&#10;--left join SUP_FORNECEDOR GG on GG.ID_FORNECEDOR = E.ID_FORNECEDOR&#13;&#10;left join SIS_PESSOA B on B.ID_PESSOA = e.id_fornecedor&#13;&#10;left join SIS_PESSOA_FISICA BA on BA.ID_PESSOA_FISICA = B.ID_PESSOA_FISICA&#13;&#10;left join SIS_PESSOA_JURIDICA BB on BB.ID_PESSOA_JURIDICA = B.ID_PESSOA_JURIDICA&#13;&#10;left join SIS_pessoa_ENDERECO BC on BC.ID_PESSOA = B.ID_PESSOA and BC.PRINCIPAL = 1&#13;&#10;left join SIS_MUNICIPIO BD on BD.ID_MUNICIPIO = BC.ID_MUNICIPIO&#13;&#10;left join SIS_ESTADO BE on BE.ID_ESTADO = BD.ID_ESTADO&#13;&#10;&#13;&#10;left join SUP_ALMOXARIFADO SALM on SALM.ID_ALMOXARIFADO = E.ID_ALMOXARIFADO&#13;&#10;left join SUP_TP_MEDIDA_PRAZO STMP on STMP.ID_TP_MEDIDA_PRAZO = E.ID_TP_MEDIDA_PRAZO&#13;&#10;left join SUP_PROCESSO_COMPRA SPRC on SPRC.ID_PROCESSO_COMPRA = E.ID_PROCESSO_COMPRA&#13;&#10;left join SUP_MODALIDADE SMOD on SMOD.ID_MODALIDADE = SPRC.ID_MODALIDADE&#13;&#10;left join SUP_ARTIGO SART on SART.ID_ARTIGO = SPRC.ID_ARTIGO&#13;&#10;left join GCC_CONTRATO GCNT on GCNT.ID_CONTRATO = E.ID_CONTRATO&#13;&#10;&#13;&#10;left join SIS_USUARIO SURE on SURE.ID_USUARIO = E.ID_RESPONSAVEL&#13;&#10;left join SUP_MODALIDADE D2 on D2.ID_MODALIDADE = SPRC.ID_MODALIDADE&#13;&#10;left join VET_ST_LIBERACAO_NF H on H.ID_ST_LIBERACAO_NF = A.ID_ST_LIBERACAO_NF&#13;&#10;left join SIS_TP_LOGRADOURO TP on TP.ID_TP_LOGRADOURO = BC.ID_TP_LOGRADOURO&#13;&#10;LEFT JOIN LATERAL(&#13;&#10;       		SELECT &#13;&#10;            	 MAX(CASE&#13;&#10;                 WHEN S.PRINCIPAL = TRUE  THEN S.CONTATO END) AS FONE1&#13;&#10;                ,MAX(CASE&#13;&#10;                 WHEN S.PRINCIPAL = FALSE THEN S.CONTATO END) AS FONE2&#13;&#10;                ,MAX(CASE&#13;&#10;                 WHEN S2.PRINCIPAL = TRUE  THEN S2.CONTATO END) AS EMAIL&#13;&#10;                ,MAX(CASE&#13;&#10;                 WHEN S2.PRINCIPAL = FALSE THEN S2.CONTATO END) AS EMAIL2&#13;&#10;                ,MAX(S3.contato)  AS FAX&#13;&#10;                ,MAX(s4.contato)  as celular&#13;&#10;            FROM sis_pessoa_contato S &#13;&#10;            LEFT JOIN sis_pessoa_contato S2 ON S2.id_tp_contato = 1 AND S2.ID_PESSOA = b.ID_PESSOA --principal&#13;&#10;            lEFT JOIN sis_pessoa_contato S22 ON S22.id_tp_contato = 1 AND S22.ID_PESSOA = b.ID_PESSOA --reserva&#13;&#10;            LEFT JOIN SIS_PESSOA_CONTATO S3 ON S3.id_tp_contato = 2 AND S3.id_tp_contato_marcador = 8 AND S3.id_pessoa = b.ID_PESSOA&#13;&#10;            left join sis_pessoa_contato s4 on s4.id_tp_contato = 2 and s4.id_tp_contato_marcador = 4 and s4.id_pessoa = b.id_pessoa&#13;&#10;            WHERE &#13;&#10;            S.id_tp_contato = 2 AND S.ID_TP_CONTATO_MARCADOR = ANY (ARRAY[5, 6, 7])&#13;&#10;            AND S.ID_PESSOA = b.ID_PESSOA&#13;&#10;            ) Z ON TRUE&#13;&#10;            &#13;&#10;where A.ID_LIBERACAO_NF = :ID_LIBERACAO_NF">
+        <Column Name="id_liberacao_nf" DataType="System.Int32"/>
+        <Column Name="dt_liberacao_nf" DataType="System.DateTime"/>
+        <Column Name="dt_vencimento" DataType="System.DateTime"/>
+        <Column Name="obs" DataType="System.String"/>
+        <Column Name="nr_autorizacao" DataType="System.Int32"/>
+        <Column Name="ano_autorizacao" DataType="System.Int32"/>
+        <Column Name="dt_autorizacao" DataType="System.DateTime"/>
+        <Column Name="comprador" DataType="System.String"/>
+        <Column Name="especificacao" DataType="System.String"/>
+        <Column Name="id_processo_compra" DataType="System.Int32"/>
+        <Column Name="sigla" DataType="System.String"/>
+        <Column Name="tp_doc_fiscal" DataType="System.Int32"/>
+        <Column Name="sr_doc_fiscal" DataType="System.String"/>
+        <Column Name="nr_doc_fiscal" DataType="System.String"/>
+        <Column Name="ds_doc_fiscal" DataType="System.String"/>
+        <Column Name="dt_emissao_nf" DataType="System.DateTime"/>
+        <Column Name="vl_nf" DataType="System.Double"/>
+        <Column Name="vl_desconto_nf" DataType="System.Double"/>
+        <Column Name="vl_liquido_nf" DataType="System.Double"/>
+        <Column Name="eletronica" DataType="System.Int32"/>
+        <Column Name="chave" DataType="System.String"/>
+        <Column Name="chave_municipal" DataType="System.String"/>
+        <Column Name="aidf" DataType="System.String"/>
+        <Column Name="ds_tp_logradouro" DataType="System.String"/>
+        <Column Name="ds_logradouro" DataType="System.String"/>
+        <Column Name="nr_endereco" DataType="System.String"/>
+        <Column Name="bairro" DataType="System.String"/>
+        <Column Name="ds_municipio" DataType="System.String"/>
+        <Column Name="uf" DataType="System.String"/>
+        <Column Name="cep" DataType="System.String"/>
+        <Column Name="nome_razao" DataType="System.String"/>
+        <Column Name="celular" DataType="System.String"/>
+        <Column Name="fone1" DataType="System.String"/>
+        <Column Name="fone2" DataType="System.String"/>
+        <Column Name="fax" DataType="System.String"/>
+        <Column Name="email" DataType="System.String"/>
+        <Column Name="documento_formatado" DataType="System.String"/>
+        <Column Name="id_pessoa" DataType="System.Int32"/>
+        <Column Name="nr_processo_compra" DataType="System.Int32"/>
+        <Column Name="ano_processo_compra" DataType="System.Int16"/>
+        <Column Name="dt_processo_compra" DataType="System.DateTime"/>
+        <Column Name="sigla_modalidade" DataType="System.String"/>
+        <Column Name="ds_modalidade" DataType="System.String"/>
+        <Column Name="nr_modalidade" DataType="System.Int32"/>
+        <Column Name="ano_modalidade" DataType="System.Int16"/>
+        <Column Name="ds_artigo" DataType="System.String"/>
+        <Column Name="ds_st_liberacao_nf" DataType="System.String"/>
+        <CommandParameter Name="ID_LIBERACAO_NF" DataType="9" Expression="[IdLiberacaoNf]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;LIBERAÇÃO DE NOTA FISCAL - SITUAÇÃO: &quot; + UpperCase([SqlLiberacao.DS_ST_LIBERACAO_NF])"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idLiberacaoNf" DataType="System.Int64" Expression="29774"/>
+    <Total Name="Soma Empenho" Expression="[SqlEmpenho.vl_utilizado]" Evaluator="BndEmpenho" IncludeInvisibleRows="true"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="98.67">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="BndTitulo" ZOrder="-1" Top="121.73" Width="718.2" Height="40.82">
+          <TextObject Name="Text1" Top="15.5" Width="204.88" Height="24.95" Border.Lines="All" Border.Color="41, 82, 118" Fill.Color="41, 82, 118" Text="Número [SqlLiberacao.id_liberacao_nf]/[Year([SqlLiberacao.dt_liberacao_nf])]" VertAlign="Center" Font="Tahoma, 12pt" TextFill.Color="White">
+            <Formats>
+              <CustomFormat Format="000000"/>
+              <GeneralFormat/>
+            </Formats>
+          </TextObject>
+          <TextObject Name="Text2" Left="354.94" Top="20.79" Width="363.26" Height="20.03" Text="Vencimento: [SqlLiberacao.dt_vencimento]" Format="Date" Format.Format="dd/MM/yyyy" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <ChildBand Name="BndNotaFiscal" Top="166.72" Width="718.2" Height="94.5">
+            <TextObject Name="Text3" Top="8.32" Width="179.93" Height="20.03" Border.Lines="All" Border.Color="Transparent" Fill.Color="ButtonFace" Text="Nota Fiscal" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text4" Top="30.24" Width="85.05" Height="20.03" Border.Lines="All" Text="Número:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text5" Top="50.27" Width="85.05" Height="20.03" Border.Lines="All" Text="Valor:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text6" Top="70.31" Width="85.05" Height="20.03" Border.Lines="All" Text="Chave:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text7" Left="85.05" Top="30.24" Width="404.84" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.nr_doc_fiscal] ([SqlLiberacao.sr_doc_fiscal])" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text8" Left="489.89" Top="30.24" Width="69.93" Height="20.03" Border.Lines="All" Text="Emissão:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text9" Left="489.89" Top="30.24" Width="69.93" Height="20.03" Border.Lines="All" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text10" Left="559.82" Top="30.24" Width="159.14" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.dt_emissao_nf]" Format="Date" Format.Format="d" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text11" Left="85.05" Top="50.27" Width="166.7" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.vl_nf]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text12" Left="251.75" Top="50.27" Width="85.05" Height="20.03" Border.Lines="All" Text="Desconto:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text13" Left="336.8" Top="50.27" Width="153.09" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.vl_desconto_nf]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text14" Left="489.89" Top="50.27" Width="69.93" Height="20.03" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor líquido:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7.8pt" TextFill.Color="White"/>
+            <TextObject Name="Text15" Left="559.82" Top="50.27" Width="159.14" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.vl_liquido_nf]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" TextFill.Color="41, 82, 118"/>
+            <TextObject Name="Text16" Left="85.05" Top="70.31" Width="404.84" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.chave][SqlLiberacao.chave_municipal]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text17" Left="489.89" Top="70.31" Width="69.93" Height="20.03" Border.Lines="All" Text="AIDF:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text18" Left="559.82" Top="70.31" Width="159.14" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.aidf]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <ChildBand Name="BndAutorizacao" Top="265.39" Width="718.2" Height="99.79">
+              <TextObject Name="Text19" Top="7.56" Width="179.93" Height="20.03" Border.Lines="All" Border.Color="Transparent" Fill.Color="ButtonFace" Text="Nota Fiscal" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text20" Top="28.35" Width="85.05" Height="20.03" Border.Lines="All" Text="Número:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="Text21" Left="85.05" Top="28.35" Width="170.48" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.sigla] [Format(&quot;{0:000000}&quot;, [SqlLiberacao.nr_autorizacao])]/[SqlLiberacao.ano_autorizacao]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold">
+                <Formats>
+                  <GeneralFormat/>
+                  <CustomFormat Format="000000"/>
+                  <GeneralFormat/>
+                </Formats>
+              </TextObject>
+              <TextObject Name="Text22" Left="255.53" Top="28.35" Width="65.02" Height="20.03" Border.Lines="All" Text="Data:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="Text23" Left="320.54" Top="28.35" Width="397.28" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.dt_autorizacao]" Format="Date" Format.Format="d" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text24" Top="58.7" Width="179.93" Height="20.03" Border.Lines="All" Border.Color="Transparent" Fill.Color="ButtonFace" Text="Observação" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text25" Top="79.76" Width="718.2" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.obs]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <ChildBand Name="BndFornecedor" Top="369.34" Width="718.2" Height="29.48">
+                <TextObject Name="Text26" Top="9.45" Width="179.93" Height="20.03" Border.Lines="All" Border.Color="Transparent" Fill.Color="ButtonFace" Text="Fornecedor" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <ChildBand Name="BndAutorizacaoFornecedorNome" Top="402.99" Width="718.2" Height="20.03" CanGrow="true">
+                  <TextObject Name="Text27" Width="85.05" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" Text="Fornecedor:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                  <TextObject Name="Text28" Left="85.05" Width="505.01" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" CanGrow="true" Text="[SqlLiberacao.nome_razao] ([SqlLiberacao.id_pessoa])" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text29" Left="590.06" Width="128.14" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlLiberacao.documento_formatado]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <ChildBand Name="BndAutorizacaoFornecedorEndereco" Top="427.19" Width="718.2" Height="20.03">
+                    <TextObject Name="Text30" Width="85.05" Height="20.03" Border.Lines="All" Text="Endereço:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                    <TextObject Name="Text31" Left="85.05" Width="633.15" Height="20.03" Border.Lines="All" Text="[Trim[SqlLiberacao.ds_tp_logradouro]] [Trim[SqlLiberacao.ds_logradouro]][IIf([SqlLiberacao.nr_endereco] == &quot;&quot;, &quot;&quot;, &quot;, &quot; + [SqlLiberacao.nr_endereco])][IIf([SqlLiberacao.bairro] == &quot;&quot;,&quot;&quot;,&quot; - &quot; + [SqlLiberacao.bairro])][IIf([SqlLiberacao.cep] == &quot;&quot;,&quot;&quot;,&quot;, CEP: &quot; + [SqlLiberacao.cep])][IIf([SqlLiberacao.ds_municipio] == &quot;&quot;,&quot;&quot;,&quot;,&quot;+ [SqlLiberacao.ds_municipio]+ &quot; - &quot; +[SqlLiberacao.uf])]&#13;&#10;" HorzAlign="Justify" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <ChildBand Name="BndAutorizacaoFornecedorContatos" Top="451.38" Width="718.2" Height="20.03">
+                      <TextObject Name="Text32" Width="85.05" Height="20.03" Border.Lines="All" Text="e-Mail:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                      <TextObject Name="Text33" Left="85.05" Width="223.02" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.email]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold">
+                        <Formats>
+                          <GeneralFormat/>
+                          <CustomFormat Format="000000"/>
+                          <GeneralFormat/>
+                        </Formats>
+                      </TextObject>
+                      <TextObject Name="Text34" Left="308.07" Width="60.1" Height="20.03" Border.Lines="All" Text="Contatos:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                      <TextObject Name="Text35" Left="368.17" Width="350.03" Height="20.03" Border.Lines="All" Text="[Trim([SqlLiberacao.FONE1])][IIf([SqlLiberacao.FONE1] == &quot;&quot;, &quot;&quot;, &quot; | &quot; )][Trim([SqlLiberacao.FONE2])][IIf([SqlLiberacao.FONE2] == &quot;&quot;, &quot;&quot;, &quot; | &quot; )][Trim([SqlLiberacao.FAX])][IIf([SqlLiberacao.FAX] == &quot;&quot;, &quot;&quot;, &quot; | &quot; )][Trim([SqlLiberacao.CELULAR])]&#13;&#10;" HorzAlign="Justify" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                      <ChildBand Name="BndProcessoCompra" Top="475.58" Width="718.2" Height="119.82" CanGrow="true">
+                        <TextObject Name="Text36" Top="9.45" Width="179.93" Height="20.03" Border.Lines="All" Border.Color="Transparent" Fill.Color="ButtonFace" Text="Processo de compra" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text37" Top="30.35" Width="85.05" Height="20.03" Border.Lines="All" Text="Número:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                        <TextObject Name="Text38" Top="50.38" Width="85.05" Height="20.03" Border.Lines="All" Text="Data:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                        <TextObject Name="Text39" Top="70.42" Width="85.05" Height="20.03" Border.Lines="All" Text="Comprador:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                        <TextObject Name="Text40" Left="85.05" Top="30.24" Width="94.88" Height="20.03" Border.Lines="All" Text="[Format(&quot;{0:000000}&quot;, [SqlLiberacao.nr_processo_compra])]/[SqlLiberacao.ano_processo_compra]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold">
+                          <Formats>
+                            <CustomFormat Format="000000"/>
+                            <GeneralFormat/>
+                          </Formats>
+                        </TextObject>
+                        <TextObject Name="Text42" Left="85.05" Top="50.27" Width="94.88" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.dt_processo_compra]" Format="Date" Format.Format="d" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text43" Left="85.05" Top="70.31" Width="633.15" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.comprador]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text44" Left="179.93" Top="30.24" Width="66.53" Height="20.03" Border.Lines="All" Text="Modalidade:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                        <TextObject Name="Text45" Left="179.93" Top="50.27" Width="66.53" Height="20.03" Border.Lines="All" Text="Artigo:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                        <TextObject Name="Text46" Left="246.46" Top="30.24" Width="471.74" Height="20.03" Border.Lines="All" Text="[SqlLiberacao.sigla_modalidade] - [SqlLiberacao.ds_modalidade] nº: [Format(&quot;{0:000000}&quot;, [SqlLiberacao.nr_modalidade])]/[SqlLiberacao.ano_modalidade]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold">
+                          <Formats>
+                            <GeneralFormat/>
+                            <CustomFormat Format="000000"/>
+                            <CustomFormat Format="000000"/>
+                          </Formats>
+                        </TextObject>
+                        <TextObject Name="Text47" Left="246.46" Top="50.27" Width="471.74" Height="20.03" Border.Lines="All" Text="*[SqlLiberacao.ds_artigo]" VertAlign="Center" Font="Tahoma, 8pt, style=Italic">
+                          <Formats>
+                            <GeneralFormat/>
+                            <CustomFormat Format="000000"/>
+                            <GeneralFormat/>
+                          </Formats>
+                        </TextObject>
+                        <TextObject Name="Text48" Top="90.34" Width="718.2" Height="20.03" Border.Lines="All" CanGrow="true" Text="[SqlLiberacao.especificacao]" VertAlign="Center" Font="Tahoma, 8pt"/>
+                        <ChildBand Name="BndTituloEmpenho" Top="599.57" Width="718.2" Height="29.48">
+                          <TextObject Name="Text49" Top="9.45" Width="179.93" Height="20.03" Border.Lines="All" Border.Color="Transparent" Fill.Color="ButtonFace" Text="Empenhos" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        </ChildBand>
+                      </ChildBand>
+                    </ChildBand>
+                  </ChildBand>
+                </ChildBand>
+              </ChildBand>
+            </ChildBand>
+          </ChildBand>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <DataBand Name="BndEmpenho" ZOrder="0" Top="633.21" Width="718.2" Height="37.8" CanGrow="true" DataSource="Table">
+      <TextObject Name="Text50" Width="179.93" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" Text="[SqlEmpenho.nr_empenho]/[SqlEmpenho.dt_empenho]-[SqlEmpenho.ds_tp_empenho]" HorzAlign="Justify" VertAlign="Center" Font="Tahoma, 8pt, style=Bold">
+        <Formats>
+          <GeneralFormat/>
+          <CustomFormat Format="yyyy"/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <TextObject Name="Text51" Left="179.93" Width="359.1" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" Text="UO: &lt;b&gt;[Trim([SqlEmpenho.cd_uo]) + &quot; - &quot;+ Trim([SqlEmpenho.ds_uo])] &lt;/b&gt;&#13;&#10;UE: &lt;b&gt;[Trim([SqlEmpenho.cd_ue]) + &quot; - &quot;+ Trim([SqlEmpenho.ds_ue])] &lt;/b&gt;&#13;&#10;[Format(&quot;{0:00000}&quot;, [SqlEmpenho.nr_ficha])] | [SqlEmpenho.cd_ue] | [SqlEmpenho.cd_funcao].[SqlEmpenho.cd_subfuncao].[SqlEmpenho.cd_programa].[SqlEmpenho.cd_acao]] | [SqlEmpenho.cd_fonte_recurso] | [SqlEmpenho.cd_fixo].[SqlEmpenho.cd_variavel] | [SqlEmpenho.cd_conta]&#13;&#10;" VertAlign="Center" Font="Tahoma, 6pt" TextRenderType="HtmlTags"/>
+      <TextObject Name="Text52" Left="539.41" Width="74.09" Height="20.03" Border.Lines="Left, Top, Bottom" GrowToBottom="true" Text="Valor empenhado:" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text53" Left="613.12" Width="105.08" Height="20.03" Border.Lines="Right, Top, Bottom" GrowToBottom="true" Text="[SqlEmpenho.vl_utilizado]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <DataFooterBand Name="DataFooter1" Top="675.18" Width="718.2" Height="37.8">
+        <TextObject Name="Text54" Left="558.31" Width="159.89" Height="20.03" Border.Lines="All" Text="[Soma Empenho]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      </DataFooterBand>
+    </DataBand>
+    <inherited Name="BndRodape" Top="717.15">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

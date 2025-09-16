@@ -1,0 +1,4 @@
+ficha_contrato RCDATA "ficha_contrato.fr3"
+ficha_convenio RCDATA "ficha_convenio.fr3"
+ficha_outros_convenios RCDATA "ficha_outros_convenios.fr3"
+relacao_contratos RCDATA "relacao_contratos.fr3"

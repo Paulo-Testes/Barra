@@ -1,0 +1,229 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="C:\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="C:\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/07/2025 08:35:00" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }    
+
+    private void MainPage_StartPage(object sender, EventArgs e)
+    {
+      // Obtém o valor do parâmetro &quot;Filtro&quot; passado para o relatório
+      string filtro = Report.GetParameterValue(&quot;Filtro&quot;)?.ToString();
+
+      // Referencia a fonte de dados &quot;qu_pensionistas&quot;
+      TableDataSource data = Report.GetDataSource(&quot;qu_pensionistas&quot;) as TableDataSource;
+
+      if (data != null)
+      {
+        // Adiciona o filtro se estiver definido
+        if (!string.IsNullOrWhiteSpace(filtro))
+        {
+          data.SelectCommand += &quot; &quot; + filtro;
+        }
+
+        // Adiciona ordenação
+        data.SelectCommand += &quot; order by a.Chapa&quot;;
+      }
+    }
+  }
+}</ScriptText>
+  <Styles>
+    <Style Name="Cor" Fill.Color="Silver" Font="Arial, 10pt" ApplyBorder="false" ApplyTextFill="false" ApplyFont="false"/>
+  </Styles>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O2/yeCKrWTR2bVxi4hktSvM=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="qu_pensionistas" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;    a.chapa,&#13;&#10;    c.c001 as nome_func,&#13;&#10;    a.nome,&#13;&#10;    b.descricao as banco,&#13;&#10;    a.agencia,&#13;&#10;    a.conta_corrente,&#13;&#10;    a.conta_folha,&#13;&#10;    a.inicio,&#13;&#10;    a.fim,&#13;&#10;    a.ativo&#13;&#10;&#13;&#10;from&#13;&#10;    grh_pensao_alimenticia a&#13;&#10;&#13;&#10;left join&#13;&#10;    grh_cadastro_funcionarios c on&#13;&#10;    (c.c000 = a.chapa)&#13;&#10;&#13;&#10;left join&#13;&#10;    aac_tabelas_internas b on &#13;&#10;    (a.banco = b.chave) and&#13;&#10;    (b.tipo = 'BANCOS') and&#13;&#10;    (c.c000 &lt; 100000000)&#13;&#10;where&#13;&#10;    (a.competencia = :compet) and (c.id_estabelecimento = :id_estabelecimento)&#13;&#10;    &#13;&#10;&#13;&#10;">
+        <Column Name="chapa" DataType="System.Int32"/>
+        <Column Name="nome_func" DataType="System.String"/>
+        <Column Name="nome" DataType="System.String"/>
+        <Column Name="banco" DataType="System.String"/>
+        <Column Name="agencia" DataType="System.String"/>
+        <Column Name="conta_corrente" DataType="System.String"/>
+        <Column Name="conta_folha" DataType="System.Int32"/>
+        <Column Name="inicio" DataType="System.DateTime"/>
+        <Column Name="fim" DataType="System.DateTime"/>
+        <Column Name="ativo" DataType="System.String"/>
+        <CommandParameter Name="Compet" DataType="22" Expression="[competencia]"/>
+        <CommandParameter Name="id_estabelecimento" DataType="22" Expression="[idestabelecimento]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="TituloRelatorio" DataType="System.String" Expression="&quot;Relatório de Pensionistas&quot;"/>
+    <Parameter Name="IdEntidade" DataType="System.Int32" Expression="-1"/>
+    <Parameter Name="IdModulo" DataType="System.Int32" Expression="-1"/>
+    <Parameter Name="IdLogin" DataType="System.Int32" Expression="-1"/>
+    <Parameter Name="IdUsuario" DataType="System.Int32" Expression="-1"/>
+    <Parameter Name="IdRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="Periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="Filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="Personalizado" DataType="System.Int32" Expression="0"/>
+    <Parameter Name="ImprimirUsuario" DataType="System.Int32" Expression="1"/>
+    <Parameter Name="ImprimirData" DataType="System.Int32" Expression="1"/>
+    <Parameter Name="competencia" DataType="System.String" Expression="&quot;200509&quot;"/>
+    <Parameter Name="idEstabelecimento" DataType="System.String" Expression="&quot;1&quot;"/>
+  </Dictionary>
+  <inherited Name="MainPage" StartPageEvent="MainPage_StartPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="97.7">
+        <inherited Name="TxtFiltro"/>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="GroupHeader1" ZOrder="0" Top="119.8" Width="718.2" Height="75.6" Fill.Color="Gainsboro" Condition="[qu_pensionistas.chapa]">
+      <TextObject Name="Text1" Left="9.45" Top="9.45" Width="50.27" Height="18.9" Text="CHAPA:" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text2" Left="66.15" Top="9.45" Width="79.38" Height="18.9" Text="[qu_pensionistas.CHAPA]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text3" Left="160.65" Top="9.45" Width="75.6" Height="18.9" Text="Funcionário:" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text4" Left="245.7" Top="9.45" Width="321.3" Height="18.9" Text="[qu_pensionistas.NOME_FUNC]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text5" Left="9.45" Top="47.25" Width="70.31" Height="18.9" Text="Pensionista" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text6" Left="180" Top="47.25" Width="41.96" Height="18.9" Text="Banco" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text7" Left="281.95" Top="47.25" Width="51.41" Height="18.9" Text="Agencia" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text8" Left="354.55" Top="47.25" Width="32.51" Height="18.9" Text="C/C" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text9" Left="444.7" Top="47.25" Width="41.96" Height="18.9" Text="Folha" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text10" Left="493.85" Top="47.25" Width="41.96" Height="18.9" Text="Ativo" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text11" Left="548" Top="47.25" Width="41.96" Height="18.9" Text="Inicio" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text12" Left="627.6" Top="47.25" Width="51.41" Height="18.9" Text="Termino" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <DataBand Name="Data1" Top="198.6" Width="718.2" Height="28.35" Fill.Color="WhiteSmoke" DataSource="Table">
+        <TextObject Name="Text13" Left="9.45" Width="166.32" Height="26.46" Text="[qu_pensionistas.NOME]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text14" Left="179" Width="98.28" Height="26.46" Text="[qu_pensionistas.BANCO]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text15" Left="281.95" Width="71.82" Height="26.46" Text="[qu_pensionistas.AGENCIA]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text16" Left="354.55" Width="86.94" Height="26.46" Text="[qu_pensionistas.CONTA_CORRENTE]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text17" Left="444.7" Width="45.36" Height="26.46" Text="Folha" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text18" Left="493.85" Width="52.92" Height="26.46" Text="[IIf([qu_pensionistas.ATIVO] == &quot;S&quot;,&quot;Sim&quot;,&quot;Não&quot;)]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text19" Left="548" Width="75.6" Height="26.46" Text="[qu_pensionistas.INICIO]" Format="Date" Format.Format="d" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text20" Left="625.7" Width="90.72" Height="26.46" Text="[qu_pensionistas.FIM]" Format="Date" Format.Format="d" VertAlign="Center" Font="Arial, 8pt"/>
+      </DataBand>
+      <GroupFooterBand Name="GroupFooter1" Top="230.15" Width="718.2" Height="9.45" Border.Lines="Bottom" Fill.Color="Silver"/>
+    </GroupHeaderBand>
+    <inherited Name="BndRodape" Top="242.8">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

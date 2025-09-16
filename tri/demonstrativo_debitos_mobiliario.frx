@@ -1,0 +1,368 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="05/30/2025 14:29:21" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+    
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }    
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }     
+//=====================================================================================================================================   
+    private void Text2_BeforePrint(object sender, EventArgs e)
+    {
+      string dia = DateTime.Now.ToString(&quot;dd&quot;);
+      string ano = DateTime.Now.ToString(&quot;yyyy&quot;);
+      string mes = DateTime.Now.ToString(&quot;MM&quot;);
+        
+      // Supondo que mesExtenso seja uma função personalizada para converter números em nomes de meses
+      string mesPorExtenso = MesExtenso(mes);
+        
+      // Supondo que dataAtual seja um campo de texto no relatório
+      ((TextObject)sender).Text = $&quot;{dia} de {mesPorExtenso} de {ano}&quot;;
+    }
+    
+    private string MesExtenso(string mes)
+    {
+      switch (mes)
+      {
+        case &quot;01&quot;: return &quot;janeiro&quot;;
+        case &quot;02&quot;: return &quot;fevereiro&quot;;
+        case &quot;03&quot;: return &quot;março&quot;;
+        case &quot;04&quot;: return &quot;abril&quot;;
+        case &quot;05&quot;: return &quot;maio&quot;;
+        case &quot;06&quot;: return &quot;junho&quot;;
+        case &quot;07&quot;: return &quot;julho&quot;;
+        case &quot;08&quot;: return &quot;agosto&quot;;
+        case &quot;09&quot;: return &quot;setembro&quot;;
+        case &quot;10&quot;: return &quot;outubro&quot;;
+        case &quot;11&quot;: return &quot;novembro&quot;;
+        case &quot;12&quot;: return &quot;dezembro&quot;;
+        default: return &quot;&quot;;
+      } 
+    }
+    
+//=====================================================================================================================================
+    
+    private void Data2_BeforePrint(object sender, EventArgs e)
+    {
+      // Verifica se o campo 'descricao' dentro de 'sqldemonstrativo' é nulo
+      if (&quot;sqldemonstrativo.descricao&quot; == null)
+      {
+        // Se for nulo, esconde o componente 'Data2' para que ele não seja exibido no relatório
+        Data2.Visible = false;
+      }
+      else
+      {
+        // Se não for nulo, garante que o componente 'Data2' fique visível no relatório
+        Data2.Visible = true;
+      } 
+    }
+
+//=====================================================================================================================================    
+    
+    private void Container1_BeforePrint(object sender, EventArgs e)
+    {
+      // Verifica se o campo 'descricao' dentro de 'sqldemonstrativo' é nulo
+      if (&quot;sqldemonstrativo.descricao&quot; == null)
+      {
+       // Se for nulo, esconde o componente 'Data2' para que ele não seja exibido no relatório
+        Container1.Visible = false;
+    }
+    else
+    {
+    // Se não for nulo, garante que o componente 'Data2' fique visível no relatório    
+    Container1.Visible = true;
+  }
+    }
+
+//=====================================================================================================================================    
+    
+    private void Container2_BeforePrint(object sender, EventArgs e)
+    {
+      // Verifica se o campo 'descricao' dentro de 'sqldemonstrativo' é nulo
+      if (&quot;sqldemonstrativo.descricao&quot; == null)
+      {
+        // Se for nulo, esconde o componente 'Data2' para que ele não seja exibido no relatório
+        Container1.Visible = false;
+      }
+      else
+      {
+        // Se não for nulo, garante que o componente 'Data2' fique visível no relatório
+        Container1.Visible = true;
+      }
+      
+    }    
+    
+//=====================================================================================================================================    
+                                                                                                                                    
+    private void Text31_BeforePrint(object sender, EventArgs e)                                                                      
+    {                                                                                                                                
+      // Verifica se o campo 'descricao' dentro de 'sqldemonstrativo' é nulo                                                         
+      if (&quot;sqldemonstrativo.descricao&quot; == null)                                                                                      
+      {                                                                                                                              
+        // Se for nulo, esconde o componente 'Data2' para que ele não seja exibido no relatório                                      
+        Text31.Visible = true;                                                                                                       
+      }                                                                                                                              
+      else                                                                                                                           
+      {                                                                                                                              
+        // Se não for nulo, garante que o componente 'Data2' fique visível no relatório                                             
+        Text31.Visible = false;                                                                                                      
+      }                                                                                                                              
+    }                                                                                                                                
+                                                                                                                                     
+//=====================================================================================================================================    
+    
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O6HxP+D4aTvWHmHWlJCqxIk=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" PropName="Table" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" DataType="System.String"/>
+        <Column Name="site" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" PropName="Table2" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" PropName="Table1" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlDadosDemonstrativo" DataType="System.Int32" Enabled="true" SelectCommand="select	A.M000,&#13;&#10;	    S.NOME_RAZAO&#13;&#10;from CTEC_MOBILIARIO A&#13;&#10;left join SIS_PESSOA S on A.M001 = S.ID_PESSOA&#13;&#10;where A.M000 = :inscricao &#13;&#10;and	A.M005 = 'S'  &#13;&#10;">
+        <Column Name="nome_razao" DataType="System.String"/>
+        <Column Name="m000" DataType="System.String"/>
+        <CommandParameter Name="inscricao" DataType="22" Expression="[inscricao]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlDemonstrativo" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;A.M000,&#13;&#10;	A.COMPETENCIA,&#13;&#10;(select VALOR from AAC_VALOR_UF U where (U.SIGLA='VRM') and (P.VENCIMENTO &gt;= U.VIGENCIA) and (P.VENCIMENTO &lt;= U.VALIDADE)) as VALOR_UF,&#13;&#10;	substring(C.COMPETENCIA,1,4) as COMPETCARNE,&#13;&#10;	C.STATUS      as STATUSCARNE,&#13;&#10;	C.TRIBUTO,&#13;&#10;	P.STATUS      as STATUSPARCELA,&#13;&#10;	P.VALOR,&#13;&#10;	P.VLR_PAGO,&#13;&#10;	P.VENCIMENTO,&#13;&#10;	P.PARCELA,&#13;&#10;	T.DESCRICAO,		&#13;&#10;    extract(day from (cast('now' as date) - coalesce(P.VENCIMENTO, cast('now' as date)))) as DIAS_VENCIMENTO,&#13;&#10;    (select JUROS from multajuroscorrecao(P.VALOR,cast('now' as date),coalesce(cast(P.VENCIMENTO as date),cast('now' as date)),'01')) as JUROS,&#13;&#10;    (select MULTA from multajuroscorrecao(P.VALOR,cast('now' as date),coalesce(cast(P.VENCIMENTO as date),cast('now' as date)),'01')) as MULTA,		&#13;&#10;    (select JUROS from multajuroscorrecao(P.VALOR,cast('now' as date),coalesce(cast(P.VENCIMENTO as date),cast('now' as date)),'01')) +&#13;&#10;    (select MULTA from multajuroscorrecao(P.VALOR,cast('now' as date),coalesce(cast(P.VENCIMENTO as date),cast('now' as date)),'01')) as TOTAL			&#13;&#10;	from      ISSW_DADOS_ANUAIS A&#13;&#10;	left join ISSW_CARNES C     on C.REFERENCIAL_DADOS = A.REFERENCIAL&#13;&#10;	left join ISSW_PARCELAS P   on (P.REFERENCIAL_CARNE = C.REFERENCIAL) and (P.PARCELA &lt;&gt; 0) and ((cast(P.STATUS as integer)= 00) or  (cast(P.STATUS as integer)= 03) or  (cast(P.STATUS as integer)= 07))&#13;&#10;	left join TRI_TRIBUTOS T    on (T.TRIBUTO = C.TRIBUTO)&#13;&#10;	where&#13;&#10;		A.M000 = :inscricao and&#13;&#10;		C.STATUS &lt;&gt; 06 and&#13;&#10;		C.STATUS &lt;&gt; 07 and&#13;&#10;		C.STATUS &lt;&gt; 08 and&#13;&#10;		C.STATUS &lt;&gt; 10 and&#13;&#10;		C.STATUS &lt;&gt; 11 and&#13;&#10;		C.STATUS &lt;&gt; 12 and&#13;&#10;		P.PARCELA is not null&#13;&#10;&#13;&#10;		--left join IPTU_DADOS_ANUAIS AN ON AN.I000=D.M001 AND AN.COMPETENCIA= cast(udf_year(cast('today' as date)) as char(4)) || '00'&#13;&#10;    --udf_copy">
+        <Column Name="competencia" DataType="System.String"/>
+        <Column Name="valor_uf" DataType="System.Double"/>
+        <Column Name="competcarne" DataType="System.String"/>
+        <Column Name="statuscarne" DataType="System.Int32"/>
+        <Column Name="tributo" DataType="System.String"/>
+        <Column Name="statusparcela" DataType="System.String"/>
+        <Column Name="valor" DataType="System.Double"/>
+        <Column Name="vlr_pago" DataType="System.Double"/>
+        <Column Name="vencimento" DataType="System.DateTime"/>
+        <Column Name="parcela" DataType="System.Int32"/>
+        <Column Name="descricao" DataType="System.String"/>
+        <Column Name="dias_vencimento" DataType="System.Int32"/>
+        <Column Name="juros" DataType="System.Double"/>
+        <Column Name="multa" DataType="System.Double"/>
+        <Column Name="total" DataType="System.Double"/>
+        <Column Name="m000" DataType="System.String"/>
+        <CommandParameter Name="inscricao" DataType="22" Expression="[inscricao]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlEndereco" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;	trim(P.NOME_RAZAO) AS P001,&#13;&#10;	trim(coalesce(PF.CPF,PJ.CNPJ)) as CPF_CNPJ,&#13;&#10;	trim(E.PREFIXO) AS PREFIXO,&#13;&#10;	trim(E.TITULO) AS TITULO,&#13;&#10;	trim(E.NOME) as LOGRADOURO,&#13;&#10;	trim(M.M019) as NUMERO,&#13;&#10;	trim(E.BAIRRO) AS BAIRRO,&#13;&#10;	trim(E.CIDADE) AS CIDADE,&#13;&#10;	trim(E.ESTADO) as UF,&#13;&#10;(SELECT trim(L001)&#13;&#10;   FROM CTEC_LOGRA&#13;&#10;  WHERE REFERENCIAL = M.referencial) AS QUADRA  &#13;&#10;from CTEC_MOBILIARIO M&#13;&#10;inner join SIS_PESSOA P on P.ID_PESSOA = M.M001&#13;&#10;left join SIS_PESSOA_FISICA PF ON PF.ID_PESSOA_FISICA = P.ID_PESSOA_FISICA&#13;&#10;left join SIS_PESSOA_JURIDICA PJ ON PJ.ID_PESSOA_JURIDICA = P.ID_PESSOA_JURIDICA&#13;&#10;left join PROC_CTEC_ENDERECOS(M.M015) E on 1=1&#13;&#10;where M.M000 = :inscricao">
+        <Column Name="p001" DataType="System.String"/>
+        <Column Name="prefixo" DataType="System.String"/>
+        <Column Name="titulo" DataType="System.String"/>
+        <Column Name="logradouro" DataType="System.String"/>
+        <Column Name="numero" DataType="System.String"/>
+        <Column Name="bairro" DataType="System.String"/>
+        <Column Name="cidade" DataType="System.String"/>
+        <Column Name="uf" DataType="System.String"/>
+        <Column Name="quadra" DataType="System.String"/>
+        <Column Name="cpf_cnpj" DataType="System.String"/>
+        <CommandParameter Name="inscricao" DataType="22" Expression="[inscricao]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlUfAtual" DataType="System.Int32" Enabled="true" SelectCommand="	select	VALOR&#13;&#10;	from 	AAC_VALOR_UF U&#13;&#10;	where U.SIGLA='VRM'&#13;&#10; and	cast('NOW' as timestamp) &gt;= U.VIGENCIA&#13;&#10; and cast('NOW' as timestamp) &lt;= U.VALIDADE">
+        <Column Name="valor" DataType="System.Double"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Demonstrativo De Débitos Mobiliário&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int32" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int32" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int32" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="tipoCertidao" DataType="System.String" AsString=""/>
+    <Parameter Name="referencial" DataType="System.String" AsString=""/>
+    <Parameter Name="inscricao" DataType="System.String" AsString=""/>
+    <Parameter Name="ipAcessado" DataType="System.String" AsString=""/>
+    <Total Name="Total" Expression="[SqlDemonstrativo.valor]" Evaluator="Data2"/>
+    <Total Name="Total_Multa" Expression="[SqlDemonstrativo.multa]" Evaluator="Data2"/>
+    <Total Name="Total_juros" Expression="[SqlDemonstrativo.juros]" Evaluator="Data2"/>
+    <Total Name="Total_pago" Expression="[SqlDemonstrativo.vlr_pago]" Evaluator="Data2"/>
+    <Total Name="Total_total" Expression="[SqlDemonstrativo.total]" Evaluator="Data2"/>
+  </Dictionary>
+  <ReportPage Name="MainPage" Landscape="true" PaperWidth="297" PaperHeight="210" RawPaperSize="9" Watermark.Font="Arial, 60pt">
+    <PageHeaderBand Name="BndCabecalho" Restrictions="DontResize, DontDelete" Top="20" Width="1047.06" Height="94.5" Border.Lines="Bottom" BeforePrintEvent="parent_BndCabecalho_BeforePrint" KeepChild="true">
+      <PictureObject Name="ImgBrasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Width="75.6" Height="94.5" DataColumn="SqlEntidade.brasao" ImageAlign="Center_Center"/>
+      <TextObject Name="TxtEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Width="858.06" Height="18.9" Text="[SqlEntidade.nome]" VertAlign="Center" Font="Tahoma, 10pt, style=Bold"/>
+      <PictureObject Name="ImgLogo" Left="933.66" Width="113.4" Height="94.5" DataColumn="SqlEntidade.logo" ImageAlign="Center_Center"/>
+      <TextObject Name="TxtTituloModulo1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="18.9" Width="858.06" Height="18.9" Text="[SqlModulo.titulo_1]" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="TxtTituloModulo2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="37.8" Width="858.06" Height="18.9" Text="[SqlModulo.titulo_2]" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="TxtTituloRelatorio" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="56.7" Width="858.06" Height="18.9" Text="[TituloRelatorio]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="TxtPeriodo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="75.6" Width="858.06" Height="18.9" BeforePrintEvent="TxtCompetencia_BeforePrint" Text="[periodo]" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+      <ChildBand Name="BndFiltro" Restrictions="DontResize, DontDelete" Top="134.5" Width="1047.06" Height="18.9" CanGrow="true" BeforePrintEvent="parent_BndFiltro_BeforePrint">
+        <TextObject Name="TxtFiltro" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="3.78" Width="1047.06" Height="11.34" Fill.Color="129, 245, 230, 207" Cursor="IBeam" CanGrow="true" Text="[filtro]" Font="Tahoma, 7pt, style=Bold" Wysiwyg="true"/>
+      </ChildBand>
+    </PageHeaderBand>
+    <DataBand Name="Data1" Top="173.4" Width="1047.06" Height="155.36" DataSource="Table">
+      <ContainerObject Name="Container1" Top="131.92" Width="1048.95" Height="18.9" BeforePrintEvent="Container1_BeforePrint">
+        <TextObject Name="Text11" Left="328.99" Top="2.65" Width="83.16" Height="20.79" Border.Lines="Bottom" Fill.Color="41, 82, 118" Text="Parcela" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text19" Left="965.9" Top="2.65" Width="80.89" Height="20.79" Border.Lines="Right, Bottom" Fill.Color="41, 82, 118" Text="Total&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text18" Left="886.3" Top="2.65" Width="79.38" Height="20.79" Border.Lines="Right, Bottom" Fill.Color="41, 82, 118" Text="Valor Pago" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text17" Left="807.05" Top="2.65" Width="79.38" Height="20.79" Border.Lines="Right, Bottom" Fill.Color="41, 82, 118" Text="Desconto" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text15" Left="647.62" Top="2.65" Width="79.38" Height="20.79" Border.Lines="Right, Bottom" Fill.Color="41, 82, 118" Text="Multa" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text14" Left="568" Top="2.65" Width="79.38" Height="20.79" Border.Lines="Right, Bottom" Fill.Color="41, 82, 118" Text="Atual" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text13" Left="488.62" Top="2.65" Width="79.38" Height="20.79" Border.Lines="Right, Bottom" Fill.Color="41, 82, 118" Text="Origem" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text16" Left="727.38" Top="2.65" Width="79.38" Height="20.79" Border.Lines="Right, Bottom" Fill.Color="41, 82, 118" Text="Juros" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text9" Top="2.65" Width="249.48" Height="20.79" Border.Lines="Left, Right, Bottom" Fill.Color="41, 82, 118" Text="Tributo&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text10" Left="249.48" Top="2.65" Width="79.38" Height="20.79" Border.Lines="Left, Right, Bottom" Fill.Color="41, 82, 118" Text="Ano" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text12" Left="409.24" Top="2.65" Width="79.38" Height="20.79" Border.Lines="Left, Right, Bottom" Fill.Color="41, 82, 118" Text="Termo" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" TextFill.Color="White"/>
+      </ContainerObject>
+      <TextObject Name="Text1" Top="18.14" Width="670.57" Height="24.57" Text="DEMONSTRATIVO DE DÉBITOS MOBILIÁRIO - &#13;&#10;" HorzAlign="Right" Font="Arial, 18pt, style=Bold" TextFill.Color="41, 82, 118" Wysiwyg="true" LineHeight="2"/>
+      <TextObject Name="Text2" Left="670.57" Top="18.14" Width="611.98" Height="25.33" BeforePrintEvent="Text2_BeforePrint" Text="[DATE]" Format="Date" Format.Format="D" Font="Arial, 18pt, style=Bold" TextFill.Color="41, 82, 118" Wysiwyg="true" LineHeight="2"/>
+      <TextObject Name="Text3" Top="71.44" Width="151.2" Height="20.79" Border.Lines="Left, Top, Bottom" Text="Inscrição Imobiliária:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+      <TextObject Name="Text5" Top="92.61" Width="151.2" Height="20.79" Border.Lines="Left, Bottom" Text="Proprietário:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+      <TextObject Name="Text6" Left="151.2" Top="92.5" Width="895.86" Height="20.79" Border.Lines="Left, Right, Bottom" Fill.Color="ButtonFace" Text="[UpperCase([SqlDadosDemonstrativo.nome_razao])]" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text4" Left="150.82" Top="71.6" Width="895.86" Height="20.79" Border.Lines="All" Fill.Color="ButtonFace" Text="[SqlDadosDemonstrativo.m000]&#13;&#10;" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text8" Left="151.2" Top="113.4" Width="895.86" Height="20.79" Border.Lines="Left, Right, Bottom" Text="[SqlEndereco.prefixo] [SqlEndereco.titulo] [SqlEndereco.logradouro], [SqlEndereco.numero] - [SqlEndereco.bairro]&#13;&#10;" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text7" Top="113.4" Width="151.2" Height="20.79" Border.Lines="Left, Bottom" Text="Endereço:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+    </DataBand>
+    <DataBand Name="Data2" Top="348.76" Width="1047.06" Height="18.9" BeforePrintEvent="Data2_BeforePrint" DataSource="Table1">
+      <TextObject Name="Text27" Left="807.03" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" AfterPrintEvent="Text27_AfterPrint" Text="0,00" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text20" Width="249.48" Height="18.9" Border.Lines="Left, Top, Bottom" Text="[SqlDemonstrativo.descricao]&#13;&#10;" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text21" Left="249.48" Width="79.38" Height="18.9" Border.Lines="All" Text="[SqlDemonstrativo.competcarne]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text23" Left="488.75" Width="79.38" Height="18.9" Border.Lines="All" Text="[SqlDemonstrativo.valor]&#13;&#10;" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text24" Left="568.13" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" Text="[SqlDemonstrativo.valor]&#13;&#10;" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text25" Left="647.51" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" Text="[SqlDemonstrativo.multa]&#13;&#10;" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text28" Left="886.41" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" AfterPrintEvent="Text27_AfterPrint" Text="[SqlDemonstrativo.vlr_pago]&#13;&#10;" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text29" Left="965.79" Width="80.89" Height="18.9" Border.Lines="Right, Top, Bottom" AfterPrintEvent="Text27_AfterPrint" Text="[SqlDemonstrativo.total]&#13;&#10;" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text30" Left="409.35" Width="79.38" Height="18.9" Border.Lines="Top, Bottom" AfterPrintEvent="Text27_AfterPrint" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text26" Left="727.27" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" Text="[SqlDemonstrativo.juros]&#13;&#10;" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      <TextObject Name="Text22" Left="329.99" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" Text="[SqlDemonstrativo.parcela]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+    </DataBand>
+    <DataBand Name="Data3" Top="387.66" Width="1047.06" Height="18.9" DataSource="Table">
+      <TextObject Name="Text31" Width="1048.95" Height="18.9" BeforePrintEvent="Text31_BeforePrint" Text="Não foram encontrados débitos para esta inscrição.&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+    </DataBand>
+    <ReportSummaryBand Name="ReportSummary1" Top="426.56" Width="1047.06" Height="67.28">
+      <ContainerObject Name="Container2" Top="45.36" Width="1048.95" Height="18.9">
+        <TextObject Name="Text32" Width="567" Height="18.9" Border.Lines="All" BeforePrintEvent="Text32_BeforePrint" Text="Total Geral:&#13;&#10;" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text33" Left="567" Top="0.06" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" Text="[Total]" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text34" Left="647.14" Top="0.06" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" Text="[Total_multa]" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text35" Left="727.27" Top="0.06" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" Text="[Total_juros]" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text36" Left="806.7" Top="0.06" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" AfterPrintEvent="Text27_AfterPrint" Text="0,00" Format="Custom" Format.Format="G" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text37" Left="886.41" Top="0.06" Width="79.38" Height="18.9" Border.Lines="Right, Top, Bottom" AfterPrintEvent="Text27_AfterPrint" Text="[Total_pago]" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text38" Left="965.79" Top="0.06" Width="80.89" Height="18.9" Border.Lines="Right, Top, Bottom" AfterPrintEvent="Text27_AfterPrint" Text="[Total_total]&#13;&#10;" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+      </ContainerObject>
+    </ReportSummaryBand>
+    <PageFooterBand Name="BndRodape" Restrictions="DontResize, DontDelete" Top="513.84" Width="1047.06" Height="30.24" Border.Lines="Top" CanGrow="true" BeforePrintEvent="parent_BndRodape_BeforePrint">
+      <TextObject Name="TxtRodape" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="18.9" Width="933.66" Height="11.34" Text="TxtRodape" Font="Tahoma, 7pt"/>
+      <TextObject Name="TxtPaginacao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="933.66" Top="18.9" Width="113.4" Height="11.34" Text="Página [Page#] de [TotalPages#]" HorzAlign="Right" Font="Tahoma, 7pt">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <TextObject Name="TxtEndereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="3.78" Width="1047.06" Height="11.34" CanGrow="true" Text="[SqlEntidade.endereco] | Telefone: [SqlEntidade.telefone] | CNPJ: [SqlEntidade.cnpj]" HorzAlign="Justify" Font="Tahoma, 7pt">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+    </PageFooterBand>
+  </ReportPage>
+</Report>

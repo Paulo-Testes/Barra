@@ -1,0 +1,263 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="..\..\..\..\..\..\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/27/2025 08:54:43" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }   
+    /* ==========================================================================================================================================*/
+    private void grpAgrupamento_BeforePrint(object sender, EventArgs e)
+    {
+      Int64 tpAgrupamento = Convert.ToInt64(Report.GetParameterValue(&quot;tpAgrupamento&quot;));
+      Int64 quebrarPagina = Convert.ToInt64(Report.GetParameterValue(&quot;quebrarPagina&quot;));
+      
+      
+      grpAgrupamento.Height = (tpAgrupamento == 1 || tpAgrupamento == 3) ? 15 : 0;
+      grpAgrupamento.StartNewPage = quebrarPagina == 1;
+      
+    }
+          
+    /* ==========================================================================================================================================*/
+    
+    private void chdAgrupamento_BeforePrint(object sender, EventArgs e)
+    {
+      chdAgrupamento.Visible = (((String)Report.GetParameterValue(&quot;tpAgrupamento&quot;)) == &quot;2&quot; || ((String)Report.GetParameterValue(&quot;tpAgrupamento&quot;)) == &quot;3&quot;);
+    }
+    /* ==========================================================================================================================================*/
+
+    private void memUnidadeEstoque_BeforePrint(object sender, EventArgs e)
+    {
+      if (((String)Report.GetParameterValue(&quot;tpAgrupamento&quot;)) == &quot;3&quot;)
+        memUnidadeEstoque.Text = &quot;          &quot; + memUnidadeEstoque.Text; 
+    }
+    /* ==========================================================================================================================================*/
+    private void SqlPrincipalCP_MES_BeforePrint(object sender, EventArgs e)
+    {
+      if (((String)Report.GetParameterValue(&quot;tpAgrupamento&quot;)) == &quot;0&quot;) {
+        SqlPrincipalCP_MES.Left  = (float) 0.0;
+        SqlPrincipalCP_MES.Width = (float) 718.20;
+      }
+    }                              
+    /* ==========================================================================================================================================*/
+ 
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1Ow3LPlcbX31dCowSg/R9eJ4=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlPrincipal" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CASE WHEN CAST(:TP_AGRUPAMENTO AS INTEGER) IN (1,3) THEN A2.CD_ALMOXARIFADO      END AS CD_ALMOXARIFADO&#13;&#10;     , CASE WHEN CAST(:TP_AGRUPAMENTO AS INTEGER) IN (1,3) THEN A2.DS_ALMOXARIFADO      END AS DS_ALMOXARIFADO&#13;&#10;     , CASE WHEN CAST(:TP_AGRUPAMENTO AS INTEGER) IN (2,3) THEN A2.CD_UNIDADE_ESTOQUE   END AS CD_UNIDADE_ESTOQUE&#13;&#10;     , CASE WHEN CAST(:TP_AGRUPAMENTO AS INTEGER) IN (2,3) THEN A2.DS_UNIDADE_ESTOQUE   END AS DS_UNIDADE_ESTOQUE&#13;&#10;     , A2.CP_MES&#13;&#10;     , ROUND(SUM(A2.VL_SALDO_ANTERIOR)  , 2) AS VL_SALDO_ANTERIOR&#13;&#10;     , ROUND(SUM(A2.VL_ENTRADA)         , 2) AS VL_ENTRADA&#13;&#10;     , ROUND(SUM(A2.VL_SAIDA)           , 2) AS VL_SAIDA&#13;&#10;     , ROUND(SUM(A2.VL_SALDO_ANTERIOR&#13;&#10;               + A2.VL_ENTRADA&#13;&#10;               + A2.VL_SAIDA         )  , 2) AS VL_SALDO_SEGUINTE&#13;&#10;  FROM (&#13;&#10;        SELECT A1.CD_ALMOXARIFADO&#13;&#10;             , A1.DS_ALMOXARIFADO&#13;&#10;             , A1.CD_UNIDADE_ESTOQUE&#13;&#10;             , A1.DS_UNIDADE_ESTOQUE&#13;&#10;             , A1.CP_MES&#13;&#10;             , (SELECT COALESCE(SUM(ZZ.VL_TOTAL), 0)&#13;&#10;                  FROM SUP_LANCAMENTO XX&#13;&#10;                       LEFT JOIN SUP_LANCAMENTO_IT ZZ ON ZZ.ID_LANCAMENTO = XX.ID_LANCAMENTO&#13;&#10;                 WHERE ( ( XX.CP_ANO &lt; :CP_ANO ) OR&#13;&#10;                         ( XX.CP_ANO = :CP_ANO AND XX.CP_MES &lt; A1.CP_MES ) )&#13;&#10;                   AND XX.ID_ENTIDADE          = :ID_ENTIDADE                                                                                                                                                                                                                                           &#13;&#10;                   AND XX.ID_ALMOXARIFADO      = A1.ID_ALMOXARIFADO&#13;&#10;                   AND XX.ID_UNIDADE_ESTOQUE   = A1.ID_UNIDADE_ESTOQUE) AS VL_SALDO_ANTERIOR&#13;&#10;             , SUM(A1.VL_ENTRADA) AS VL_ENTRADA&#13;&#10;             , SUM(A1.VL_SAIDA)   AS VL_SAIDA&#13;&#10;          FROM (&#13;&#10;                SELECT A.ID_ALMOXARIFADO&#13;&#10;                     , C.CD_ALMOXARIFADO&#13;&#10;                     , C.DS_ALMOXARIFADO&#13;&#10;                     , A.ID_UNIDADE_ESTOQUE&#13;&#10;                     , D.CD_UNIDADE_ESTOQUE&#13;&#10;                     , D.DS_UNIDADE_ESTOQUE&#13;&#10;                     , A.CP_MES&#13;&#10;                     , SUM(CASE WHEN A.TP_LANCAMENTO = 0 THEN B.VL_TOTAL ELSE 0 END) AS VL_ENTRADA&#13;&#10;                     , SUM(CASE WHEN A.TP_LANCAMENTO = 1 THEN B.VL_TOTAL ELSE 0 END) AS VL_SAIDA&#13;&#10;                  FROM SUP_LANCAMENTO A&#13;&#10;                       LEFT JOIN SUP_LANCAMENTO_IT          B ON B.ID_LANCAMENTO        = A.ID_LANCAMENTO&#13;&#10;                       LEFT JOIN SUP_ALMOXARIFADO           C ON C.ID_ALMOXARIFADO      = A.ID_ALMOXARIFADO&#13;&#10;                       LEFT JOIN SUP_UNIDADE_ESTOQUE        D ON D.ID_UNIDADE_ESTOQUE   = A.ID_UNIDADE_ESTOQUE&#13;&#10;                       LEFT JOIN SUP_USUARIO                F ON F.ID_USUARIO           = :ID_USUARIO&#13;&#10;                       LEFT JOIN SUP_ACESSO_ALMOXARIFADO    E ON E.ID_ALMOXARIFADO      = A.ID_ALMOXARIFADO&#13;&#10;                                                             AND E.ID_GRUPO_USUARIO     = F.ID_GRUPO_USUARIO&#13;&#10;                 WHERE A.ID_ENTIDADE         = :ID_ENTIDADE                                                                                                                                                                               &#13;&#10;                   AND A.CP_ANO              = :CP_ANO&#13;&#10;                   AND A.CP_MES        BETWEEN :CP_MES_INICIAL AND :CP_MES_FINAL&#13;&#10;                   AND (A.ID_ALMOXARIFADO    = :ID_ALMOXARIFADO    OR -1 = :ID_ALMOXARIFADO)&#13;&#10;                   AND (A.ID_UNIDADE_ESTOQUE = :ID_UNIDADE_ESTOQUE OR -1 = :ID_UNIDADE_ESTOQUE)&#13;&#10;                   AND E.ALMOXARIFE          = 1&#13;&#10;                 GROUP BY 1,2,3,4,5,6,7&#13;&#10;        &#13;&#10;                UNION&#13;&#10;        &#13;&#10;                SELECT B.ID_ALMOXARIFADO&#13;&#10;                     , B.CD_ALMOXARIFADO&#13;&#10;                     , B.DS_ALMOXARIFADO&#13;&#10;                     , C.ID_UNIDADE_ESTOQUE&#13;&#10;                     , C.CD_UNIDADE_ESTOQUE&#13;&#10;                     , C.DS_UNIDADE_ESTOQUE&#13;&#10;                     , S.CP_MES&#13;&#10;                     , CAST(0 AS DOUBLE PRECISION) AS VL_ENTRADA&#13;&#10;                     , CAST(0 AS DOUBLE PRECISION) AS VL_SAIDA&#13;&#10;                  FROM SUP_ALMOX_UNIDADE_ESTOQUE A&#13;&#10;                       LEFT JOIN SUP_ALMOXARIFADO           B ON B.ID_ALMOXARIFADO      = A.ID_ALMOXARIFADO&#13;&#10;                       LEFT JOIN SUP_UNIDADE_ESTOQUE        C ON C.ID_UNIDADE_ESTOQUE   = A.ID_UNIDADE_ESTOQUE&#13;&#10;                       LEFT JOIN SUP_USUARIO                F ON F.ID_USUARIO           = :ID_USUARIO&#13;&#10;                       LEFT JOIN SUP_ACESSO_ALMOXARIFADO    E ON E.ID_ALMOXARIFADO      = A.ID_ALMOXARIFADO&#13;&#10;                                                             AND E.ID_GRUPO_USUARIO     = F.ID_GRUPO_USUARIO&#13;&#10;                       LEFT JOIN (&#13;&#10;                                  SELECT SEQ.ID_SEQUENCIA AS CP_MES&#13;&#10;                                    FROM SIS_SEQUENCIA SEQ&#13;&#10;                                   WHERE SEQ.ID_SEQUENCIA BETWEEN :CP_MES_INICIAL AND :CP_MES_FINAL&#13;&#10;                                 ) S ON 1 = 1&#13;&#10;        &#13;&#10;                 WHERE B.ID_ENTIDADE         = :ID_ENTIDADE&#13;&#10;                   AND C.ID_ENTIDADE         = :ID_ENTIDADE                                                                                                                                   &#13;&#10;                   AND (A.ID_ALMOXARIFADO    = :ID_ALMOXARIFADO    OR -1 = :ID_ALMOXARIFADO)&#13;&#10;                   AND (A.ID_UNIDADE_ESTOQUE = :ID_UNIDADE_ESTOQUE OR -1 = :ID_UNIDADE_ESTOQUE)&#13;&#10;                   AND E.ALMOXARIFE = 1&#13;&#10;               ) A1&#13;&#10;         GROUP BY&#13;&#10;               A1.ID_ALMOXARIFADO&#13;&#10;             , A1.CD_ALMOXARIFADO&#13;&#10;             , A1.DS_ALMOXARIFADO&#13;&#10;             , A1.ID_UNIDADE_ESTOQUE&#13;&#10;             , A1.CD_UNIDADE_ESTOQUE&#13;&#10;             , A1.DS_UNIDADE_ESTOQUE&#13;&#10;             , A1.CP_MES&#13;&#10;&#13;&#10;       ) A2&#13;&#10; GROUP BY&#13;&#10;       1,2,3,4,5&#13;&#10; ORDER BY&#13;&#10;       1, 3">
+        <Column Name="cd_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <Column Name="cd_unidade_estoque" DataType="System.Int32"/>
+        <Column Name="ds_unidade_estoque" DataType="System.String"/>
+        <Column Name="cp_mes" DataType="System.Int32"/>
+        <Column Name="vl_saldo_anterior" DataType="System.Double"/>
+        <Column Name="vl_entrada" DataType="System.Double"/>
+        <Column Name="vl_saida" DataType="System.Double"/>
+        <Column Name="vl_saldo_seguinte" DataType="System.Double"/>
+        <CommandParameter Name="TP_AGRUPAMENTO" DataType="22" Expression="[tpAgrupamento]"/>
+        <CommandParameter Name="CP_ANO" DataType="22" Expression="[cpAno]"/>
+        <CommandParameter Name="CP_MES_INICIAL" DataType="22" Expression="[cpMesIni]"/>
+        <CommandParameter Name="CP_MES_FINAL" DataType="22" Expression="[cpMesFin]"/>
+        <CommandParameter Name="ID_ALMOXARIFADO" DataType="22" Expression="[idAlmoxarifado]"/>
+        <CommandParameter Name="ID_UNIDADE_ESTOQUE" DataType="22" Expression="[idUnidadeEstoque]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[IdEntidade]"/>
+        <CommandParameter Name="ID_USUARIO" DataType="9" Expression="[IdUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlAlmoxarifado" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_ALMOXARIFADO&#13;&#10;     , A.DS_ALMOXARIFADO&#13;&#10;  FROM SUP_ALMOXARIFADO A&#13;&#10; WHERE A.ID_ALMOXARIFADO = :ID_ALMOXARIFADO">
+        <Column Name="cd_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <CommandParameter Name="ID_ALMOXARIFADO" DataType="22" Expression="[idAlmoxarifado]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlUnidadeEstoque" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_UNIDADE_ESTOQUE&#13;&#10;     , A.DS_UNIDADE_ESTOQUE&#13;&#10;  FROM SUP_UNIDADE_ESTOQUE A&#13;&#10; WHERE A.ID_UNIDADE_ESTOQUE = :ID_UNIDADE_ESTOQUE">
+        <Column Name="cd_unidade_estoque" DataType="System.Int32"/>
+        <Column Name="ds_unidade_estoque" DataType="System.String"/>
+        <CommandParameter Name="ID_UNIDADE_ESTOQUE" DataType="22" Expression="[idUnidadeEstoque]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlMes" DataType="System.Int32" Enabled="true" SelectCommand="SELECT &#13;&#10;    CASE &#13;&#10;        WHEN :CpMesIni = 1 THEN 'Janeiro'&#13;&#10;        WHEN :CpMesIni = 2 THEN 'Fevereiro'&#13;&#10;        WHEN :CpMesIni = 3 THEN 'Março'&#13;&#10;        WHEN :CpMesIni = 4 THEN 'Abril'&#13;&#10;        WHEN :CpMesIni = 5 THEN 'Maio'&#13;&#10;        WHEN :CpMesIni = 6 THEN 'Junho'&#13;&#10;        WHEN :CpMesIni = 7 THEN 'Julho'&#13;&#10;        WHEN :CpMesIni = 8 THEN 'Agosto'&#13;&#10;        WHEN :CpMesIni = 9 THEN 'Setembro'&#13;&#10;        WHEN :CpMesIni = 10 THEN 'Outubro'&#13;&#10;        WHEN :CpMesIni = 11 THEN 'Novembro'&#13;&#10;        WHEN :CpMesIni = 12 THEN 'Dezembro'&#13;&#10;        ELSE 'Mês inválido'&#13;&#10;    END AS MesInicio,&#13;&#10;    &#13;&#10;    CASE &#13;&#10;        WHEN :CpMesFin = 1 THEN 'Janeiro'&#13;&#10;        WHEN :CpMesFin = 2 THEN 'Fevereiro'&#13;&#10;        WHEN :CpMesFin = 3 THEN 'Março'&#13;&#10;        WHEN :CpMesFin = 4 THEN 'Abril'&#13;&#10;        WHEN :CpMesFin = 5 THEN 'Maio'&#13;&#10;        WHEN :CpMesFin = 6 THEN 'Junho'&#13;&#10;        WHEN :CpMesFin = 7 THEN 'Julho'&#13;&#10;        WHEN :CpMesFin = 8 THEN 'Agosto'&#13;&#10;        WHEN :CpMesFin = 9 THEN 'Setembro'&#13;&#10;        WHEN :CpMesFin = 10 THEN 'Outubro'&#13;&#10;        WHEN :CpMesFin = 11 THEN 'Novembro'&#13;&#10;        WHEN :CpMesFin = 12 THEN 'Dezembro'&#13;&#10;        ELSE 'Mês inválido'&#13;&#10;    END AS MesFim&#13;&#10; &#13;&#10;FROM &#13;&#10;    sup_lancamento a &#13;&#10;WHERE &#13;&#10;    a.cp_mes &gt;= :CpMesIni &#13;&#10;    AND a.cp_mes &lt;= :CpMesFin&#13;&#10; limit 1">
+        <Column Name="mesinicio" DataType="System.String"/>
+        <Column Name="mesfim" DataType="System.String"/>
+        <CommandParameter Name="CpMesIni" DataType="22" Expression="[cpMesIni]"/>
+        <CommandParameter Name="CpMesFin" DataType="22" Expression="[cpMesFin]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Resumo Anual&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="cpAno" DataType="System.String" Expression="&quot;2025&quot;"/>
+    <Parameter Name="cpMesIni" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="cpMesFin" DataType="System.String" Expression="&quot;8&quot;"/>
+    <Parameter Name="idAlmoxarifado" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idUnidadeEstoque" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="tpAgrupamento" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="quebrarPagina" DataType="System.String" Expression="&quot;0&quot;"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho" Top="0">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="98.58">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child1" ZOrder="-1" Top="121.56" Width="718.2" Height="16.35" CanGrow="true">
+          <TextObject Name="Text1" Top="3.34" Width="718.2" Height="12.85" CanGrow="true" BeforePrintEvent="Text1_BeforePrint" Text="[IIf(ToInt32([cpMesIni]) == ToInt32([cpMesFin]),[SqlMes.mesinicio] + &quot; de &quot; + [cpAno],[SqlMes.mesinicio] + &quot; a &quot; + [SqlMes.mesfim] + &quot; de &quot; + [cpAno])][IIf(ToInt32([IdAlmoxarifado]) &gt; 0, &quot;Almoxarifado: &quot; + [SqlAlmoxarifado.cd_almoxarifado] + &quot; - &quot; + [SqlAlmoxarifado.ds_almoxarifado],&quot;&quot;)][IIf(ToInt32([IdUnidadeEstoque]) &gt; 0, &quot;Unidade de estoque: &quot; + [SqlUnidadeEstoque.cd_unidade_estoque] + &quot; - &quot; + [SqlUnidadeEstoque.ds_unidade_estoque], &quot;&quot;)]" VertAlign="Center" Font="Tahoma, 7pt"/>
+          <LineObject Name="Line2" Top="16.35" Width="718.2"/>
+          <ChildBand Name="Child2" Top="141.99" Width="718.2" Height="9.45"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="grpAgrupamento" ZOrder="0" Top="155.53" Width="718.2" Height="15.12" BeforePrintEvent="grpAgrupamento_BeforePrint" Condition="IIf(ToInt32([tpAgrupamento]) == 1,[SqlAlmoxarifado.cd_almoxarifado],IIf(ToInt32([tpAgrupamento]) == 2,[SqlPrincipal.cd_unidade_estoque],IIf(ToInt32([tpAgrupamento]) == 3,Format(&quot;{0:00000000}&quot;, [SqlPrincipal.cd_almoxarifado]) + &quot;&quot; + Format(&quot;{0:00000000}&quot;, [SqlPrincipal.cd_unidade_estoque]),&quot;&quot;)))">
+      <TextObject Name="Text2" Width="718.2" Height="15.12" Fill.Color="ButtonFace" BeforePrintEvent="Text2_BeforePrint" Text="Almoxarifado: &lt;b&gt;[SqlAlmoxarifado.cd_almoxarifado] - [SqlAlmoxarifado.ds_almoxarifado]&lt;/b&gt;" VertAlign="Center" Font="Tahoma, 7pt" TextRenderType="HtmlTags"/>
+      <ChildBand Name="chdAgrupamento" Top="174.73" Width="718.2" Height="24.57" BeforePrintEvent="chdAgrupamento_BeforePrint">
+        <TextObject Name="memUnidadeEstoque" Width="718.2" Height="15.12" Fill.Color="ButtonFace" BeforePrintEvent="memUnidadeEstoque_BeforePrint" Text="Unidade de estoque: &lt;b&gt;[SqlPrincipal.cd_unidade_estoque] - [SqlPrincipal.ds_unidade_estoque]&lt;/b&gt;" VertAlign="Center" Font="Tahoma, 7pt" TextRenderType="HtmlTags"/>
+      </ChildBand>
+      <DataBand Name="mdtPrincipal" Top="203.38" Width="718.2" Height="67.01" DataSource="Table">
+        <TextObject Name="Text5" Left="261.95" Top="17.12" Width="109.24" Height="12.85" Text="Saldo anterior&#13;&#10;" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+        <TextObject Name="Text6" Left="598" Top="17.12" Width="120.2" Height="12.85" Text="[SqlPrincipal.vl_saldo_anterior]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+        <TextObject Name="Text7" Left="290.04" Top="29.97" Width="109.24" Height="12.1" Text="(+) Entradas&#13;&#10;" VertAlign="Center" Font="Tahoma, 7pt" TextFill.Color="Blue"/>
+        <TextObject Name="Text8" Left="290.04" Top="42.07" Width="109.24" Height="12.1" Text="(-) Saídas&#13;&#10;" VertAlign="Center" Font="Tahoma, 7pt" TextFill.Color="Red"/>
+        <TextObject Name="Text9" Left="598" Top="29.97" Width="120.2" Height="12.1" Text="[SqlPrincipal.vl_entrada]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7pt" TextFill.Color="Blue"/>
+        <TextObject Name="Text10" Left="598" Top="42.07" Width="120.2" Height="12.1" Text="[SqlPrincipal.vl_saida]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7pt" TextFill.Color="Red"/>
+        <TextObject Name="Text11" Left="261.95" Top="54.16" Width="109.24" Height="12.85" Text="Saldo à seguir&#13;&#10;" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+        <TextObject Name="Text12" Left="598" Top="54.16" Width="120.2" Height="12.85" Text="[SqlPrincipal.vl_saldo_seguinte]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+        <TextObject Name="SqlPrincipalCP_MES" Left="150.07" Top="2" Width="568.13" Height="12.85" Border.Lines="Bottom" BeforePrintEvent="SqlPrincipalCP_MES_BeforePrint" Text="[MonthName([SqlPrincipal.cp_mes]).Substring(0,1).ToUpper() + MonthName([SqlPrincipal.cp_mes]).Substring(1).ToLower() + &quot;/&quot; + [cpAno]]&#13;&#10;&#13;&#10;" VertAlign="Bottom" Font="Tahoma, 7pt"/>
+      </DataBand>
+    </GroupHeaderBand>
+    <inherited Name="BndRodape" Top="274.47">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

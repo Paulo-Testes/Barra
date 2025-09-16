@@ -1,0 +1,435 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\gsr-reports\base\PecRetrato.frx" BaseReportAbsolutePath="C:\gsr-reports\base\PecRetrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="09/03/2025 12:15:59" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+       
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+      string periodo = (String)Report.GetParameterValue(&quot;periodo&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtOrgao.Top = (!string.IsNullOrWhiteSpace(periodo)) ? (float) 56.7 : (float) 37.8;
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtOrgao.Top = (!string.IsNullOrWhiteSpace(periodo)) ? (float) 75.6 : (float) 56.7;
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtOrgao.Top = (!string.IsNullOrWhiteSpace(periodo)) ? (float) 75.6 : (float) 56.7;
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }   
+       
+    private void parent_FooterAssinante_BeforePrint(object sender, EventArgs e)
+    {
+      TxtAssinante1.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel1&quot;));
+      TxtAssinante2.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel2&quot;));
+      TxtAssinante3.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel3&quot;));
+      TxtAssinante4.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel4&quot;));
+    } 
+
+    
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O9ID+PBrsHyCDMMAhImSf3g=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlAssinante" DataType="System.Int32" PropName="Table" Enabled="true" SelectCommand="SELECT TRIM(C1.NOME_RAZAO) AS NOME_RESPONSAVEL1&#13;&#10;     , C.CARGO AS CARGO_RESPONSAVEL1&#13;&#10;     , CAST(C.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL1&#13;&#10;     , CAST(C3.MATRICULA AS VARCHAR(20)) AS MATRICULA1&#13;&#10;&#13;&#10;     , TRIM(D1.NOME_RAZAO) AS NOME_RESPONSAVEL2&#13;&#10;     , D.CARGO AS CARGO_RESPONSAVEL2&#13;&#10;     , CAST(D.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL2&#13;&#10;     , CAST(D3.MATRICULA AS VARCHAR(20)) AS MATRICULA2&#13;&#10;&#13;&#10;     , TRIM(E1.NOME_RAZAO) AS NOME_RESPONSAVEL3&#13;&#10;     , E.CARGO AS CARGO_RESPONSAVEL3&#13;&#10;     , CAST(E.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL3&#13;&#10;     , CAST(E3.MATRICULA AS VARCHAR(20)) AS MATRICULA3&#13;&#10;&#13;&#10;     , TRIM(F1.NOME_RAZAO) AS NOME_RESPONSAVEL4&#13;&#10;     , F.CARGO AS CARGO_RESPONSAVEL4&#13;&#10;     , CAST(F.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL4&#13;&#10;     , CAST(F3.MATRICULA AS VARCHAR(20)) AS MATRICULA4&#13;&#10;&#13;&#10;     , CAST(MAKE_DATE(CAST(:ANO AS INTEGER), CAST(:MES AS INTEGER), CAST(:DIA AS INTEGER)) AS TIMESTAMP) AS DT_RELATORIO&#13;&#10;&#13;&#10;  FROM SIS_RELATORIO R&#13;&#10;       LEFT JOIN PEC_RELATORIO           A  ON A.ID_RELATORIO           = R.ID_RELATORIO&#13;&#10;       LEFT JOIN PEC_RELATORIO_ASSINANTE B  ON B.ID_RELATORIO_GRUPO     = A.ID_RELATORIO_GRUPO&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL C  ON C.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_01&#13;&#10;       LEFT JOIN SIS_PESSOA              C1 ON C1.ID_PESSOA             = C.ID_PESSOA&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL D  ON D.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_02&#13;&#10;       LEFT JOIN SIS_PESSOA              D1 ON D1.ID_PESSOA             = D.ID_PESSOA&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL E  ON E.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_03&#13;&#10;       LEFT JOIN SIS_PESSOA              E1 ON E1.ID_PESSOA             = E.ID_PESSOA&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL F  ON F.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_04&#13;&#10;       LEFT JOIN SIS_PESSOA              F1 ON F1.ID_PESSOA             = F.ID_PESSOA&#13;&#10;&#13;&#10;&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(C1.DOCUMENTO) C3 ON 1=1&#13;&#10;                                                         AND C3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND C3.DT_DEMISSAO IS NULL&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(D1.DOCUMENTO) D3 ON 1=1&#13;&#10;                                                         AND D3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND D3.DT_DEMISSAO IS NULL&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(E1.DOCUMENTO) E3 ON 1=1&#13;&#10;                                                         AND E3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND E3.DT_DEMISSAO IS NULL&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(F1.DOCUMENTO) F3 ON 1=1&#13;&#10;                                                         AND F3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND F3.DT_DEMISSAO IS NULL&#13;&#10;&#13;&#10; WHERE R.ID_MODULO    = :ID_MODULO&#13;&#10;   AND R.CD_RELATORIO = :CD_RELATORIO&#13;&#10;   AND R.GERADO       = 0&#13;&#10;   AND B.DT_INICIO   &lt;= MAKE_DATE(CAST(:ANO AS INTEGER), CAST(:MES AS INTEGER), CAST(:DIA AS INTEGER))&#13;&#10;   AND A.ID_ENTIDADE  = :ID_ENTIDADE&#13;&#10; ORDER BY&#13;&#10;       B.DT_INICIO DESC&#13;&#10; LIMIT 1">
+        <Column Name="nome_responsavel1" DataType="System.String"/>
+        <Column Name="cargo_responsavel1" DataType="System.String"/>
+        <Column Name="documento_responsavel1" DataType="System.String"/>
+        <Column Name="matricula1" DataType="System.String"/>
+        <Column Name="nome_responsavel2" DataType="System.String"/>
+        <Column Name="cargo_responsavel2" DataType="System.String"/>
+        <Column Name="documento_responsavel2" DataType="System.String"/>
+        <Column Name="matricula2" DataType="System.String"/>
+        <Column Name="nome_responsavel3" DataType="System.String"/>
+        <Column Name="cargo_responsavel3" DataType="System.String"/>
+        <Column Name="documento_responsavel3" DataType="System.String"/>
+        <Column Name="matricula3" DataType="System.String"/>
+        <Column Name="nome_responsavel4" DataType="System.String"/>
+        <Column Name="cargo_responsavel4" DataType="System.String"/>
+        <Column Name="documento_responsavel4" DataType="System.String"/>
+        <Column Name="matricula4" DataType="System.String"/>
+        <Column Name="dt_relatorio" DataType="System.DateTime"/>
+        <CommandParameter Name="ANO" DataType="22" Expression="ExtractYear([dataAssinante])"/>
+        <CommandParameter Name="MES" DataType="22" Expression="ExtractMonth([dataAssinante])"/>
+        <CommandParameter Name="DIA" DataType="22" Expression="ExtractDay([dataAssinante])"/>
+        <CommandParameter Name="ID_MODULO" DataType="9" Expression="[idModulo]"/>
+        <CommandParameter Name="CD_RELATORIO" DataType="9" DefaultValue="193"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlAdiantamento" DataType="System.Int32" Enabled="true" SelectCommand="SELECT EMPEN.ID_EMPENHO&#13;&#10;     , EMPEN.NR_EMPENHO&#13;&#10;     , EMPEN.ANO_EMPENHO&#13;&#10;     , EMPEN.ID_CREDOR&#13;&#10;     , SPESS.NOME_RAZAO&#13;&#10;     , SPESS.DOCUMENTO_FORMATADO&#13;&#10;     , ADNTO.ID_LIQUIDACAO&#13;&#10;     , ADNTO.ID_ORDEM_PAGAMENTO&#13;&#10;     , ADNTO.PERIODO_APLICACAO&#13;&#10;     , ADNTO.DT_CONCESSAO&#13;&#10;     , STADI.ID_ST_ADIANTAMENTO&#13;&#10;     , STADI.DS_ST_ADIANTAMENTO&#13;&#10;     , LIQUD.NR_LIQUIDACAO&#13;&#10;     , LIQUD.ANO_LIQUIDACAO&#13;&#10;     , ORDPG.NR_PARCELA&#13;&#10;     , SUM(CASE WHEN ADMOV.ID_TP_ADIANTAMENTO_MOV = 1 THEN ADMOV.VL_MOVIMENTO     ELSE 0 END) AS VL_CONCESSAO&#13;&#10;     , SUM(CASE WHEN ADMOV.ID_TP_ADIANTAMENTO_MOV = 2 THEN ADMOV.VL_MOVIMENTO *-1 ELSE 0 END) AS VL_UTILIZACAO&#13;&#10;     , SUM(CASE WHEN ADMOV.ID_TP_ADIANTAMENTO_MOV = 3 THEN ADMOV.VL_MOVIMENTO *-1 ELSE 0 END) AS VL_DEVOLUCAO&#13;&#10;     , SUM(COALESCE(ADMOV.VL_MOVIMENTO, 0))                                                   AS VL_SALDO&#13;&#10;  FROM PEC_EMPENHO EMPEN&#13;&#10;       INNER JOIN PEC_ADIANTAMENTO                   ADNTO ON ADNTO.ID_EMPENHO           = EMPEN.ID_EMPENHO&#13;&#10;       LEFT JOIN PEC_ST_ADIANTAMENTO                 STADI ON STADI.ID_ST_ADIANTAMENTO   = ADNTO.ID_ST_ADIANTAMENTO&#13;&#10;       LEFT JOIN PEC_LIQUIDACAO                      LIQUD ON LIQUD.ID_LIQUIDACAO        = ADNTO.ID_LIQUIDACAO&#13;&#10;       LEFT JOIN PEC_ORDEM_PAGAMENTO                 ORDPG ON ORDPG.ID_ORDEM_PAGAMENTO   = ADNTO.ID_ORDEM_PAGAMENTO&#13;&#10;       LEFT JOIN SIS_PESSOA                          SPESS ON SPESS.ID_PESSOA            = EMPEN.ID_CREDOR&#13;&#10;       LEFT JOIN PEC_ADIANTAMENTO_MOV                ADMOV ON ADMOV.ID_EMPENHO           = ADNTO.ID_EMPENHO&#13;&#10;                                                          AND ADMOV.CP_ANO              &lt;= :CP_ANO&#13;&#10; WHERE EMPEN.ID_ENTIDADE = :ID_ENTIDADE&#13;&#10;   AND EMPEN.NR_EMPENHO  = :NR_EMPENHO&#13;&#10;   AND EMPEN.ANO_EMPENHO = :ANO_EMPENHO&#13;&#10; GROUP BY&#13;&#10;       EMPEN.ID_EMPENHO&#13;&#10;     , EMPEN.NR_EMPENHO&#13;&#10;     , EMPEN.ANO_EMPENHO&#13;&#10;     , EMPEN.ID_CREDOR&#13;&#10;     , SPESS.NOME_RAZAO&#13;&#10;     , SPESS.DOCUMENTO_FORMATADO&#13;&#10;     , ADNTO.ID_LIQUIDACAO&#13;&#10;     , ADNTO.ID_ORDEM_PAGAMENTO&#13;&#10;     , ADNTO.PERIODO_APLICACAO&#13;&#10;     , ADNTO.DT_CONCESSAO&#13;&#10;     , STADI.ID_ST_ADIANTAMENTO&#13;&#10;     , STADI.DS_ST_ADIANTAMENTO&#13;&#10;     , LIQUD.NR_LIQUIDACAO&#13;&#10;     , LIQUD.ANO_LIQUIDACAO&#13;&#10;     , ORDPG.NR_PARCELA">
+        <Column Name="id_empenho" DataType="System.Int32"/>
+        <Column Name="nr_empenho" DataType="System.Int32"/>
+        <Column Name="ano_empenho" DataType="System.Int32"/>
+        <Column Name="id_credor" DataType="System.Int32"/>
+        <Column Name="nome_razao" DataType="System.String"/>
+        <Column Name="documento_formatado" DataType="System.String"/>
+        <Column Name="id_liquidacao" DataType="System.Int32"/>
+        <Column Name="id_ordem_pagamento" DataType="System.Int32"/>
+        <Column Name="periodo_aplicacao" DataType="System.Int32"/>
+        <Column Name="dt_concessao" DataType="System.DateTime"/>
+        <Column Name="id_st_adiantamento" DataType="System.Int32"/>
+        <Column Name="ds_st_adiantamento" DataType="System.String"/>
+        <Column Name="nr_liquidacao" DataType="System.Int32"/>
+        <Column Name="ano_liquidacao" DataType="System.Int32"/>
+        <Column Name="nr_parcela" DataType="System.Int32"/>
+        <Column Name="vl_concessao" DataType="System.Double"/>
+        <Column Name="vl_utilizacao" DataType="System.Double"/>
+        <Column Name="vl_devolucao" DataType="System.Double"/>
+        <Column Name="vl_saldo" DataType="System.Double"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[cpAno]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+        <CommandParameter Name="NR_EMPENHO" DataType="9" Expression="[nrEmpenho]"/>
+        <CommandParameter Name="ANO_EMPENHO" DataType="9" Expression="[anoEmpenho]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlMovimentacao" DataType="System.Int32" Enabled="true" SelectCommand="SELECT ADIMV.ID_TP_ADIANTAMENTO_MOV&#13;&#10;     , TADMV.DS_TP_ADIANTAMENTO_MOV&#13;&#10;     , ADIMV.DT_MOVIMENTO&#13;&#10;     , SUM(CASE WHEN ADIMV.ID_TP_ADIANTAMENTO_MOV = 1 THEN ADIMV.VL_MOVIMENTO     ELSE 0 END) AS VL_CONCESSAO&#13;&#10;     , SUM(CASE WHEN ADIMV.ID_TP_ADIANTAMENTO_MOV = 2 THEN ADIMV.VL_MOVIMENTO *-1 ELSE 0 END) AS VL_UTILIZACAO&#13;&#10;     , SUM(CASE WHEN ADIMV.ID_TP_ADIANTAMENTO_MOV = 3 THEN ADIMV.VL_MOVIMENTO *-1 ELSE 0 END) AS VL_DEVOLUCAO&#13;&#10;     , SUM(ADIMV.VL_MOVIMENTO) AS VL_MOVIMENTO&#13;&#10;  FROM PEC_ADIANTAMENTO_MOV ADIMV&#13;&#10;       LEFT JOIN PEC_TP_ADIANTAMENTO_MOV TADMV ON TADMV.ID_TP_ADIANTAMENTO_MOV = ADIMV.ID_TP_ADIANTAMENTO_MOV&#13;&#10; WHERE ADIMV.ID_EMPENHO = :ID_EMPENHO&#13;&#10;   AND ADIMV.CP_ANO    &lt;= :CP_ANO&#13;&#10; GROUP BY&#13;&#10;       ADIMV.ID_TP_ADIANTAMENTO_MOV&#13;&#10;     , TADMV.DS_TP_ADIANTAMENTO_MOV&#13;&#10;     , ADIMV.DT_MOVIMENTO&#13;&#10; ORDER BY&#13;&#10;       ADIMV.ID_TP_ADIANTAMENTO_MOV&#13;&#10;     , ADIMV.DT_MOVIMENTO">
+        <Column Name="id_tp_adiantamento_mov" DataType="System.Int32"/>
+        <Column Name="ds_tp_adiantamento_mov" DataType="System.String"/>
+        <Column Name="dt_movimento" DataType="System.DateTime"/>
+        <Column Name="vl_concessao" DataType="System.Double"/>
+        <Column Name="vl_utilizacao" DataType="System.Double"/>
+        <Column Name="vl_devolucao" DataType="System.Double"/>
+        <Column Name="vl_movimento" DataType="System.Double"/>
+        <CommandParameter Name="ID_EMPENHO" DataType="9" Expression="[SqlAdiantamento.ID_EMPENHO]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[cpAno]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlPrestacao" DataType="System.Int32" Enabled="true" SelectCommand="SELECT ADIPC.ID_ADIANTAMENTO_PC&#13;&#10;     , ADIPC.NR_PRESTACAO_CONTA&#13;&#10;     , ADIPC.DS_PRESTACAO_CONTA&#13;&#10;     , ADIPC.DT_PRESTACAO_CONTA&#13;&#10;     , ADIPC.EXTERNO&#13;&#10;     , STAPC.DS_ST_ADIANTAMENTO_PC&#13;&#10;     , ADINF.ID_ADIANTAMENTO_NF&#13;&#10;     , ADINF.DOC_CREDOR&#13;&#10;     , ADINF.DS_CREDOR&#13;&#10;     , ADINF.SERIE_NF&#13;&#10;     , ADINF.NR_NF&#13;&#10;     , ADINF.DT_NF&#13;&#10;     , ADINF.VL_NF&#13;&#10;     , ADINF.VL_NF_CONSID_PC&#13;&#10;     , ADINF.DS_NF&#13;&#10;     , ADINF.RECUSADA&#13;&#10;     , ADINF.OBSERVACAO&#13;&#10;     , ADINF.CD_CONTA_CONTABIL&#13;&#10;     , CCONT.DS_CONTA_CONTABIL&#13;&#10;     , TADNF.DS_TP_ADIANTAMENTO_NF&#13;&#10;  FROM PEC_ADIANTAMENTO_PC ADIPC&#13;&#10;       LEFT JOIN PEC_ST_ADIANTAMENTO_PC STAPC ON STAPC.ID_ST_ADIANTAMENTO_PC    = ADIPC.ID_ST_ADIANTAMENTO_PC&#13;&#10;       LEFT JOIN PEC_ADIANTAMENTO_NF    ADINF ON ADINF.ID_ADIANTAMENTO_PC       = ADIPC.ID_ADIANTAMENTO_PC&#13;&#10;       LEFT JOIN PEC_TP_ADIANTAMENTO_NF TADNF ON TADNF.ID_TP_ADIANTAMENTO_NF    = ADINF.ID_TP_ADIANTAMENTO_NF&#13;&#10;       LEFT JOIN PEC_CONTA_CONTABIL     CCONT ON CCONT.CD_CONTA_CONTABIL        = ADINF.CD_CONTA_CONTABIL&#13;&#10;                                             AND CCONT.CP_ANO                   = ADIPC.CP_ANO&#13;&#10; WHERE ADIPC.ID_EMPENHO  = :ID_EMPENHO&#13;&#10;   AND ADIPC.CP_ANO     &lt;= :CP_ANO&#13;&#10; ORDER BY&#13;&#10;       ADIPC.NR_PRESTACAO_CONTA&#13;&#10;     , ADINF.DT_NF&#13;&#10;     , ADINF.NR_NF&#13;&#10;">
+        <Column Name="id_adiantamento_pc" DataType="System.Int32"/>
+        <Column Name="nr_prestacao_conta" DataType="System.Int32"/>
+        <Column Name="ds_prestacao_conta" DataType="System.String"/>
+        <Column Name="dt_prestacao_conta" DataType="System.DateTime"/>
+        <Column Name="externo" DataType="System.Int16"/>
+        <Column Name="ds_st_adiantamento_pc" DataType="System.String"/>
+        <Column Name="id_adiantamento_nf" DataType="System.Int32"/>
+        <Column Name="doc_credor" DataType="System.String"/>
+        <Column Name="ds_credor" DataType="System.String"/>
+        <Column Name="serie_nf" DataType="System.String"/>
+        <Column Name="nr_nf" DataType="System.String"/>
+        <Column Name="dt_nf" DataType="System.DateTime"/>
+        <Column Name="vl_nf" DataType="System.Double"/>
+        <Column Name="vl_nf_consid_pc" DataType="System.Double"/>
+        <Column Name="ds_nf" DataType="System.String"/>
+        <Column Name="recusada" DataType="System.Int16"/>
+        <Column Name="observacao" DataType="System.String"/>
+        <Column Name="cd_conta_contabil" DataType="System.String"/>
+        <Column Name="ds_conta_contabil" DataType="System.String"/>
+        <Column Name="ds_tp_adiantamento_nf" DataType="System.String"/>
+        <CommandParameter Name="ID_EMPENHO" DataType="9" Expression="[SqlAdiantamento.ID_EMPENHO]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[cpAno]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="dataAssinante" DataType="System.String" Expression="&quot;01/01/1900&quot;"/>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Adiantamento&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="formato" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="orgao" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="codigoRelatorio" DataType="System.Int64" Expression="193"/>
+    <Parameter Name="competencia" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="cpAno" DataType="System.Int64" Expression="2024"/>
+    <Parameter Name="anoEmpenho" DataType="System.Int64" Expression="2024"/>
+    <Parameter Name="nrEmpenho" DataType="System.Int64" Expression="3616"/>
+    <Total Name="Total" Expression="[SqlMovimentacao.VL_CONCESSAO]" Evaluator="Data2"/>
+    <Total Name="Total1" Expression="[SqlMovimentacao.VL_UTILIZACAO]" Evaluator="Data2"/>
+    <Total Name="Total2" Expression="[SqlMovimentacao.VL_DEVOLUCAO]" Evaluator="Data2"/>
+    <Total Name="Total3" Expression="[SqlPrestacao.vl_nf_consid_pc]" Evaluator="Data3" IncludeInvisibleRows="true"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="TxtOrgao"/>
+      <inherited Name="BndFiltro">
+        <inherited Name="TxtFiltro"/>
+      </inherited>
+    </inherited>
+    <inherited Name="HeaderAssinante">
+      <inherited Name="bndAssinante">
+        <DataBand Name="bndAdiantamento" ZOrder="0" Top="267.42" Width="718.2" Height="51.03" Border.Lines="All" DataSource="Table1">
+          <TextObject Name="Text25" Left="359.55" Top="37.8" Width="89.96" Height="13.23" Text="[SqlAdiantamento.VL_CONCESSAO]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Arial, 7pt, style=Bold"/>
+          <TextObject Name="Text14" Width="47.25" Height="11.34" Text="Empenho" Font="Arial, 6pt"/>
+          <TextObject Name="Text15" Top="11.45" Width="100.17" Height="13.23" Text="[SqlAdiantamento.NR_EMPENHO]/[SqlAdiantamento.ANO_EMPENHO][IIf([SqlAdiantamento.NR_PARCELA] &gt; 0, &quot; - &quot; + [SqlAdiantamento.NR_PARCELA], &quot;&quot;)]&#13;&#10;" Font="Arial, 7pt, style=Bold">
+            <Formats>
+              <CustomFormat Format="000000"/>
+              <GeneralFormat/>
+              <CustomFormat Format="0000"/>
+            </Formats>
+          </TextObject>
+          <LineObject Name="Line1" Top="26.35" Width="718.2"/>
+          <TextObject Name="Text16" Top="26.35" Width="85.05" Height="11.34" Text="Período p/ aplicação" Font="Arial, 6pt"/>
+          <TextObject Name="Text17" Top="37.8" Width="100.17" Height="13.23" Text="[SqlAdiantamento.PERIODO_APLICACAO] dias" HorzAlign="Right" Font="Arial, 7pt, style=Bold"/>
+          <LineObject Name="Line2" Left="99.95" Height="51.03"/>
+          <TextObject Name="Text18" Left="100.95" Width="56.7" Height="11.34" Text="Beneficíario" Font="Arial, 6pt"/>
+          <TextObject Name="Text19" Left="100.4" Top="11.45" Width="528.07" Height="13.23" Text="[SqlAdiantamento.DOCUMENTO_FORMATADO] - [SqlAdiantamento.NOME_RAZAO]&#13;&#10;" Font="Arial, 7pt, style=Bold">
+            <Formats>
+              <CustomFormat Format="000000"/>
+              <GeneralFormat/>
+              <CustomFormat Format="0000"/>
+            </Formats>
+          </TextObject>
+          <TextObject Name="Text20" Left="100.95" Top="26.35" Width="56.7" Height="11.34" Text="Concedido em:" Font="Arial, 6pt"/>
+          <TextObject Name="Text21" Left="100.95" Top="37.8" Width="69.93" Height="13.23" Text="[SqlAdiantamento.DT_CONCESSAO]&#13;&#10;" Format="Date" Format.Format="d" HorzAlign="Right" Font="Arial, 7pt, style=Bold"/>
+          <LineObject Name="Line3" Left="170.86" Top="26.35" Height="24.57"/>
+          <TextObject Name="Text22" Left="171.55" Top="26.35" Width="56.7" Height="11.34" Text="Situação" Font="Arial, 6pt"/>
+          <TextObject Name="Text23" Left="171.55" Top="37.8" Width="187.87" Height="13.23" Text="[SqlAdiantamento.DS_ST_ADIANTAMENTO]&#13;&#10;" Font="Arial, 7pt, style=Bold"/>
+          <LineObject Name="Line4" Left="359.1" Top="26.46" Height="24.57"/>
+          <TextObject Name="Text24" Left="359.55" Top="26.35" Width="56.7" Height="11.34" Text="Concedido" Font="Arial, 6pt"/>
+          <LineObject Name="Line5" Left="450.6" Top="26.46" Height="24.57"/>
+          <TextObject Name="Text26" Left="450.6" Top="26.35" Width="56.7" Height="11.34" Text="Utilizado" Font="Arial, 6pt"/>
+          <TextObject Name="Text27" Left="450.6" Top="37.8" Width="89.96" Height="13.23" Text="[SqlAdiantamento.VL_UTILIZACAO]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Arial, 7pt, style=Bold"/>
+          <LineObject Name="Line6" Left="540.65" Top="26.46" Height="24.57"/>
+          <TextObject Name="Text28" Left="541.1" Top="26.35" Width="56.7" Height="11.34" Text="Devolvido" Font="Arial, 6pt"/>
+          <TextObject Name="Text29" Left="541.1" Top="37.8" Width="89.96" Height="13.23" Text="[SqlAdiantamento.VL_DEVOLUCAO]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Arial, 7pt, style=Bold"/>
+          <TextObject Name="Text30" Left="632.15" Top="26.35" Width="56.7" Height="11.34" Text="Saldo" Font="Arial, 6pt"/>
+          <TextObject Name="Text31" Left="632.15" Top="37.8" Width="86.18" Height="13.23" Text="[SqlAdiantamento.VL_SALDO]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Arial, 7pt, style=Bold"/>
+          <TextObject Name="Text32" Left="631.15" Width="56.7" Height="11.34" Text="Liquidação" Font="Arial, 6pt"/>
+          <TextObject Name="Text33" Left="632.15" Top="11.45" Width="86.18" Height="13.23" Text="[SqlAdiantamento.NR_LIQUIDACAO]/[SqlAdiantamento.ANO_LIQUIDACAO]&#13;&#10;" HorzAlign="Right" Font="Arial, 7pt, style=Bold">
+            <Formats>
+              <CustomFormat Format="000000"/>
+              <GeneralFormat/>
+              <CustomFormat Format="0000"/>
+            </Formats>
+          </TextObject>
+          <LineObject Name="Line7" Left="631.7" Height="51.03"/>
+          <DataHeaderBand Name="cabAdiantamento" Top="232.3" Width="718.2" Height="15.12" Border.Lines="Top">
+            <TextObject Name="Text13" Width="718.2" Height="15.12" Border.Lines="Left, Right" Fill.Color="42, 82, 118" Text="Informações do Adiantamento" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+          </DataHeaderBand>
+          <DataBand Name="Data2" Top="399.03" Width="718.2" Height="13.23" Border.Lines="Left" DataSource="Table2">
+            <TextObject Name="Text40" Left="359.1" Width="90.72" Height="13.23" Border.Lines="Right" Text="[SqlMovimentacao.DT_MOVIMENTO]" VertAlign="Center" Font="Arial, 7pt"/>
+            <TextObject Name="Text41" Width="359.1" Height="13.23" Border.Lines="Right" Text="[SqlMovimentacao.DS_TP_ADIANTAMENTO_MOV]" Font="Arial, 7pt"/>
+            <TextObject Name="Text42" Left="450.15" Width="90.72" Height="13.23" Border.Lines="Right" Text="[SqlMovimentacao.VL_CONCESSAO]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt">
+              <Highlight>
+                <Condition Expression="[SqlMovimentacao.VL_CONCESSAO] == 0" TextFill.Color="White" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+            <TextObject Name="Text43" Left="540.65" Width="89.96" Height="13.23" Text="[SqlMovimentacao.VL_UTILIZACAO]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt">
+              <Highlight>
+                <Condition Expression="[SqlMovimentacao.VL_UTILIZACAO] == 0" TextFill.Color="Transparent" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+            <TextObject Name="Text44" Left="631.7" Width="86.18" Height="13.23" Border.Lines="Left, Right" Text="[SqlMovimentacao.VL_DEVOLUCAO]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt">
+              <Highlight>
+                <Condition Expression="[SqlMovimentacao.VL_DEVOLUCAO] == 0" TextFill.Color="Transparent" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+            <DataHeaderBand Name="DataHeader2" Top="338.45" Width="718.2" Height="40.58">
+              <TextObject Name="Text35" Left="359.1" Top="27.35" Width="90.72" Height="13.23" Border.Lines="Right, Bottom" Text="Data" Font="Arial, 7pt, style=Bold"/>
+              <TextObject Name="Text36" Top="27.35" Width="359.1" Height="13.23" Border.Lines="Left, Right, Bottom" Text="Tipo Da Movimentação" Font="Arial, 7pt, style=Bold"/>
+              <TextObject Name="Text37" Left="450.15" Top="27.35" Width="90.72" Height="13.23" Border.Lines="Right, Bottom" Text="Valor Concedido" Font="Arial, 7pt, style=Bold"/>
+              <TextObject Name="Text38" Left="540.65" Top="27.35" Width="89.96" Height="13.23" Border.Lines="Bottom" Text="Valor Utilizado" Font="Arial, 7pt, style=Bold"/>
+              <TextObject Name="Text39" Left="631.7" Top="27.35" Width="86.18" Height="13.23" Border.Lines="Left, Right, Bottom" Text="Valor Devolvido" Font="Arial, 7pt, style=Bold">
+                <Formats>
+                  <CustomFormat Format="000000"/>
+                  <GeneralFormat/>
+                  <CustomFormat Format="0000"/>
+                </Formats>
+              </TextObject>
+              <TextObject Name="Text34" Top="11.9" Width="717.97" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Movimentação do Adiantamento" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+            </DataHeaderBand>
+            <DataFooterBand Name="DataFooter1" Top="432.26" Width="718.2" Height="13.23" Border.Lines="Left">
+              <TextObject Name="Text46" Width="449.82" Height="13.23" Border.Lines="All" Text="Total das Movimentações:" Font="Arial, 7pt, style=Bold"/>
+              <TextObject Name="Text47" Left="450.15" Width="90.72" Height="13.23" Border.Lines="Right, Top, Bottom" Text="[Total]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+              <TextObject Name="Text48" Left="540.65" Width="89.96" Height="13.23" Border.Lines="Top, Bottom" Text="[Total1]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+              <TextObject Name="Text49" Left="631.7" Width="86.18" Height="13.23" Border.Lines="All" Text="[Total2]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+            </DataFooterBand>
+          </DataBand>
+          <GroupHeaderBand Name="GroupHeader1" Top="519.51" Width="718.2" Height="31.55" Border.Lines="Left, Right, Bottom" Condition="[SqlPrestacao.id_adiantamento_pc]">
+            <TextObject Name="Text57" Left="680.4" Width="37.8" Height="21.55" CanGrow="true" GrowToBottom="true" Text="Externa" Font="Arial, 6pt"/>
+            <TextObject Name="Text51" Width="28.35" Height="11.34" CanGrow="true" GrowToBottom="true" Text="Data" Font="Arial, 6pt"/>
+            <TextObject Name="Text52" Top="13.45" Width="69.93" Height="13.23" CanGrow="true" GrowToBottom="true" Text="[SqlPrestacao.DT_PRESTACAO_CONTA]&#13;&#10;" Format="Date" Format.Format="d" Font="Arial, 7pt, style=Bold"/>
+            <LineObject Name="Line8" Left="69.6" Height="31.37"/>
+            <TextObject Name="Text53" Left="72.05" Width="189" Height="11.34" CanGrow="true" GrowToBottom="true" Text="Nº - Descrição da Prestação de Contas" Font="Arial, 7pt"/>
+            <TextObject Name="Text54" Left="72.6" Top="18.32" Width="503.5" Height="13.23" CanGrow="true" GrowToBottom="true" Text="[SqlPrestacao.NR_PRESTACAO_CONTA] - [SqlPrestacao.DS_PRESTACAO_CONTA]&#13;&#10;" VertAlign="Bottom" Font="Arial, 7pt, style=Bold"/>
+            <LineObject Name="Line9" Left="575.9" Height="31.37"/>
+            <TextObject Name="Text55" Left="575.9" Width="56.7" Height="11.34" CanGrow="true" Text="Situação" Font="Arial, 6pt"/>
+            <TextObject Name="Text56" Left="575.9" Top="12.32" Width="105.08" Height="13.23" CanGrow="true" GrowToBottom="true" Text="[SqlPrestacao.DS_ST_ADIANTAMENTO_PC]&#13;&#10;" Font="Arial, 7pt, style=Bold"/>
+            <CheckBoxObject Name="CheckBox1" Left="689.85" Top="12.67" Width="15.12" Height="15.12"/>
+            <LineObject Name="Line10" Left="680.4" Height="31.37"/>
+            <ChildBand Name="Child1" Top="571.06" Width="718.2" Height="13.99" Visible="false" Border.Lines="Right">
+              <TextObject Name="Text58" Width="190.13" Height="13.99" Border.Lines="All" Text="Credor" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+              <TextObject Name="Text59" Left="190.13" Width="49.9" Height="13.99" Border.Lines="All" Text="Tipo Doc." VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+              <TextObject Name="Text60" Left="240.03" Width="29.86" Height="13.99" Border.Lines="All" Text="Série" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+              <TextObject Name="Text61" Left="269.89" Width="75.22" Height="13.99" Border.Lines="All" Text="Número" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+              <TextObject Name="Text62" Left="345.11" Width="49.9" Height="13.99" Border.Lines="All" Text="Emissão" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+              <TextObject Name="Text63" Left="395.01" Width="181.06" Height="13.99" Border.Lines="All" Text="Descrição" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+              <TextObject Name="Text64" Left="576.22" Width="46.12" Height="13.99" Border.Lines="All" Text="Recusada" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+              <TextObject Name="Text65" Left="622.38" Width="95.26" Height="13.99" Border.Lines="Left, Top, Bottom" Text="Valor Considerado" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            </ChildBand>
+            <DataHeaderBand Name="DataHeader3" Top="465.49" Width="718.2" Height="34.02">
+              <TextObject Name="Text50" Top="18.9" Width="718.2" Height="15.12" Border.Lines="Left, Right, Top" Fill.Color="42, 82, 118" Text="Prestações de Contas do Adiantamento" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+            </DataHeaderBand>
+            <GroupHeaderBand Name="GroupHeader2" Top="605.05" Width="718.2" Height="37.89" Border.Lines="Left, Right, Bottom" CanGrow="true" Condition="[SqlPrestacao.id_adiantamento_nf]" SortOrder="Descending">
+              <TextObject Name="Text66" Width="642.6" Height="13.99" CanGrow="true" GrowToBottom="true" Text="&lt;B&gt;Credor:&lt;/b&gt; [SqlPrestacao.DS_CREDOR]      &lt;b&gt;Tipo Doc: &lt;/b&gt;[SqlPrestacao.DS_TP_ADIANTAMENTO_NF]      &lt;b&gt;Série:&lt;/b&gt; [SqlPrestacao.SERIE_NF]      &lt;b&gt;Número: &lt;/b&gt;[SqlPrestacao.NR_NF]      &lt;b&gt;Emissão: &lt;/b&gt;[SqlPrestacao.dt_nf]&#13;&#10;&#13;&#10;&lt;b&gt;Descrição: &lt;/b&gt;[SqlPrestacao.DS_NF]&#13;&#10;&#13;&#10;&lt;b&gt;Observação:&lt;/b&gt; [SqlPrestacao.observacao]" VertAlign="Center" Font="Arial, 6pt" TextRenderType="HtmlTags">
+                <Formats>
+                  <GeneralFormat/>
+                  <GeneralFormat/>
+                  <GeneralFormat/>
+                  <GeneralFormat/>
+                  <DateFormat/>
+                </Formats>
+              </TextObject>
+              <TextObject Name="Text73" Left="499.53" Top="22.35" Width="218.11" Height="13.99" CanGrow="true" GrowToBottom="true" Text="&lt;b&gt;Valor Considerado: &lt;/b&gt;[SqlPrestacao.VL_NF_CONSID_PC]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+              <TextObject Name="Text79" Left="645.7" Top="4" Width="49.14" Height="13.99" CanBreak="false" Text="&lt;b&gt;Recusada:&lt;/b&gt; " Format="Date" Format.Format="d" VertAlign="Center" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+              <CheckBoxObject Name="CheckBox2" Left="690.4" Top="4" Width="15.12" Height="13.23"/>
+              <DataBand Name="Data3" Top="662.94" Width="718.2" Height="27.13" Visible="false" DataSource="Table3">
+                <TextObject Name="Text74" Width="718.2" Height="13.23" Border.Lines="Left, Right, Top" Text="                        &lt;i&gt;&lt;b&gt;Conta Contábil:&lt;/b&gt; [SqlPrestacao.CD_CONTA_CONTABIL] - [SqlPrestacao.DS_CONTA_CONTABIL]&lt;/i&gt;" VertAlign="Center" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+                <TextObject Name="Text75" Top="13.9" Width="718.2" Height="13.23" Border.Lines="Left, Right, Bottom" Text="                        &lt;i&gt;&lt;b&gt;Observação: &lt;/b&gt;[SqlPrestacao.OBSERVACAO]&lt;/i&gt;" VertAlign="Center" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+              </DataBand>
+              <GroupFooterBand Name="GroupFooter2" Top="710.07" Width="718.2" Height="9.45" Visible="false">
+                <TextObject Name="Text76" Width="718.2" Height="9.45" Border.Lines="All" VertAlign="Center" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+              </GroupFooterBand>
+            </GroupHeaderBand>
+            <GroupFooterBand Name="GroupFooter1" Top="739.52" Width="718.2" Height="13.99" Border.Lines="Right">
+              <TextObject Name="Text77" Width="622.57" Height="13.99" Border.Lines="All" Text="Total da prestação de contas:" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+              <TextObject Name="Text78" Left="622.61" Width="95.26" Height="13.99" Border.Lines="Left, Top, Bottom" Text="[Total3]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            </GroupFooterBand>
+          </GroupHeaderBand>
+        </DataBand>
+      </inherited>
+      <inherited Name="FooterAssinante" Top="773.51" BeforePrintEvent="parent_FooterAssinante_BeforePrint">
+        <inherited Name="TxtAssinante1"/>
+        <inherited Name="TxtAssinante2"/>
+        <inherited Name="TxtAssinante3"/>
+        <inherited Name="TxtAssinante4"/>
+        <inherited Name="Text5"/>
+        <inherited Name="Text6"/>
+        <inherited Name="Text7"/>
+        <inherited Name="Text8"/>
+        <inherited Name="Text9"/>
+        <inherited Name="Text10"/>
+        <inherited Name="Text11"/>
+        <inherited Name="Text12"/>
+      </inherited>
+    </inherited>
+    <inherited Name="BndRodape" Top="881.59">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

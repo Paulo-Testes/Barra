@@ -1,0 +1,382 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\..\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="..\..\..\..\..\..\..\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\designer-FRX\designer-win-x64\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="07/16/2025 16:08:29" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }    
+
+    private void Child3_BeforePrint(object sender, EventArgs e)
+    {
+      Child3.Visible = (String)Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Em Acordo&quot;;
+    }
+
+    private void Child4_BeforePrint(object sender, EventArgs e)
+    {
+      Child4.Visible = 
+       (((String)Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Quitado&quot;)   ||
+        ((String)Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Cancelado&quot;) ||
+        ((String)Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Anistiada&quot;));
+    }
+
+    private void Child6_BeforePrint(object sender, EventArgs e)
+    {
+      Child6.Visible = 
+       (((String)Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Quitado&quot;)   ||
+        ((String)Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Cancelado&quot;) ||
+        ((String)Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Anistiada&quot;));
+    }
+
+    private void Child5_BeforePrint(object sender, EventArgs e)
+    {
+      Child5.Visible = Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Suspenso&quot;;
+    }
+
+    private void Data1_BeforePrint(object sender, EventArgs e)
+    {
+      Data1.Visible =  
+        Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Em Aberto&quot;;
+      
+      //SqlParcAcordo - Param ref_acordo
+      TableDataSource SqlParcAcordo = Report.GetDataSource(&quot;SqlParcAcordo&quot;) as TableDataSource;
+      SqlParcAcordo.Parameters.FindByName(&quot;ref_acordo&quot;).Value = Report.GetColumnValue(&quot;SqlProcesso.d012&quot;);
+      (SqlParcAcordo as DataSourceBase).Init();
+      
+    }
+
+    private void Child7_BeforePrint(object sender, EventArgs e)
+    {
+      Child7.Visible = 
+       (((String)Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Quitado&quot;)   ||
+        ((String)Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Cancelado&quot;) ||
+        ((String)Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Anistiada&quot;));
+    }
+
+    private void Child8_BeforePrint(object sender, EventArgs e)
+    {
+      Child8.Visible = Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Suspenso&quot;;
+    }
+
+    private void Child9_BeforePrint(object sender, EventArgs e)
+    {
+      Child9.Visible = Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Suspenso&quot;;
+    }
+
+    private void Data2_BeforePrint(object sender, EventArgs e)
+    {
+      
+      
+      Data4.Visible = Report.GetColumnValue(&quot;SqlProcesso.descricao&quot;).ToString().Trim() == &quot;Em Acordo&quot;;      
+    }
+
+    private void Data3_BeforePrint(object sender, EventArgs e)
+    {          
+      Data5.Visible = ((String)Report.GetColumnValue(&quot;SqlProcesso.titulo&quot;)) == &quot;2&quot;;
+    }
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAf45SGh+1JQ06HfUCwVjdXkCyXOd9RvbMkV2y8PKTmYL5ELmpgxhEufvvYXggj47AbdjnR2ZIhTO/eV8u1e+0GQroqt7IHHt+W9nlBPcYXH7jkFkUjVGMrNUdKEUsbmLI=" CommandTimeout="5000">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select usu.ds_usuario as nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_usuario usu&#13;&#10; where usu.id_usuario = :id_usuario&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlProcesso" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;  d.d019 as inscricao,&#13;&#10;  p.nome_razao as nome,&#13;&#10;  p.id_pessoa,                            &#13;&#10;  i.descricao,&#13;&#10;  d.id_execucao,&#13;&#10;  d.d012,            &#13;&#10;  d.d029,                                                                                           &#13;&#10;  d.d001 as modulo,                                                        &#13;&#10;  e.processo_cnj,&#13;&#10;  e.id_mestre,      &#13;&#10;  &#13;&#10;  string_agg(cast(to_char(cast(d.d039 as date),'DD/MM/YYYY') as varchar), chr(13) || chr(10)) as dt_cancelamento,&#13;&#10;  string_agg(cast(d.d000 as varchar), chr(13) || chr(10)) as ref_divida,&#13;&#10;  CAST(&#13;&#10;  string_agg(&#13;&#10;    DISTINCT &#13;&#10;    TRIM(&#13;&#10;      CASE &#13;&#10;        WHEN t.tributo = 1 THEN 'IPTU'  -- Substitui '1' por 'IPTU'&#13;&#10;        ELSE t.descricao                    -- Caso contrário, mantém o valor original&#13;&#10;      END || ' / ' || d.d004&#13;&#10;    ),&#13;&#10;    chr(13) || chr(10)&#13;&#10;  ) AS VARCHAR&#13;&#10;) AS tributo,&#13;&#10;  &#13;&#10;  CASE&#13;&#10;  	WHEN i.chave in ('0', '2')      then '1' -- 'Divida Ativa em Aberto'&#13;&#10;    WHEN i.chave =   '1'            then '2' -- 'Divida Ativa com Acordo'&#13;&#10;    WHEN i.chave in ('3', '4', '5') then '3' -- 'Divida Ativa Finalizada'&#13;&#10;    WHEN i.chave =   '6'            then '4' -- 'Divida Ativa Suspenso'&#13;&#10;  END as titulo,&#13;&#10;     &#13;&#10;  sum(round(case when d.d029 = 0 then mjc.principal else d.d009 end, 2)) as principal,&#13;&#10;  &#13;&#10;  sum(round(case when d.d029 = 0 then mjc.correcao else d.d036 end, 2)) as correcao,&#13;&#10;&#13;&#10;  sum(round(case when d.d029 = 0 then mjc.multa else d.d034 end, 2)) as multa,&#13;&#10;&#13;&#10;  sum(round(case when d.d029 = 0 then mjc.juros else d.d035 end, 2)) as juros,&#13;&#10;  round(SUM(&#13;&#10;        (&#13;&#10;            (&#13;&#10;              d.d009 &#13;&#10;               &#13;&#10;                + COALESCE(d.d034, 0) &#13;&#10;                + COALESCE(d.d035, 0) &#13;&#10;                + COALESCE(d.d036, 0)&#13;&#10;            ) &#13;&#10;            * (1 - COALESCE(d.d052, 0)) / 10&#13;&#10;        ) &#13;&#10;        * (1 - COALESCE(CASE WHEN e.honorario_pago = 'S' THEN 1 ELSE e.fracao_hono END, 0))&#13;&#10;    ),2) AS vl_honorario      &#13;&#10;      &#13;&#10;&#13;&#10;from geda_execucao e&#13;&#10;left join geda_ldivida d on d.id_execucao = e.id_execucao&#13;&#10;left join sis_pessoa p on p.id_pessoa = d.d011&#13;&#10;left join tri_tributos t on t.tributo = d.d020&#13;&#10;left join aac_tabelas_internas i on i.tipo='STDIVIDA' and chave=d.d029&#13;&#10;left join lateral(select&#13;&#10;                     sum(coalesce(dt.valor_imposto,0)+coalesce(dt.valor_taxa,0)+coalesce(dt.saldo_aditado,0)+coalesce(dt.saldo_imposto,0)+coalesce(dt.saldo_taxa,0)) as principal,&#13;&#10;                     min(dt.vencimento) as primeiro_vencimento, round(sum(mjc.correcao),2) as correcao, round(sum(mjc.multa),2) as multa, round(sum(mjc.juros),2) as juros&#13;&#10;                    from geda_detalhe dt&#13;&#10;                    left join multajuroscorrecao(coalesce(dt.valor_imposto,0)+coalesce(dt.valor_taxa,0)+coalesce(dt.saldo_aditado,0)+coalesce(dt.saldo_imposto,0)+coalesce(dt.saldo_taxa,0), current_date, dt.vencimento::date) mjc on true&#13;&#10;                   where dt.ref_ldivida = d.d000&#13;&#10;                     and dt.status = 0&#13;&#10;                 ) mjc on true&#13;&#10;where &#13;&#10;  e.processo_cnj = cast(trim(:cnj) as varchar) or (length(:cnj) &lt; 10 and  e.id_execucao = cast(('0' || regexp_replace(:cnj, '[^0-9]', '', 'g')) as integer))                                                                              &#13;&#10;  and d.d000 is not null &#13;&#10;group by d.d029, d.d019, p.nome_razao,i.descricao, d.d012,e.processo_cnj, p.id_pessoa, d.d001, i.chave, d.id_execucao, e.id_mestre --,4,5,6,7,8,9,10,11,12,13      &#13;&#10;order by d.d029">
+        <Column Name="inscricao" DataType="System.String"/>
+        <Column Name="nome" DataType="System.String"/>
+        <Column Name="id_pessoa" DataType="System.Int32"/>
+        <Column Name="descricao" DataType="System.String"/>
+        <Column Name="id_execucao" DataType="System.Int32"/>
+        <Column Name="d012" DataType="System.Int32"/>
+        <Column Name="d029" DataType="System.Int32"/>
+        <Column Name="modulo" DataType="System.String"/>
+        <Column Name="processo_cnj" DataType="System.String"/>
+        <Column Name="dt_cancelamento" DataType="System.String"/>
+        <Column Name="ref_divida" DataType="System.String"/>
+        <Column Name="tributo" DataType="System.String"/>
+        <Column Name="titulo" DataType="System.String"/>
+        <Column Name="principal" DataType="System.Double"/>
+        <Column Name="correcao" DataType="System.Double"/>
+        <Column Name="multa" DataType="System.Double"/>
+        <Column Name="juros" DataType="System.Double"/>
+        <Column Name="id_mestre" DataType="System.Int32"/>
+        <Column Name="vl_honorario" DataType="System.Double"/>
+        <CommandParameter Name="cnj" DataType="22" Expression="[cnj]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="Local" DataType="System.Int32" Enabled="true" SelectCommand="SELECT * FROM PROC_GEDA_ENDERECOS(:inscricao, cast(:modulo as varchar), :id_pessoa)">
+        <Column Name="inscr_origem" DataType="System.String"/>
+        <Column Name="codigo_logra_principal" DataType="System.Int32"/>
+        <Column Name="endereco_principal" DataType="System.String"/>
+        <Column Name="numero_principal" DataType="System.String"/>
+        <Column Name="complemento_principal" DataType="System.String"/>
+        <Column Name="bairro_principal" DataType="System.String"/>
+        <Column Name="cidade_principal" DataType="System.String"/>
+        <Column Name="cep_principal" DataType="System.String"/>
+        <Column Name="estado_principal" DataType="System.String"/>
+        <Column Name="endereco_entrega" DataType="System.String"/>
+        <Column Name="numero_entrega" DataType="System.String"/>
+        <Column Name="complemento_entrega" DataType="System.String"/>
+        <Column Name="bairro_entrega" DataType="System.String"/>
+        <Column Name="cidade_entrega" DataType="System.String"/>
+        <Column Name="cep_entrega" DataType="System.String"/>
+        <Column Name="estado_entrega" DataType="System.String"/>
+        <Column Name="codigo_tjrj" DataType="System.Int32"/>
+        <CommandParameter Name="inscricao" DataType="22" Expression="[SqlProcesso.inscricao]"/>
+        <CommandParameter Name="modulo" DataType="22" Expression="[SqlProcesso.modulo]"/>
+        <CommandParameter Name="id_pessoa" DataType="9" Expression="[SqlProcesso.id_pessoa]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlParcAcordo" DataType="System.Int32" Enabled="true" SelectCommand="select &#13;&#10;	 gp.parcela&#13;&#10;    ,gp.vencimento&#13;&#10;    ,gp.valor&#13;&#10;    ,gp.data_pagto&#13;&#10;    ,coalesce(gp.vlr_pago, 0.0) as vlr_pago                                   &#13;&#10;    ,case &#13;&#10;    	when gp.status = '0'  then 'Sem Pagamento'&#13;&#10;        when gp.status = '1'  then 'Pendente'&#13;&#10;        when gp.status = '2'  then 'Anulada'&#13;&#10;        when gp.status = '3'  then 'Pagamento Cancelado'&#13;&#10;        when gp.status = '4'  then 'Baixa Manual'&#13;&#10;        when gp.status = '5'  then 'Baixa Automática'&#13;&#10;        when gp.status = '6'  then 'Restituída Parcial'&#13;&#10;        when gp.status = '7'  then 'Restituída Total'&#13;&#10;        when gp.status = '8'  then 'Carnê Cancelado'&#13;&#10;        when gp.status = '9'  then 'Carnê Pago em Única'&#13;&#10;        when gp.status = '10' then 'Carnê Pago em Parcelas '&#13;&#10;        when gp.status = '11' then 'Dívida Ativa'&#13;&#10;        when gp.status = '12' then 'Baixa Após Dívida'&#13;&#10;        when gp.status = '13' then 'Parcela Suspensa'&#13;&#10;    end as status&#13;&#10;    &#13;&#10;from geda_parcelas gp&#13;&#10;where gp.referencial_carne = :ref_acordo&#13;&#10;order by gp.parcela">
+        <Column Name="parcela" DataType="System.Int32"/>
+        <Column Name="vencimento" DataType="System.DateTime"/>
+        <Column Name="valor" DataType="System.Double"/>
+        <Column Name="data_pagto" DataType="System.DateTime"/>
+        <Column Name="vlr_pago" DataType="System.Double"/>
+        <Column Name="status" DataType="System.String"/>
+        <CommandParameter Name="ref_acordo" DataType="9" DefaultValue="-1"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="TotalParc" DataType="System.Int32" Enabled="true" SelectCommand="SELECT &#13;&#10;    SUM(COALESCE(gp.vlr_pago, 0.0)) AS total_vlr_pago,    -- Soma de todos os valores pagos&#13;&#10;    SUM(gp.valor) AS total_valor                          -- Soma de todos os valores das parcelas&#13;&#10;FROM geda_parcelas gp&#13;&#10;WHERE gp.referencial_carne = :ref_acordo">
+        <Column Name="total_vlr_pago" DataType="System.Double"/>
+        <Column Name="total_valor" DataType="System.Double"/>
+        <CommandParameter Name="ref_acordo" DataType="9" Expression="[SqlProcesso.d012]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="Custas" DataType="System.Int32" Enabled="true" SelectCommand="select b.processo_cnj, b.id_execucao, sum(b.acrescimo20 + b.acrescimo2 + b.caarj + b.citacao_por_correios + b.atos_distribuidores + b.atos_escrivaes + b.fundperj + b.funperj + b.funarpen + b.taxa_bancaria + b.taxa_judiciaria) from (&#13;&#10;SELECT distinct  &#13;&#10;    det.processo_cnj,&#13;&#10;    det.id_execucao,&#13;&#10;    --s.id_sequencia,&#13;&#10;&#13;&#10;    CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 11), ',',&#13;&#10;                 '.') AS DOUBLE PRECISION)- pg.pago_acrescim                                                                                               AS ACRESCIMO20,&#13;&#10;    CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 14), ',',&#13;&#10;                 '.') AS DOUBLE PRECISION)-pg.pago_acrescim2                                                                                               AS ACRESCIMO2,&#13;&#10;    CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 3), ',',&#13;&#10;                 '.') AS DOUBLE PRECISION)-pg.pago_caarj                                                                                               AS CAARJ,&#13;&#10;    CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 5), ',',&#13;&#10;                 '.') AS DOUBLE PRECISION)-pg.pago_correio                                                                                               AS CITACAO_POR_CORREIOS,&#13;&#10;    CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 7), ',',&#13;&#10;                 '.') AS DOUBLE PRECISION)-pg.pago_distrib                                                                                               AS ATOS_DISTRIBUIDORES,&#13;&#10;    CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 6), ',',&#13;&#10;                 '.') AS DOUBLE PRECISION)-pg.pago_escrivao                                                                                               AS ATOS_ESCRIVAES,&#13;&#10;    CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 9), ',',&#13;&#10;                 '.') AS DOUBLE PRECISION)-pg.pago_fundperj                                                                                               AS FUNDPERJ,&#13;&#10;    CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 8), ',',&#13;&#10;                 '.') AS DOUBLE PRECISION)-pg.pago_funperj                                                                                               AS FUNPERJ,&#13;&#10;    CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 103), ',',&#13;&#10;                 '.') AS DOUBLE PRECISION)-pg.pago_funarpen                                                                                               AS FUNARPEN,&#13;&#10;    CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 15), ',',&#13;&#10;                 '.') AS DOUBLE PRECISION)                                                                                               AS TAXA_BANCARIA,              &#13;&#10;    least(CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel =  4), ',', '.') AS DOUBLE PRECISION), -- AS TAXA_JUDICIARIA_MAX,&#13;&#10;    greatest(round((d.vl_div*1.1)*0.04,2), CAST(REPLACE((SELECT A.conteudo FROM AAC_VARIAVEIS A WHERE A.modulo = 'GEDA' AND A.id_variavel = 10), ',', '.') AS DOUBLE PRECISION)))as Taxa_judiciaria&#13;&#10;&#13;&#10;FROM GEDA_execucao DET&#13;&#10;&#13;&#10;    left join sis_sequencia s on s.id_sequencia&lt;61&#13;&#10;    left join lateral (select string_agg(cast(d000 as varchar),',')as div,sum(d.d010)as vl_div from geda_ldivida D where d.id_execucao = det.id_execucao AND d.d029 NOT IN (3, 4))d on true&#13;&#10;    left join proc_calcula_refis (cast(d.div as varchar),s.id_sequencia)r on TRUE&#13;&#10;    left join proc_pago_custas(det.id_execucao)pg on true&#13;&#10;&#13;&#10;WHERE det.id_mestre = :id_execucao and det.status in (0,1)&#13;&#10;&#13;&#10;) b&#13;&#10;group by 1,2">
+        <Column Name="processo_cnj" DataType="System.String"/>
+        <Column Name="id_execucao" DataType="System.Int32"/>
+        <Column Name="sum" DataType="System.Double"/>
+        <CommandParameter Name="id_execucao" DataType="9" Expression="[SqlProcesso.id_mestre]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Situação do Processo&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="cnj" DataType="System.String" Expression="&quot;00001465220228190006&quot;"/>
+    <Parameter Name="competencia" DataType="System.String" Expression="&quot;&quot;"/>
+    <Total Name="TotTudo" Expression="[SqlProcesso.principal]+[SqlProcesso.correcao]+[SqlProcesso.juros]+[SqlProcesso.multa]" Evaluator="Data1" EvaluateCondition="Trim([SqlProcesso.descricao]) == &quot;Em Aberto&quot;"/>
+    <Total Name="TotalPrincipal" Expression="[SqlProcesso.principal]" Evaluator="Data1" EvaluateCondition="Trim([SqlProcesso.descricao]) == &quot;Em Aberto&quot;"/>
+    <Total Name="TotalCorrecao" Expression="[SqlProcesso.correcao]" Evaluator="Data1" EvaluateCondition="Trim([SqlProcesso.descricao]) == &quot;Em Aberto&quot;"/>
+    <Total Name="TotalJuros" Expression="[SqlProcesso.juros]" Evaluator="Data1" EvaluateCondition="Trim([SqlProcesso.descricao]) == &quot;Em Aberto&quot;"/>
+    <Total Name="TotalMulta" Expression="[SqlProcesso.multa]" Evaluator="Data1" EvaluateCondition="Trim([SqlProcesso.descricao]) == &quot;Em Aberto&quot;"/>
+    <Total Name="TotalVlHonorario" Expression="[SqlProcesso.vl_honorario]" Evaluator="Data1" EvaluateCondition="Trim([SqlProcesso.descricao]) == &quot;Em Aberto&quot;"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho" Top="0">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <TextObject Name="Text20" ZOrder="7" Left="-9459.45" Top="-9450" Width="94.5" Height="18.9" Text="00001465220228190006" Font="Arial, 10pt"/>
+      <inherited Name="BndFiltro" Top="98.67">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child1" ZOrder="-1" Top="121.73" Width="718.2" Height="32.89">
+          <TextObject Name="Text1" Top="1.51" Width="73.33" Height="18.9" Text="Emitido às: &#13;&#10;" VertAlign="Bottom" Font="Arial, 8pt, style=Bold, Italic"/>
+          <TextObject Name="Text2" Left="83.16" Top="1.51" Width="146.66" Height="18.9" Text="[Date]" VertAlign="Center" Font="Arial, 8pt, style=Italic"/>
+          <TextObject Name="Text3" Left="226.8" Width="94.5" Height="18.9" Text="Número CNJ" VertAlign="Bottom" Font="Arial, 8pt, style=Bold"/>
+          <TextObject Name="Text4" Left="302.4" Top="1.51" Width="264.6" Height="18.9" Text="[Trim([cnj])]&#13;&#10;" VertAlign="Bottom" Font="Arial, 8pt"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="GroupHeader1" ZOrder="0" Top="158.79" Width="718.2" Height="81.65" Condition="[SqlProcesso.inscricao]+[SqlProcesso.descricao]">
+      <TextObject Name="Text5" Top="17.39" Width="718.2" Height="64.26" Border.Lines="All" Fill.Color="ControlLight" VertAlign="Bottom" Font="Arial, 8pt"/>
+      <TextObject Name="Text6" Left="91.7" Top="22.3" Width="605.18" Height="18.9" Text="[Trim([SqlProcesso.inscricao])] - &lt;b&gt;Nome:&lt;/b&gt; [SqlProcesso.nome]" VertAlign="Bottom" Font="Arial, 8pt" TextRenderType="HtmlTags"/>
+      <TextObject Name="Text9" Left="1.89" Top="22.3" Width="87.7" Height="18.9" Text="Código Imóvel:" HorzAlign="Right" VertAlign="Bottom" WordWrap="false" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text10" Left="1.89" Top="55.26" Width="59.35" Height="18.9" Text="Situação:" HorzAlign="Right" VertAlign="Bottom" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text11" Left="56.7" Top="55.26" Width="605.18" Height="18.9" Text="[IIf([SqlProcesso.titulo] == &quot;1&quot;, &quot;Divida Ativa em Aberto&quot;, IIf([SqlProcesso.titulo] == &quot;2&quot;, &quot;Divida Ativa com Acordo de Número&quot; +ToString([SqlProcesso.d012]), IIf([SqlProcesso.titulo] == &quot;3&quot;, &quot;Divida Ativa Finalizada - &quot;+Trim(UpperCase([SqlProcesso.descricao])), IIf([SqlProcesso.titulo] == &quot;4&quot;, &quot;Divida Ativa Suspenso&quot;, &quot;&quot;))))]" VertAlign="Bottom" Font="Arial, 8pt"/>
+      <GroupHeaderBand Name="GroupHeader2" Top="244.61" Width="718.2" Height="22.3" Condition="[SqlProcesso.descricao]">
+        <TextObject Name="Text12" Width="718.2" Height="22.3" Border.Lines="Left, Right, Bottom" Text="Tributo(s)" HorzAlign="Center" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <ChildBand Name="Child2" Top="271.07" Width="718.2" Height="30.62" CanGrow="true" PrintIfDatabandEmpty="true">
+          <TextObject Name="Text13" Width="718.2" Height="30.62" Border.Lines="Left, Right, Bottom" CanGrow="true" Text="[SqlProcesso.tributo]" Padding="4, 4, 4, 4" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+          <ChildBand Name="Child3" Top="305.86" Width="718.2" Height="19.66" Border.Lines="Left, Right, Bottom" BeforePrintEvent="Child3_BeforePrint" PrintIfDatabandEmpty="true">
+            <TextObject Name="Text14" Top="0.76" Width="60.86" Height="18.9" Text="Parcela" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+            <TextObject Name="Text15" Left="66.15" Top="0.76" Width="121.34" Height="18.9" Text="Vencimento" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+            <TextObject Name="Text16" Left="194.29" Top="0.76" Width="121.34" Height="18.9" Text="Valor" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+            <TextObject Name="Text17" Left="326.59" Top="0.76" Width="95.63" Height="18.9" Text="Data Pagamento" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+            <TextObject Name="Text18" Left="447.17" Top="0.76" Width="118.69" Height="18.9" Text="Valor Pago" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+            <TextObject Name="Text19" Left="590.81" Top="0.76" Width="96.01" Height="18.9" Text="Status" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+            <ChildBand Name="Child4" Top="329.69" Width="718.2" Height="22.68" Border.Lines="Left, Right, Bottom" BeforePrintEvent="Child4_BeforePrint" PrintIfDatabandEmpty="true">
+              <TextObject Name="Text21" Left="184.46" Width="122.09" Height="18.9" Text="Data Cancelamento" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+              <TextObject Name="Text22" Left="411.26" Width="105.46" Height="18.9" Text="Ref. Dívida" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+              <ChildBand Name="Child5" Top="356.53" Width="718.2" Height="18.9" Border.Lines="Left, Right, Bottom" BeforePrintEvent="Child5_BeforePrint" PrintIfDatabandEmpty="true">
+                <TextObject Name="Text23" Left="184.46" Width="122.09" Height="18.9" Text="Data Suspensão" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+                <TextObject Name="Text24" Left="411.26" Width="105.46" Height="18.9" Text="Ref. Dívida" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+              </ChildBand>
+            </ChildBand>
+          </ChildBand>
+        </ChildBand>
+        <DataBand Name="Data1" Top="379.6" Width="718.2" Height="18.9" Border.Lines="All" BeforePrintEvent="Data1_BeforePrint" DataSource="Table" PrintIfDetailEmpty="true" PrintIfDatasourceEmpty="true">
+          <TextObject Name="Text25" Left="1" Width="116.42" Height="18.9" Text="&lt;b&gt;Valor:&lt;/b&gt; R$ [SqlProcesso.principal]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+          <TextObject Name="Text26" Left="115.76" Width="114.53" Height="18.9" Text="&lt;b&gt;Correção:&lt;/b&gt; R$ [SqlProcesso.correcao]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+          <TextObject Name="Text27" Left="232.51" Width="95.63" Height="18.9" Text="&lt;b&gt;Juros:&lt;/b&gt; R$ [SqlProcesso.juros]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+          <TextObject Name="Text28" Left="332.09" Width="114.53" Height="18.9" Text="&lt;b&gt;Multa:&lt;/b&gt; R$ [SqlProcesso.multa]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+          <TextObject Name="Text29" Left="566.5" Width="144.77" Height="18.9" Text="&lt;b&gt;Valor Final:&lt;/b&gt; R$ [[SqlProcesso.principal]+[SqlProcesso.correcao]+[SqlProcesso.juros]+[SqlProcesso.multa]+[SqlProcesso.vl_honorario]]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+          <TextObject Name="Text52" Left="445.15" Width="123.98" Height="18.9" Text="&lt;b&gt;Honorários:&lt;/b&gt; R$ [SqlProcesso.vl_honorario]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+          <ChildBand Name="Child6" Top="402.67" Width="718.2" Height="18.9" Border.Lines="All" BeforePrintEvent="Child6_BeforePrint" PrintIfDatabandEmpty="true">
+            <TextObject Name="Text30" Left="184.46" Width="122.09" Height="18.9" Text="[SqlProcesso.dt_cancelamento]" Format="Date" Format.Format="d" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+            <TextObject Name="Text31" Left="411.26" Width="105.46" Height="18.9" Text="[SqlProcesso.ref_divida]" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+            <ChildBand Name="Child7" Top="425.73" Width="718.2" Height="18.9" Border.Lines="All" BeforePrintEvent="Child7_BeforePrint" PrintIfDatabandEmpty="true">
+              <TextObject Name="Text37" Left="191.65" Width="334.91" Height="18.9" Text="&lt;b&gt;Valor Final:&lt;/b&gt; [[SqlProcesso.correcao] + [SqlProcesso.multa] + [SqlProcesso.juros] + [SqlProcesso.principal]]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt" TextRenderType="HtmlTags"/>
+              <ChildBand Name="Child8" Top="448.8" Width="718.2" Height="18.9" Border.Lines="All" BeforePrintEvent="Child8_BeforePrint" PrintIfDatabandEmpty="true">
+                <TextObject Name="Text39" Left="184.46" Width="122.09" Height="18.9" Text="[SqlProcesso.dt_cancelamento]" Format="Date" Format.Format="d" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+                <TextObject Name="Text40" Left="411.26" Width="105.46" Height="18.9" Text="[SqlProcesso.ref_divida]" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+                <ChildBand Name="Child9" Top="471.87" Width="718.2" Height="18.9" Border.Lines="All" BeforePrintEvent="Child9_BeforePrint" PrintIfDatabandEmpty="true">
+                  <TextObject Name="Text38" Left="191.65" Width="334.91" Height="18.9" Text="&lt;b&gt;Valor Final:&lt;/b&gt; [[SqlProcesso.correcao] + [SqlProcesso.multa] + [SqlProcesso.juros] + [SqlProcesso.principal]]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt" TextRenderType="HtmlTags"/>
+                </ChildBand>
+              </ChildBand>
+            </ChildBand>
+          </ChildBand>
+          <DataBand Name="Data4" Top="494.93" Width="718.2" Height="18.9" Border.Lines="All" BeforePrintEvent="Data2_BeforePrint" DataSource="Table2" PrintIfDetailEmpty="true" PrintIfDatasourceEmpty="true">
+            <TextObject Name="Text42" Left="66.15" Width="121.34" Height="18.9" Text="[SqlParcAcordo.vencimento]" HideZeros="true" Format="Date" Format.Format="d" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+            <TextObject Name="Text41" Width="60.86" Height="18.9" Text="[SqlParcAcordo.parcela]" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+            <TextObject Name="Text43" Left="194.29" Width="121.34" Height="18.9" Text="[SqlParcAcordo.valor]" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+            <TextObject Name="Text44" Left="326.59" Width="95.63" Height="18.9" Text="[SqlParcAcordo.data_pagto]" HideZeros="true" Format="Date" Format.Format="d" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+            <TextObject Name="Text45" Left="447.17" Width="118.69" Height="18.9" Text="[SqlParcAcordo.vlr_pago]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+            <TextObject Name="Text46" Left="568.13" Width="118.69" Height="18.9" Text="[SqlParcAcordo.status]" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+          </DataBand>
+          <DataBand Name="Data5" Top="518" Width="718.2" Height="20.9" Border.Lines="All" Fill.Color="ControlLight" BeforePrintEvent="Data3_BeforePrint" DataSource="Table3" PrintIfDetailEmpty="true" PrintIfDatasourceEmpty="true">
+            <TextObject Name="Text51" Left="463.05" Top="2" Width="236.25" Height="18.9" Text="Restante a Pagar: R$ [[TotalParc.total_valor] - [TotalParc.total_vlr_pago]]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+            <TextObject Name="Text49" Left="18.8" Top="2" Width="207.9" Height="18.9" Text="Valor Total: R$ [TotalParc.total_valor]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+            <TextObject Name="Text50" Left="236.6" Top="2" Width="217.35" Height="18.9" Text="Valor Pago: R$ [TotalParc.total_vlr_pago] " Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+          </DataBand>
+        </DataBand>
+      </GroupHeaderBand>
+    </GroupHeaderBand>
+    <ReportSummaryBand Name="ReportSummary1" ZOrder="-1" Top="543.07" Width="718.2" Height="113.4">
+      <TextObject Name="Text47" Top="32.9" Width="718.2" Height="18.9" Border.Lines="All" Fill.Color="ControlLight" Text="Soma dos Valores: EM ABERTO" HorzAlign="Center" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="Text53" Top="52.7" Width="103.95" Height="18.9" Border.Lines="Left" Text="&lt;b&gt;Valor:&lt;/b&gt; R$ [TotalPrincipal]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+      <TextObject Name="Text54" Left="104.5" Top="52.25" Width="102.06" Height="18.9" Text="&lt;b&gt;Correção:&lt;/b&gt;  R$ [TotalCorrecao]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+      <TextObject Name="Text55" Left="206.45" Top="52.7" Width="122.85" Height="18.9" Text="&lt;b&gt;Juros:&lt;/b&gt; R$ [TotalJuros]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+      <TextObject Name="Text56" Left="329.05" Top="52.25" Width="132.3" Height="18.9" Text="&lt;b&gt;Multa:&lt;/b&gt; R$ [TotalMulta]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+      <TextObject Name="Text57" Left="461.1" Top="52.25" Width="132.3" Height="18.9" Text="&lt;b&gt;Custas:&lt;/b&gt; R$  [Custas.sum]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+      <TextObject Name="Text58" Left="593.46" Top="52.25" Width="124.74" Height="18.9" Border.Lines="Right" Text="&lt;b&gt;Honorários:&lt;/b&gt; R$ [TotalVlHonorario]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+      <TextObject Name="Text59" Top="71.15" Width="718.2" Height="18.9" Border.Lines="All" Text="&lt;b&gt;Valor Final:&lt;/b&gt; R$ [[TotalCorrecao] + [TotalPrincipal] + [TotalJuros] + [TotalMulta] + [Custas.sum] + [TotalVlHonorario]]" Padding="2, 6, 2, 0" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+    </ReportSummaryBand>
+    <inherited Name="BndRodape" Top="660.63">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="C:\Users\Embras\Desktop\FAST\gsr-designer-frx\designer-win-x64\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="C:\Users\Embras\Desktop\FAST\gsr-designer-frx\designer-win-x64\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="06/06/2025 15:00:28" ReportInfo.CreatorVersion="2025.1.10.0">
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O3ZiiFtrI0fOlPE5qiimkEE=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlHistorico" DataType="System.Int32" Enabled="true" SelectCommand="SELECT&#13;&#10;  A.DT_HISTORICO_AUT,&#13;&#10;  A.MANUAL,                      &#13;&#10;  B.ds_usuario as nome,&#13;&#10;  B.nome_usuario as nome_completo,&#13;&#10;  C.DS_ST_AUTORIZACAO,&#13;&#10;  D.DS_ALMOXARIFADO&#13;&#10;FROM&#13;&#10;  SUP_HISTORICO_AUT A&#13;&#10;  LEFT JOIN sis_USUARIO B ON B.id_usuario = A.ID_USUARIO&#13;&#10;  LEFT JOIN VET_ST_AUTORIZACAO C ON C.ID_ST_AUTORIZACAO = A.ID_ST_AUTORIZACAO&#13;&#10;  LEFT JOIN SUP_ALMOXARIFADO D ON D.ID_ALMOXARIFADO = A.ID_ALMOXARIFADO&#13;&#10;WHERE&#13;&#10; A.ID_AUTORIZACAO = :ID_AUTORIZACAO">
+        <Column Name="dt_historico_aut" DataType="System.DateTime"/>
+        <Column Name="manual" DataType="System.Int16"/>
+        <Column Name="nome" DataType="System.String"/>
+        <Column Name="nome_completo" DataType="System.String"/>
+        <Column Name="ds_st_autorizacao" DataType="System.String"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <CommandParameter Name="ID_AUTORIZACAO" DataType="9" Expression="[idAutorizacao]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlAutorizacao" DataType="System.Int32" Enabled="true" SelectCommand="select A.ID_TP_AUTORIZACAO, A.DT_AUTORIZACAO, A.NR_AUTORIZACAO, A.ANO_AUTORIZACAO, A.COMPRADOR, A.PRAZO_ENTREGA,&#13;&#10;       A.REPRESENTANTE, A.LOCAL_ENTREGA, A.FORMA_PAGTO, C.DS_ST_AUTORIZACAO, P.DOCUMENTO_FORMATADO, P.NOME_RAZAO,&#13;&#10;       A.DT_ENVIO, A.REPRESENTANTE,&#13;&#10;       A.ESPECIFICACAO,&#13;&#10;      &#13;&#10;       (select sum(S.VALOR)&#13;&#10;        from SUP_AUTORIZACAO_FICHA S&#13;&#10;        where S.ID_AUTORIZACAO = A.ID_AUTORIZACAO) as VALOR&#13;&#10;from SUP_AUTORIZACAO A&#13;&#10;left join VET_ST_AUTORIZACAO C on C.ID_ST_AUTORIZACAO = A.ID_ST_AUTORIZACAO&#13;&#10;left join SIS_PESSOA P on P.ID_PESSOA = a.id_fornecedor&#13;&#10;&#13;&#10;where A.ID_AUTORIZACAO = :ID_AUTORIZACAO">
+        <Column Name="id_tp_autorizacao" DataType="System.Int16"/>
+        <Column Name="dt_autorizacao" DataType="System.DateTime"/>
+        <Column Name="nr_autorizacao" DataType="System.Int32"/>
+        <Column Name="ano_autorizacao" DataType="System.Int32"/>
+        <Column Name="comprador" DataType="System.String"/>
+        <Column Name="prazo_entrega" DataType="System.Int16"/>
+        <Column Name="representante" DataType="System.String"/>
+        <Column Name="local_entrega" DataType="System.String"/>
+        <Column Name="forma_pagto" DataType="System.String"/>
+        <Column Name="ds_st_autorizacao" DataType="System.String"/>
+        <Column Name="documento_formatado" DataType="System.String"/>
+        <Column Name="nome_razao" DataType="System.String"/>
+        <Column Name="dt_envio" DataType="System.DateTime"/>
+        <Column Name="representante1" DataType="System.String"/>
+        <Column Name="especificacao" DataType="System.String"/>
+        <Column Name="valor" DataType="System.Double"/>
+        <CommandParameter Name="ID_AUTORIZACAO" DataType="9" Expression="[idAutorizacao]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;HISTÓRICO DA SITUAÇÃO DA AUTORIZAÇÃO&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idAutorizacao" DataType="System.Int64" AsString=""/>
+    <Parameter Name="competencia" DataType="System.Int64" AsString="2024"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="97.6">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child1" ZOrder="-1" Top="119.6" Width="718.2" Height="11.34" Border.Lines="Bottom">
+          <TextObject Name="Text26" Left="616.7" Width="105.84" Height="11.34" Text="[Competencia]" HorzAlign="Right" Font="Arial, 8pt, style=Bold"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <DataBand Name="Data1" ZOrder="0" Top="134.04" Width="718.2" Height="176.9" CanGrow="true" DataSource="Table1">
+      <TextObject Name="Text2" Top="12.85" Width="204.88" Height="24.95" Border.Lines="All" Fill.Color="42, 82, 118" Text="[IIf([SqlAutorizacao.iD_TP_AUTORIZACAO] == 1, &quot;AF&quot;, &quot;AS&quot;)] [SqlAutorizacao.NR_AUTORIZACAO]/[sqlAutorizacao.ANO_AUTORIZACAO]&#13;&#10;" VertAlign="Center" Font="Arial, 12pt, style=Bold" TextFill.Color="White">
+        <Formats>
+          <GeneralFormat/>
+          <CustomFormat Format="000000"/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <TextObject Name="Text3" Top="37.8" Width="80.14" Height="20.03" Border.Lines="All" Text="Data:" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text4" Top="57.83" Width="80.14" Height="20.03" Border.Lines="All" Text="Fornecedor:" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text5" Top="77.87" Width="80.14" Height="20.03" Border.Lines="All" Text="Comprador:" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text6" Left="80.14" Top="37.8" Width="74.84" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[SqlAutorizacao.DT_AUTORIZACAO]&#13;&#10;" Format="Date" Format.Format="dd/MM/yyyy" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text7" Left="154.98" Top="37.8" Width="49.9" Height="20.03" Border.Lines="All" Text="Valor:" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text8" Left="204.88" Top="37.8" Width="195.8" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[SqlAutorizacao.VALOR]&#13;&#10;" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text9" Left="400.68" Top="37.8" Width="90.72" Height="20.03" Border.Lines="All" Text="Data Envio:" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text10" Left="491.4" Top="37.8" Width="226.42" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[SqlAutorizacao.DT_ENVIO]&#13;&#10;" Format="Date" Format.Format="dd/MM/yyyy" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text11" Left="80.14" Top="57.83" Width="637.69" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[SqlAutorizacao.DOCUMENTO_FORMATADO] - [SqlAutorizacao.NOME_RAZAO]" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text12" Left="399.92" Top="77.87" Width="91.48" Height="20.03" Border.Lines="All" Text="Representante:&#13;&#10;" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text13" Left="491.4" Top="77.87" Width="226.42" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[Trim([SqlAutorizacao.REPRESENTANTE])]&#13;&#10;" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text14" Left="80.14" Top="77.87" Width="319.79" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[Trim([SqlAutorizacao.COMPRADOR])]&#13;&#10;" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text15" Top="113.4" Width="226.42" Height="20.03" Fill.Color="ButtonFace" Text="Observação" Format="Date" Format.Format="dd/MM/yyyy" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text16" Top="133.3" Width="718.2" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" Text="[SqlAutorizacao.ESPECIFICACAO]&#13;&#10;" VertAlign="Center" Font="Arial, 8pt"/>
+    </DataBand>
+    <DataBand Name="Data2" ZOrder="1" Top="384.42" Width="718.2" Height="37.8" DataSource="Table">
+      <TextObject Name="Text21" Width="120.96" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" Text="[SqlHistorico.dt_historico_aut]" Format="Custom" Format.Format="dd/MM/yyyy  hh:mm:ss" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text22" Left="120.96" Width="71.82" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" Text="[sqlHistorico.DS_ST_AUTORIZACAO]&#13;&#10;[IIf([sqlHistorico.MANUAL] == 1, &quot;&lt;b&gt;(manual)&lt;/b&gt;&quot;, &quot;&quot;)]&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt" TextRenderType="HtmlParagraph">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <TextObject Name="Text23" Left="192.78" Width="226.8" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" Text="[sqlHistorico.DS_ALMOXARIFADO]&#13;&#10;" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text24" Left="419.58" Width="298.62" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" Text="[sqlHistorico.NOME_COMPLETO]&#13;&#10;Login: &lt;b&gt;[sqlHistorico.NOME]&#13;&#10;" VertAlign="Center" Font="Arial, 8pt" TextRenderType="HtmlParagraph">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <DataHeaderBand Name="DataHeader1" Top="314.04" Width="718.2" Height="67.28">
+        <TextObject Name="Text17" Top="47.25" Width="120.96" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="Data / Hora" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text18" Left="120.96" Top="47.25" Width="71.82" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="Situação" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text19" Left="192.78" Top="47.25" Width="226.8" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="Almoxarifado" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text20" Left="419.58" Top="47.25" Width="298.62" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="Almoxarifado" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt"/>
+      </DataHeaderBand>
+    </DataBand>
+    <inherited Name="BndRodape" Top="425.32">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

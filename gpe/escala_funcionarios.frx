@@ -1,0 +1,243 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="C:\Users\Embras\Desktop\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="C:\Users\Embras\Desktop\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/06/2025 14:31:57" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }   
+//===============================================================================================================================================//
+    private void memHoraExtra_BeforePrint(object sender, EventArgs e)
+    {
+      memHoraExtra.Visible = ((Int16)Report.GetColumnValue(&quot;SqlEscala.folga&quot;)) != 1;
+    }
+//===============================================================================================================================================//
+
+    private void chkHoraExtra_BeforePrint(object sender, EventArgs e)
+    {
+      chkHoraExtra.Visible = ((Int16)Report.GetColumnValue(&quot;SqlEscala.folga&quot;)) != 1;
+    }
+//===============================================================================================================================================//
+
+    private void memLocal_BeforePrint(object sender, EventArgs e)
+    {
+      memLocal.Visible = ((Int16)Report.GetColumnValue(&quot;SqlEscala.folga&quot;)) != 1; 
+    }
+//===============================================================================================================================================//
+
+    private void grpAssinante_BeforePrint(object sender, EventArgs e)
+    {
+      grpAssinante.Visible = ((Int64)Report.GetParameterValue(&quot;impAssinante&quot;)) == 1;
+    }
+//===============================================================================================================================================//
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8P7uQHIyyz39UKCw5T7zIJhgXlNP30cbcxMOJLE6jBo0=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlEscala" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A1.MATRICULA&#13;&#10;     , A1.NOME&#13;&#10;     , A1.CPF&#13;&#10;     , A1.CARGO&#13;&#10;     , A1.FUNCAO&#13;&#10;     , A1.DT_CONSIDERADA&#13;&#10;     , A1.ID_HORARIO&#13;&#10;     , A1.HORA_EXTRA&#13;&#10;     , A1.FOLGA&#13;&#10;     , A1.ID_ESCALA_LOCAL&#13;&#10;     , A1.DS_ESCALA_LOCAL&#13;&#10;     , A1.DS_ESCALA&#13;&#10;     , A1.CP_ANO&#13;&#10;     , A1.CP_MES&#13;&#10;     , A1.DS_AREA_APURACAO&#13;&#10;     , A1.CD_HORARIO_CONTRATUAL&#13;&#10;     , A1.DS_HORARIO_CONTRATUAL&#13;&#10;     , A1.DT_HR_ENTRADA_01&#13;&#10;     , A1.DT_HR_SAIDA_01&#13;&#10;     , A1.DT_HR_ENTRADA_02&#13;&#10;     , A1.DT_HR_SAIDA_02&#13;&#10;     , A1.DT_HR_ENTRADA_03&#13;&#10;     , A1.DT_HR_SAIDA_03&#13;&#10;&#13;&#10;     , CAST('E: &lt;b&gt;' || ( SELECT X.RESULT FROM FORMATDATETIME(A1.DT_HR_ENTRADA_01, 'HH:NN') X ) || '&lt;/b&gt; - ' ||&#13;&#10;            'S: &lt;b&gt;' || ( SELECT X.RESULT FROM FORMATDATETIME(A1.DT_HR_SAIDA_01,   'HH:NN') X ) || '&lt;/b&gt;'    ||&#13;&#10;            CASE WHEN A1.DT_HR_ENTRADA_02 IS NOT NULL&#13;&#10;                 THEN ' | ' || 'E: &lt;b&gt;' || ( SELECT X.RESULT FROM FORMATDATETIME(A1.DT_HR_ENTRADA_02, 'HH:NN') X ) || '&lt;/b&gt; - ' ||&#13;&#10;                               'S: &lt;b&gt;' || ( SELECT X.RESULT FROM FORMATDATETIME(A1.DT_HR_SAIDA_02,   'HH:NN') X ) || '&lt;/b&gt;'&#13;&#10;                 ELSE '' END ||&#13;&#10;            CASE WHEN A1.DT_HR_ENTRADA_03 IS NOT NULL&#13;&#10;                 THEN ' | ' || 'E: &lt;b&gt;' || ( SELECT X.RESULT FROM FORMATDATETIME(A1.DT_HR_ENTRADA_03, 'HH:NN') X ) || '&lt;/b&gt; - ' ||&#13;&#10;                               'S: &lt;b&gt;' || ( SELECT X.RESULT FROM FORMATDATETIME(A1.DT_HR_SAIDA_03,   'HH:NN') X ) || '&lt;/b&gt;'&#13;&#10;                 ELSE '' END AS VARCHAR(250)) AS TURNO&#13;&#10;          FROM (&#13;&#10;        SELECT B.MATRICULA_SEQ AS MATRICULA                       &#13;&#10;             , B.NOME&#13;&#10;             ,CAST(H.DOCUMENTO_FORMATADO AS VARCHAR(20)) AS CPF&#13;&#10;             , B.CARGO&#13;&#10;             , B.FUNCAO&#13;&#10;             , A.DT_CONSIDERADA&#13;&#10;             , A.ID_HORARIO&#13;&#10;             , A.HORA_EXTRA&#13;&#10;             , A.FOLGA&#13;&#10;             , A.ID_ESCALA_LOCAL&#13;&#10;             , D.DS_ESCALA_LOCAL&#13;&#10;             , E.DS_ESCALA&#13;&#10;             , E.CP_ANO&#13;&#10;             , E.CP_MES&#13;&#10;             , F.DS_AREA_APURACAO&#13;&#10;             , G.CD_HORARIO_CONTRATUAL&#13;&#10;             , G.DS_HORARIO_CONTRATUAL&#13;&#10;        &#13;&#10;             , CAST((CASE WHEN C.ENTRADA_01 IS NOT NULL THEN&#13;&#10;               A.DT_CONSIDERADA + make_interval(mins =&gt; ( CAST(SUBSTRING(RPAD(C.ENTRADA_01, 4, '0') FROM 1 FOR 2) AS INTEGER) * 60) + &#13;&#10;                                    CAST(SUBSTRING(RPAD(C.ENTRADA_01, 4, '0') FROM 3 FOR 2) AS INTEGER)) END) AS TIMESTAMP) AS DT_HR_ENTRADA_01&#13;&#10;&#13;&#10;        &#13;&#10;             , CAST(CASE WHEN C.SAIDA_01 IS NOT NULL THEN&#13;&#10;               A.DT_CONSIDERADA + make_interval(mins =&gt; ( CAST(SUBSTRING(RPAD(C.SAIDA_01, 4, '0') FROM 1 FOR 2) AS INTEGER) * 60) +&#13;&#10;                                    CAST(SUBSTRING(RPAD(C.SAIDA_01, 4, '0') FROM 3 FOR 2) AS INTEGER)       +&#13;&#10;                                    CASE WHEN C.SAIDA_01 &lt; C.ENTRADA_01 THEN 1440 ELSE 0 END) END AS TIMESTAMP ) AS DT_HR_SAIDA_01&#13;&#10;        &#13;&#10;             , CAST(CASE WHEN C.ENTRADA_02 IS NOT NULL THEN&#13;&#10;               A.DT_CONSIDERADA + make_interval(mins =&gt; ( CAST(SUBSTRING(RPAD(C.ENTRADA_02, 4, '0') FROM 1 FOR 2) AS INTEGER) * 60) +&#13;&#10;                                    CAST(SUBSTRING(RPAD(C.ENTRADA_02, 4, '0') FROM 3 FOR 2) AS INTEGER)       +&#13;&#10;                                    CASE WHEN C.ENTRADA_02 &lt; C.SAIDA_01 THEN 1440 ELSE 0 END) END AS TIMESTAMP ) AS DT_HR_ENTRADA_02&#13;&#10;        &#13;&#10;             , CAST(CASE WHEN C.SAIDA_02 IS NOT NULL THEN&#13;&#10;               A.DT_CONSIDERADA + make_interval(mins =&gt; ( CAST(SUBSTRING(RPAD(C.SAIDA_02,   4, '0') FROM 1 FOR 2) AS INTEGER) * 60) +&#13;&#10;                                    CAST(SUBSTRING(RPAD(C.SAIDA_02,   4, '0') FROM 3 FOR 2) AS INTEGER)       +&#13;&#10;                                    CASE WHEN C.SAIDA_02 &lt; C.ENTRADA_02 THEN 1440 ELSE 0 END) END AS TIMESTAMP ) AS DT_HR_SAIDA_02&#13;&#10;        &#13;&#10;             , CAST(CASE WHEN C.ENTRADA_03 IS NOT NULL THEN&#13;&#10;               A.DT_CONSIDERADA + make_interval(mins =&gt; ( CAST(SUBSTRING(RPAD(C.ENTRADA_03, 4, '0') FROM 1 FOR 2) AS INTEGER) * 60) +&#13;&#10;               		                CAST(SUBSTRING(RPAD(C.ENTRADA_03, 4, '0') FROM 3 FOR 2) AS INTEGER)       +&#13;&#10;                                    CASE WHEN C.ENTRADA_03 &lt; C.SAIDA_02 THEN 1440 ELSE 0 END) END AS TIMESTAMP ) AS DT_HR_ENTRADA_03&#13;&#10;        &#13;&#10;             , CAST(CASE WHEN C.SAIDA_03 IS NOT NULL THEN&#13;&#10;               A.DT_CONSIDERADA + make_interval(mins =&gt; ( CAST(SUBSTRING(RPAD(C.SAIDA_03,   4, '0') FROM 1 FOR 2) AS INTEGER) * 60) +&#13;&#10;                                    CAST(SUBSTRING(RPAD(C.SAIDA_03,   4, '0') FROM 3 FOR 2) AS INTEGER)       +&#13;&#10;                                    CASE WHEN C.SAIDA_03 &lt; C.ENTRADA_03 THEN 1440 ELSE 0 END) END AS TIMESTAMP ) AS DT_HR_SAIDA_03&#13;&#10;          FROM SIS_RELATORIO_FILTRO X&#13;&#10;               LEFT JOIN GPE_ESCALA_DATA                A ON A.ID_ESCALA                                        = :ID_ESCALA&#13;&#10;                                                         AND COALESCE(A.ID_FUNCIONARIO, A.ID_FUNCIONARIO_RH)    = X.ID_FILTRO&#13;&#10;               LEFT JOIN GPE_FUNCIONARIO_POR_ID(COALESCE(A.ID_FUNCIONARIO, A.ID_FUNCIONARIO_RH)) B ON         1 = 1 &#13;&#10;               LEFT JOIN GPE_HORARIO                    C ON C.ID_HORARIO                                       = A.ID_HORARIO&#13;&#10;               LEFT JOIN GPE_ESCALA_LOCAL               D ON D.ID_ESCALA_LOCAL                                  = A.ID_ESCALA_LOCAL&#13;&#10;               LEFT JOIN GPE_ESCALA                     E ON E.ID_ESCALA                                        = :ID_ESCALA&#13;&#10;               LEFT JOIN GPE_AREA_APURACAO              F ON F.ID_AREA_APURACAO                                 = E.ID_AREA_APURACAO&#13;&#10;               LEFT JOIN GPE_HORARIO_CONTRATUAL_VIEW    G on G.ID_HORARIO_CONTRATUAL                            = (COALESCE(E.ID_HORARIO_CONTRATUAL, E.ID_HORARIO_CONTRATUAL_RH))                         &#13;&#10;               LEFT JOIN SIS_FORMATA_DOCUMENTO(2,B.CPF) H ON                                                  1 = 1&#13;&#10;         WHERE X.ID_RELATORIO_FILTRO = :ID_RELATORIO_FILTRO&#13;&#10;&#13;&#10;       ) A1&#13;&#10; ORDER BY&#13;&#10;       A1.NOME&#13;&#10;     , A1.DT_HR_ENTRADA_01&#13;&#10;     , A1.DT_HR_SAIDA_01">
+        <Column Name="matricula" DataType="System.String"/>
+        <Column Name="nome" DataType="System.String"/>
+        <Column Name="cpf" DataType="System.String"/>
+        <Column Name="cargo" DataType="System.String"/>
+        <Column Name="funcao" DataType="System.String"/>
+        <Column Name="dt_considerada" DataType="System.DateTime"/>
+        <Column Name="id_horario" DataType="System.Int32"/>
+        <Column Name="hora_extra" DataType="System.Int16"/>
+        <Column Name="folga" DataType="System.Int16"/>
+        <Column Name="id_escala_local" DataType="System.Int32"/>
+        <Column Name="ds_escala_local" DataType="System.String"/>
+        <Column Name="ds_escala" DataType="System.String"/>
+        <Column Name="cp_ano" DataType="System.Int32"/>
+        <Column Name="cp_mes" DataType="System.Int32"/>
+        <Column Name="ds_area_apuracao" DataType="System.String"/>
+        <Column Name="cd_horario_contratual" DataType="System.Int32"/>
+        <Column Name="ds_horario_contratual" DataType="System.String"/>
+        <Column Name="dt_hr_entrada_01" DataType="System.DateTime"/>
+        <Column Name="dt_hr_saida_01" DataType="System.DateTime"/>
+        <Column Name="dt_hr_entrada_02" DataType="System.DateTime"/>
+        <Column Name="dt_hr_saida_02" DataType="System.DateTime"/>
+        <Column Name="dt_hr_entrada_03" DataType="System.DateTime"/>
+        <Column Name="dt_hr_saida_03" DataType="System.DateTime"/>
+        <Column Name="turno" DataType="System.String"/>
+        <CommandParameter Name="ID_ESCALA" DataType="9" Expression="[idEscala]"/>
+        <CommandParameter Name="ID_RELATORIO_FILTRO" DataType="9" Expression="[idRelatorioFiltro]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Escala do Funcionário&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="47"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idEscala" DataType="System.Int64" Expression="-123"/>
+    <Parameter Name="impAssinante" DataType="System.Int64" Expression="1"/>
+    <Total Name="MINnome" TotalType="Min" Expression="[SqlEscala.nome]" Evaluator="mtdEscala"/>
+    <Total Name="MINcpf" TotalType="Min" Expression="[SqlEscala.cpf]" Evaluator="mtdEscala"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho" Top="0">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="98.67">
+        <inherited Name="TxtFiltro"/>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="grpEscala" ZOrder="0" Top="121.73" Width="718.2" Height="99.41" Condition="[SqlEscala.matricula]">
+      <TextObject Name="Text1" Top="10.03" Width="100.17" Height="20.03" Border.Lines="All" Fill.Color="41, 82, 118" Text="Funcionário:" VertAlign="Center" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text2" Left="100.17" Top="10.03" Width="618.03" Height="20.03" Border.Lines="All" Fill.Color="41, 82, 118" Text="[SqlEscala.matricula] | [SqlEscala.nome]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text3" Top="30.07" Width="100.17" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="Escala:" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text4" Left="100.17" Top="30.07" Width="428.27" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[SqlEscala.ds_escala]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text5" Left="528.44" Top="30.07" Width="71.06" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="Competência" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text6" Left="599.13" Top="30.07" Width="119.07" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[string.Format(&quot;{0:MMMM 'de' yyyy}&quot;, new DateTime([SqlEscala.cp_ano], [SqlEscala.cp_mes], 1))]&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text7" Top="50.05" Width="100.17" Height="20.03" Border.Lines="All" Text="Área de Apuração:" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text8" Left="100.17" Top="50.05" Width="618.03" Height="20.03" Border.Lines="All" Text="[SqlEscala.ds_area_apuracao]" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text9" Top="70.14" Width="100.17" Height="20.03" Border.Lines="All" Text="Horário Contratual:" VertAlign="Center" Font="Tahoma, 7.9pt"/>
+      <TextObject Name="Text10" Left="100.17" Top="70.14" Width="618.03" Height="20.03" Border.Lines="All" Text="[SqlEscala.cd_horario_contratual] - [SqlEscala.ds_horario_contratual]" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <DataBand Name="mtdEscala" Top="225.31" Width="718.2" Height="37.8" DataSource="Table">
+        <TextObject Name="Text11" Left="100.17" Width="530.33" Height="15.88" Border.Lines="Bottom" Border.Color="199, 199, 199" Text="[IIf([SqlEscala.folga] == 1, &quot;&lt;b&gt;Folga&lt;/b&gt;&quot;, [SqlEscala.turno])]" VertAlign="Center" Font="Tahoma, 8pt" TextRenderType="HtmlTags"/>
+        <TextObject Name="SqlEscalaDT_CONSIDERADA" Width="100.17" Height="15.88" Border.Lines="Bottom" Border.Color="199, 199, 199" Text="[SqlEscala.dt_considerada]" Format="Custom" Format.Format="dd/MM - ddd" VertAlign="Center" Font="Tahoma, 7.9pt, style=Bold"/>
+        <TextObject Name="memHoraExtra" Left="630.13" Width="72.2" Height="15.88" Border.Lines="Bottom" Border.Color="199, 199, 199" BeforePrintEvent="memHoraExtra_BeforePrint" Text="Hora Extra:" VertAlign="Center" Font="Arial, 7.9pt"/>
+        <TextObject Name="chkHoraExtra" Left="702.32" Width="15.88" Height="15.88" Border.Lines="Bottom" Border.Color="199, 199, 199" BeforePrintEvent="chkHoraExtra_BeforePrint" VertAlign="Center" Font="Arial, 7.9pt"/>
+        <TextObject Name="memLocal" Top="15.88" Width="718.2" Height="15.88" BeforePrintEvent="memLocal_BeforePrint" Text="[SqlEscala.ds_escala_local]" VertAlign="Center" Font="Arial, 7.9pt"/>
+      </DataBand>
+      <GroupFooterBand Name="grpAssinante" Top="267.28" Width="718.2" Height="85.05" BeforePrintEvent="grpAssinante_BeforePrint">
+        <TextObject Name="Text13" Left="209.03" Top="26.08" Width="300.13" Height="15.12" Border.Lines="Top" Text="[MINnome]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text14" Left="209.03" Top="42.34" Width="300.13" Height="18.9" Text="CPF: [MINcpf]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+      </GroupFooterBand>
+    </GroupHeaderBand>
+    <inherited Name="BndRodape" Top="356.49">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

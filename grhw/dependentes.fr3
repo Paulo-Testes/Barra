@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<inherited ParentReport="Paisagem" PreviewOptions.AllowEdit="False" PreviewOptions.Buttons="1535" ReportOptions.LastChange="44524,7099292593" ScriptText.Text="procedure MasterData1OnBeforePrint(Sender: TfrxComponent);&#13;&#10;begin&#13;&#10;  case &#60;qu_dependentes.&#34;GRAU&#34;&#62; of&#13;&#10;     0: mGrau.Memo.text := 'Cônjuge / Companheiro';&#13;&#10;     1: mGrau.Memo.text := 'Filho(a) Menor';&#13;&#10;     2: mGrau.Memo.text := 'Filho(a) Universitário';&#13;&#10;     3: mGrau.Memo.text := 'Filho(a) s/ Arrimo';&#13;&#10;     4: mGrau.Memo.text := 'Neto(a) s/ Arrimo';&#13;&#10;     5: mGrau.Memo.text := 'Neto(a) Universitário';&#13;&#10;     6: mGrau.Memo.text := 'Pais';&#13;&#10;     7: mGrau.Memo.text := 'Irmão Inválido';&#13;&#10;     8: mGrau.Memo.text := 'Menor Pobre';&#13;&#10;     9: mGrau.Memo.text := 'Menor Universitário';&#13;&#10;    10: mGrau.Memo.text := 'Incapaz';&#13;&#10;    11: mGrau.Memo.text := 'Não Preenchido';&#13;&#10;  end;&#13;&#10;end;&#13;&#10;&#13;&#10;procedure Page1OnBeforePrint_inherited(Sender: TfrxComponent);&#13;&#10;begin&#13;&#10;  qu_dependentes.SQL.Add('and ' + VarToStr(&#60;Filtro&#62;));&#13;&#10;  qu_dependentes.SQL.Add('order by b.chapa, b.nome_dependente');&#13;&#10;end;&#13;&#10;&#13;&#10;begin&#13;&#10;&#13;&#10;end." StoreInDFM="False">
+  <Datasets>
+    <item DataSet="SqlCliente" DataSetName="SqlCliente"/>
+    <item DataSet="SqlUsuario" DataSetName="SqlUsuario"/>
+    <item DataSet="SqlModulo" DataSetName="SqlModulo"/>
+    <item DataSet="qu_dependentes" DataSetName="qu_dependentes"/>
+  </Datasets>
+  <Variables>
+    <item InheritedName=" Internas"/>
+    <item InheritedName="IdModulo"/>
+    <item InheritedName="Personalizado"/>
+    <item InheritedName="Formato"/>
+    <item InheritedName="CodigoRelatorio"/>
+    <item InheritedName=" Disponiveis"/>
+    <item InheritedName="IdEntidade"/>
+    <item InheritedName="IdRelatorioFiltro"/>
+    <item InheritedName="Competencia"/>
+    <item Name="Filtro"/>
+    <item InheritedName=" Utilizadas"/>
+    <item InheritedName="IdUsuario"/>
+  </Variables>
+  <inherited Name="Data">
+    <inherited Name="SqlCliente"/>
+    <inherited Name="SqlUsuario"/>
+    <inherited Name="SqlModulo"/>
+    <TfrxADOQuery Name="qu_dependentes" UserName="qu_dependentes" CloseDataSource="True" FieldAliases.Text="" BCDToCurrency="False" IgnoreDupParams="False" SQL.Text="SELECT                                                              &#13;&#10;    b.chapa,&#13;&#10;    a.c001 as nome,&#13;&#10;    b.nome_dependente,&#13;&#10;    b.nascimento,&#13;&#10;    (select case c.descricao&#13;&#10;        when 'Masculino' then cast ('M' as varchar(255))&#13;&#10;        when 'Feminino' then cast('F' as varchar(255))&#13;&#10;        else cast('' as varchar(255)) end&#13;&#10;      from aac_tabelas_internas c where c.tipo = 'SEXO' and b.sexo = c.chave) as sexo,&#13;&#10;    b.grau,&#13;&#10;    b.dependente_ir_ate,&#13;&#10;    b.salario_familia_ate,&#13;&#10;    b.nome_mae,&#13;&#10;    b.cpf,&#13;&#10;    cast((select t.descricao from aac_tabelas_internas t where t.tipo = 'ESTCIVIL' and b.est_civil = t.chave) as varchar(255))as est_civil&#13;&#10;&#13;&#10;FROM&#13;&#10;    GRH_Dependentes b&#13;&#10;&#13;&#10;left join&#13;&#10;    grh_cadastro_funcionarios a on&#13;&#10;    (a.c000 = b.chapa)&#13;&#10;&#13;&#10;&#13;&#10;where (a.id_estabelecimento = :id_estabelecimento)&#13;&#10;  " CommandTimeout="30" LockType="ltReadOnly" PropData="05704C65667402300470546F7002740A506172616D65746572730101063D204E616D653D2269645F6573746162656C6563696D656E746F222044617461547970653D226674537472696E67222045787072657373696F6E3D2231220000"/>
+  </inherited>
+  <inherited Name="Page1" PaperSize="9" OnBeforePrint="Page1OnBeforePrint_inherited">
+    <inherited Name="bndCabecalho" Top="18,89765">
+      <inherited Name="Logo"/>
+      <inherited Name="Brasao"/>
+      <inherited Name="TxtNomeCliente"/>
+      <inherited Name="TxtTitulo1"/>
+      <inherited Name="TxtTitulo2"/>
+      <inherited Name="TxtTituloRelatorio" Text="Relatório de Dependentes"/>
+      <inherited Name="Line1"/>
+      <inherited Name="TxtData"/>
+      <inherited Name="TxtHora"/>
+      <inherited Name="TxtCompetencia"/>
+    </inherited>
+    <inherited Name="BndRodape" Top="347,71676">
+      <inherited Name="Line2"/>
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao"/>
+      <inherited Name="TxtDataHora"/>
+    </inherited>
+    <TfrxMasterData Name="MasterData1" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="26,45671" Left="0" Top="230,55133" Width="1046,92981" OnBeforePrint="MasterData1OnBeforePrint" ColumnWidth="0" ColumnGap="0" DataSet="qu_dependentes" DataSetName="qu_dependentes" RowCount="0">
+      <TfrxMemoView Name="qu_dependentesNOME_DEPENDENTE" IndexTag="1" AllowVectorExport="True" Left="5,55906" Top="4,53543307" Width="241,88992" Height="15,11812" DataField="NOME_DEPENDENTE" DataSet="qu_dependentes" DataSetName="qu_dependentes" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="[qu_dependentes.&#34;NOME_DEPENDENTE&#34;]"/>
+      <TfrxMemoView Name="qu_dependentesNASCIMENTO" IndexTag="1" AllowVectorExport="True" Left="253,51979" Top="4,53543307" Width="71,81107" Height="15,11812" DataSet="qu_dependentes" DataSetName="qu_dependentes" DisplayFormat.FormatStr="dd/mm/yyyy" DisplayFormat.Kind="fkDateTime" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="[qu_dependentes.&#34;NASCIMENTO&#34;]"/>
+      <TfrxMemoView Name="qu_dependentesSEXO" IndexTag="1" AllowVectorExport="True" Left="332,33086" Top="4,53543307" Width="34,01577" Height="15,11812" DataField="SEXO" DataSet="qu_dependentes" DataSetName="qu_dependentes" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="1" Frame.Typ="0" HAlign="haCenter" ParentFont="False" Text="[qu_dependentes.&#34;SEXO&#34;]"/>
+      <TfrxMemoView Name="mGrau" AllowVectorExport="True" Left="380,03958" Top="4,53543307" Width="151,1812" Height="15,11812" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="0" ParentFont="False" Text=""/>
+      <TfrxMemoView Name="qu_dependentesEST_CIVIL" IndexTag="1" AllowVectorExport="True" Left="774,89023" Top="4,53543307" Width="105,82684" Height="15,11812" DataField="EST_CIVIL" DataSet="qu_dependentes" DataSetName="qu_dependentes" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="0" ParentFont="False" Text="[qu_dependentes.&#34;EST_CIVIL&#34;]"/>
+      <TfrxMemoView Name="qu_dependentesCPF" IndexTag="1" AllowVectorExport="True" Left="683,18151" Top="4,53543307" Width="79,37013" Height="15,11812" DataField="CPF" DataSet="qu_dependentes" DataSetName="qu_dependentes" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="0" ParentFont="False" Text="[qu_dependentes.&#34;CPF&#34;]"/>
+      <TfrxMemoView Name="qu_dependentesNOME_MAE" IndexTag="1" AllowVectorExport="True" Left="536,55937" Top="4,53543307" Width="139,84261" Height="15,11812" DataField="NOME_MAE" DataSet="qu_dependentes" DataSetName="qu_dependentes" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="0" ParentFont="False" Text="[qu_dependentes.&#34;NOME_MAE&#34;]"/>
+      <TfrxMemoView Name="qu_dependentesDEPENDENTE_IR_ATE" IndexTag="1" AllowVectorExport="True" Left="973,55968" Top="4,53543307" Width="37,7953" Height="15,11812" DataField="DEPENDENTE_IR_ATE" DataSet="qu_dependentes" DataSetName="qu_dependentes" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="0" HAlign="haRight" ParentFont="False" Text="[qu_dependentes.&#34;DEPENDENTE_IR_ATE&#34;]"/>
+      <TfrxMemoView Name="qu_dependentesSALARIO_FAMILIA_ATE" IndexTag="1" AllowVectorExport="True" Left="906,63049" Top="4,53543307" Width="30,23624" Height="15,11812" DataField="SALARIO_FAMILIA_ATE" DataSet="qu_dependentes" DataSetName="qu_dependentes" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Arial" Font.Style="0" Frame.Typ="0" HAlign="haRight" ParentFont="False" Text="[qu_dependentes.&#34;SALARIO_FAMILIA_ATE&#34;]"/>
+    </TfrxMasterData>
+    <TfrxGroupHeader Name="GroupHeader1" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="56,69295" Left="0" Top="151,1812" Width="1046,92981" Condition="qu_dependentes.&#34;CHAPA&#34;">
+      <TfrxMemoView Name="Memo1" AllowVectorExport="True" Left="11,33859" Top="3,77953" Width="49,13389" Height="18,89765" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="Chapa:"/>
+      <TfrxMemoView Name="qu_dependentesCHAPA" IndexTag="1" AllowVectorExport="True" Left="64,25201" Top="3,77953" Width="90,70872" Height="18,89765" DataField="CHAPA" DataSet="qu_dependentes" DataSetName="qu_dependentes" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="0" Frame.Typ="0" ParentFont="False" Text="[qu_dependentes.&#34;CHAPA&#34;]"/>
+      <TfrxMemoView Name="Memo2" AllowVectorExport="True" Left="165,29932" Top="3,55906" Width="79,37013" Height="18,89765" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="Funcinário:"/>
+      <TfrxMemoView Name="qu_dependentesNOME" IndexTag="1" AllowVectorExport="True" Left="251,00804" Top="3,77953" Width="362,83488" Height="18,89765" DataField="NOME" DataSet="qu_dependentes" DataSetName="qu_dependentes" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="0" Frame.Typ="0" ParentFont="False" Text="[qu_dependentes.&#34;NOME&#34;]"/>
+      <TfrxMemoView Name="Memo3" AllowVectorExport="True" Left="3,77953" Top="30,2362204724409" Width="90,70872" Height="18,89765" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="Dependente"/>
+      <TfrxMemoView Name="Memo4" AllowVectorExport="True" Left="249,74026" Top="30,23622047" Width="68,03154" Height="18,89765" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="Dt Nasc"/>
+      <TfrxMemoView Name="Memo5" AllowVectorExport="True" Left="328,33086" Top="30,23622047" Width="37,7953" Height="18,89765" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="Sexo"/>
+      <TfrxMemoView Name="Memo6" AllowVectorExport="True" Left="375,92146" Top="30,23622047" Width="83,14966" Height="18,89765" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="Parentesco"/>
+      <TfrxMemoView Name="Memo7" AllowVectorExport="True" Left="538,63018" Top="30,23622047" Width="102,04731" Height="18,89765" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="Nome da Mãe"/>
+      <TfrxMemoView Name="Memo8" AllowVectorExport="True" Left="683,18151" Top="30,23622047" Width="68,03154" Height="18,89765" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="CPF"/>
+      <TfrxMemoView Name="Memo9" AllowVectorExport="True" Left="774,89023" Top="30,23622047" Width="102,04731" Height="18,89765" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="Estado Civíl"/>
+      <TfrxMemoView Name="Memo10" AllowVectorExport="True" Left="897,07143" Top="15,11812" Width="68,03154" Height="30,23624" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" HAlign="haCenter" ParentFont="False" Text="Sal&#13;&#10;Fam"/>
+      <TfrxMemoView Name="Memo11" AllowVectorExport="True" Left="973,44156" Top="15,11812" Width="68,03154" Height="30,23624" Font.Charset="1" Font.Color="-16777208" Font.Height="-13" Font.Name="Arial" Font.Style="1" Frame.Typ="0" HAlign="haCenter" ParentFont="False" Text="Dep&#13;&#10;IR"/>
+      <TfrxLineView Name="Line3" AllowVectorExport="True" Left="3,57483" Top="52,91342" Width="1039,37009094" Height="0" Color="0" Frame.Style="fsDot" Frame.Typ="4"/>
+    </TfrxGroupHeader>
+    <TfrxGroupFooter Name="GroupFooter1" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="7,55906" Left="0" Top="279,68522" Width="1046,92981">
+      <TfrxLineView Name="Line4" AllowVectorExport="True" Left="4,29932000000001" Top="4,33859000000002" Width="1039,37009094" Height="0" Color="0" Frame.Typ="4"/>
+    </TfrxGroupFooter>
+  </inherited>
+</inherited>

@@ -1,0 +1,718 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\Repositórios de Clientes\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="..\..\..\..\..\..\Repositórios de Clientes\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="09/01/2025 08:34:25" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }    
+
+    private void bndN01_BeforePrint(object sender, EventArgs e)
+    {
+      bndN01.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 1);
+    }
+
+    private void bndN02_BeforePrint(object sender, EventArgs e)
+    {
+      bndN02.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 2);
+    }
+
+    private void bndN03_BeforePrint(object sender, EventArgs e)
+    {
+      bndN03.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3);
+      memUnidadeEstoque.ParagraphFormat.FirstLineIndent = Report.GetParameterValue(&quot;AgruparAlmoxarifado&quot;).ToString() == &quot;1&quot; ? 20 : 0;
+    }
+
+    private void bndDescricaoCompleta_BeforePrint(object sender, EventArgs e)
+    {
+      bndDescricaoCompleta.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; Report.GetParameterValue(&quot;ExibirDescricaoCompleta&quot;).ToString() == &quot;1&quot; &amp;&amp; Trim(((String)Report.GetColumnValue(&quot;SqlSaldo.ds_completa&quot;))) != &quot;&quot; );
+    }
+
+    private void bndCabecalhoMes_BeforePrint(object sender, EventArgs e)
+    {
+      bndCabecalhoMes.Visible = ((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3;   
+    }
+
+    private void bndMes01_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+
+      bndMes01.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; mesIni == 1);
+    }
+
+    private void bndMes02_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes02.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; 
+        mesIni &lt;= 2 &amp;&amp; 
+        mesFin &gt;= 2);
+    }
+
+    private void bndMes03_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes03.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; 
+        mesIni &lt;= 3 &amp;&amp; 
+        mesFin &gt;= 3);
+    }
+
+    private void bndMes04_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes04.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; 
+        mesIni &lt;= 4 &amp;&amp; 
+        mesFin &gt;= 4);
+    }
+
+    private void bndMes05_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes05.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; 
+        mesIni &lt;= 5 &amp;&amp; 
+        mesFin &gt;= 5);
+    }
+
+    private void bndMes06_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes06.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; 
+        mesIni &lt;= 6 &amp;&amp; 
+        mesFin &gt;= 6);
+    }
+
+    private void bndMes07_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes07.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; 
+        mesIni &lt;= 7 &amp;&amp; 
+        mesFin &gt;= 7);
+    }
+
+    private void bndMes08_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes08.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; 
+        mesIni &lt;= 8 &amp;&amp; 
+        mesFin &gt;= 8);
+    }
+
+    private void bndMes09_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes09.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; 
+        mesIni &lt;= 9 &amp;&amp; 
+        mesFin &gt;= 9);
+    }
+
+    private void bndMes10_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes10.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; 
+        mesIni &lt;= 10 &amp;&amp; 
+        mesFin &gt;= 10);
+    }
+
+    private void bndMes11_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesIni&quot;).ToString(), out int mesIni);
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes11.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; 
+        mesIni &lt;= 11 &amp;&amp; 
+        mesFin &gt;= 11);
+    }
+
+    private void bndMes12_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;CpMesFin&quot;).ToString(), out int mesFin);
+
+      bndMes12.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3 &amp;&amp; mesFin == 12);
+    }
+
+    private void bndRodapeMes_BeforePrint(object sender, EventArgs e)
+    {
+      bndRodapeMes.Visible = (((Int32)Report.GetColumnValue(&quot;SqlSaldo.nivel&quot;)) == 3);
+    }
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAf45SGh+1JQ06HfUCwVjdXLyOtFr5FbmNWNqr1W8I2tPRGoPzSsFGNAQf85ceZvCGogRGJncwLI0VhpBoFVj/qSQKkbhjw8vK4wcDZgU0qxfQEL/Gbeq3795eI880og7s=" CommandTimeout="3000">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" DataType="System.String"/>
+        <Column Name="site" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[IdEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[IdModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[IdLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[IdUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlSaldo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CAST(CASE WHEN S4.ID_SEQUENCIA = 1 THEN CASE WHEN 1 = :AGRUPAR_ALMOXARIFADO      THEN LPAD(CAST(A4.CD_ALMOXARIFADO    AS VARCHAR(20)), 20, '0') ELSE '' END&#13;&#10;                 WHEN S4.ID_SEQUENCIA = 2 THEN CASE WHEN 1 = :AGRUPAR_ALMOXARIFADO      THEN LPAD(CAST(A4.CD_ALMOXARIFADO    AS VARCHAR(20)), 20, '0') ELSE '' END ||&#13;&#10;                                               CASE WHEN 1 = :AGRUPAR_UNIDADE_ESTOQUE   THEN LPAD(CAST(A4.CD_UNIDADE_ESTOQUE AS VARCHAR(20)), 20, '0') ELSE '' END&#13;&#10;                 WHEN S4.ID_SEQUENCIA = 3 THEN CASE WHEN 1 = :AGRUPAR_ALMOXARIFADO      THEN LPAD(CAST(A4.CD_ALMOXARIFADO    AS VARCHAR(20)), 20, '0') ELSE '' END ||&#13;&#10;                                               CASE WHEN 1 = :AGRUPAR_UNIDADE_ESTOQUE   THEN LPAD(CAST(A4.CD_UNIDADE_ESTOQUE AS VARCHAR(20)), 20, '0') ELSE '' END || A4.CD_CLASSIFICACAO&#13;&#10;            END AS VARCHAR(200) )             AS CHAVE&#13;&#10;&#13;&#10;     , S4.ID_SEQUENCIA                        AS NIVEL&#13;&#10;&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 1 THEN A4.CD_ALMOXARIFADO    END AS INTEGER     ) AS CD_ALMOXARIFADO&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 1 THEN A4.DS_ALMOXARIFADO    END AS VARCHAR(250)) AS DS_ALMOXARIFADO&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 2 THEN A4.CD_UNIDADE_ESTOQUE END AS INTEGER     ) AS CD_UNIDADE_ESTOQUE&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 2 THEN A4.DS_UNIDADE_ESTOQUE END AS VARCHAR(250)) AS DS_UNIDADE_ESTOQUE&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.DISPENSA           END AS INTEGER     ) AS DISPENSA&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.CD_CLASSIFICACAO   END AS VARCHAR(250)) AS CD_CLASSIFICACAO&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.CD_MATERIAL        END AS INTEGER     ) AS CD_MATERIAL&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.TP_MATERIAL        END AS INTEGER     ) AS TP_MATERIAL&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.DS_MATERIAL        END AS VARCHAR(250)) AS DS_MATERIAL&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.UN_MATERIAL        END AS VARCHAR(250)) AS UN_MATERIAL&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.DS_COMPLETA        END AS VARCHAR(2000))AS DS_COMPLETA&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.CD_GRUPO           END AS INTEGER     ) AS CD_GRUPO&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.DS_GRUPO           END AS VARCHAR(250)) AS DS_GRUPO&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.CD_SUBGRUPO        END AS INTEGER     ) AS CD_SUBGRUPO&#13;&#10;     , CAST(CASE WHEN S4.ID_SEQUENCIA = 3 THEN A4.DS_SUBGRUPO        END AS VARCHAR(250)) AS DS_SUBGRUPO&#13;&#10;&#13;&#10;     , ROUND(SUM(A4.QTD_ANTERIOR        ), 2) AS QTD_ANTERIOR&#13;&#10;     , ROUND(SUM(A4.VL_ANTERIOR         ), 2) AS VL_ANTERIOR&#13;&#10;     , ROUND(SUM(A4.QTD_CONSUMO         ), 2) AS QTD_CONSUMO&#13;&#10;     , ROUND(SUM(A4.VL_CONSUMO          ), 2) AS VL_CONSUMO&#13;&#10;     , ROUND(SUM(A4.QTD_CONSUMO_PERDA   ), 2) AS QTD_CONSUMO_PERDA&#13;&#10;     , ROUND(SUM(A4.VL_CONSUMO_PERDA    ), 2) AS VL_CONSUMO_PERDA&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_01      ), 2) AS QTD_ENTRADA_01&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_01       ), 2) AS VL_ENTRADA_01&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_01        ), 2) AS QTD_SAIDA_01&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_01         ), 2) AS VL_SAIDA_01&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_01        ), 2) AS QTD_SALDO_01&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_01         ), 2) AS VL_SALDO_01&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_02      ), 2) AS QTD_ENTRADA_02&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_02       ), 2) AS VL_ENTRADA_02&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_02        ), 2) AS QTD_SAIDA_02&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_02         ), 2) AS VL_SAIDA_02&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_02        ), 2) AS QTD_SALDO_02&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_02         ), 2) AS VL_SALDO_02&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_03      ), 2) AS QTD_ENTRADA_03&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_03       ), 2) AS VL_ENTRADA_03&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_03        ), 2) AS QTD_SAIDA_03&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_03         ), 2) AS VL_SAIDA_03&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_03        ), 2) AS QTD_SALDO_03&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_03         ), 2) AS VL_SALDO_03&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_04      ), 2) AS QTD_ENTRADA_04&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_04       ), 2) AS VL_ENTRADA_04&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_04        ), 2) AS QTD_SAIDA_04&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_04         ), 2) AS VL_SAIDA_04&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_04        ), 2) AS QTD_SALDO_04&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_04         ), 2) AS VL_SALDO_04&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_05      ), 2) AS QTD_ENTRADA_05&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_05       ), 2) AS VL_ENTRADA_05&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_05        ), 2) AS QTD_SAIDA_05&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_05         ), 2) AS VL_SAIDA_05&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_05        ), 2) AS QTD_SALDO_05&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_05         ), 2) AS VL_SALDO_05&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_06      ), 2) AS QTD_ENTRADA_06&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_06       ), 2) AS VL_ENTRADA_06&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_06        ), 2) AS QTD_SAIDA_06&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_06         ), 2) AS VL_SAIDA_06&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_06        ), 2) AS QTD_SALDO_06&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_06         ), 2) AS VL_SALDO_06&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_07      ), 2) AS QTD_ENTRADA_07&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_07       ), 2) AS VL_ENTRADA_07&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_07        ), 2) AS QTD_SAIDA_07&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_07         ), 2) AS VL_SAIDA_07&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_07        ), 2) AS QTD_SALDO_07&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_07         ), 2) AS VL_SALDO_07&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_08      ), 2) AS QTD_ENTRADA_08&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_08       ), 2) AS VL_ENTRADA_08&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_08        ), 2) AS QTD_SAIDA_08&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_08         ), 2) AS VL_SAIDA_08&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_08        ), 2) AS QTD_SALDO_08&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_08         ), 2) AS VL_SALDO_08&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_09      ), 2) AS QTD_ENTRADA_09&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_09       ), 2) AS VL_ENTRADA_09&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_09        ), 2) AS QTD_SAIDA_09&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_09         ), 2) AS VL_SAIDA_09&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_09        ), 2) AS QTD_SALDO_09&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_09         ), 2) AS VL_SALDO_09&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_10      ), 2) AS QTD_ENTRADA_10&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_10       ), 2) AS VL_ENTRADA_10&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_10        ), 2) AS QTD_SAIDA_10&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_10         ), 2) AS VL_SAIDA_10&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_10        ), 2) AS QTD_SALDO_10&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_10         ), 2) AS VL_SALDO_10&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_11      ), 2) AS QTD_ENTRADA_11&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_11       ), 2) AS VL_ENTRADA_11&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_11        ), 2) AS QTD_SAIDA_11&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_11         ), 2) AS VL_SAIDA_11&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_11        ), 2) AS QTD_SALDO_11&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_11         ), 2) AS VL_SALDO_11&#13;&#10;     , ROUND(SUM(A4.QTD_ENTRADA_12      ), 2) AS QTD_ENTRADA_12&#13;&#10;     , ROUND(SUM(A4.VL_ENTRADA_12       ), 2) AS VL_ENTRADA_12&#13;&#10;     , ROUND(SUM(A4.QTD_SAIDA_12        ), 2) AS QTD_SAIDA_12&#13;&#10;     , ROUND(SUM(A4.VL_SAIDA_12         ), 2) AS VL_SAIDA_12&#13;&#10;     , ROUND(SUM(A4.QTD_SALDO_12        ), 2) AS QTD_SALDO_12&#13;&#10;     , ROUND(SUM(A4.VL_SALDO_12         ), 2) AS VL_SALDO_12&#13;&#10;  FROM (&#13;&#10;        SELECT A3.CD_ALMOXARIFADO&#13;&#10;             , A3.DS_ALMOXARIFADO&#13;&#10;             , A3.DISPENSA&#13;&#10;             , A3.CD_UNIDADE_ESTOQUE&#13;&#10;             , A3.DS_UNIDADE_ESTOQUE&#13;&#10;             &#13;&#10;             , A3.CD_CLASSIFICACAO&#13;&#10;             , A3.CD_MATERIAL&#13;&#10;             , A3.TP_MATERIAL&#13;&#10;             , TRIM(A3.DS_MATERIAL) AS DS_MATERIAL              &#13;&#10;             , TRIM(A3.UN_MATERIAL) AS UN_MATERIAL                       &#13;&#10;             , TRIM(A3.DS_COMPLETA) AS DS_COMPLETA              &#13;&#10;             , A3.CD_GRUPO&#13;&#10;             , A3.DS_GRUPO&#13;&#10;             , A3.CD_SUBGRUPO&#13;&#10;             , A3.DS_SUBGRUPO&#13;&#10;             &#13;&#10;             , A3.PERIODO&#13;&#10;             , A3.QTD_ANTERIOR&#13;&#10;             , A3.VL_ANTERIOR&#13;&#10;&#13;&#10;             , ROUND((CASE WHEN :CP_MES_INICIAL &lt;= 01 AND :CP_MES_FINAL &gt;= 01 THEN A3.QTD_SAIDA_01 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 02 AND :CP_MES_FINAL &gt;= 02 THEN A3.QTD_SAIDA_02 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 03 AND :CP_MES_FINAL &gt;= 03 THEN A3.QTD_SAIDA_03 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 04 AND :CP_MES_FINAL &gt;= 04 THEN A3.QTD_SAIDA_04 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 05 AND :CP_MES_FINAL &gt;= 05 THEN A3.QTD_SAIDA_05 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 06 AND :CP_MES_FINAL &gt;= 06 THEN A3.QTD_SAIDA_06 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 07 AND :CP_MES_FINAL &gt;= 07 THEN A3.QTD_SAIDA_07 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 08 AND :CP_MES_FINAL &gt;= 08 THEN A3.QTD_SAIDA_08 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 09 AND :CP_MES_FINAL &gt;= 09 THEN A3.QTD_SAIDA_09 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 10 AND :CP_MES_FINAL &gt;= 10 THEN A3.QTD_SAIDA_10 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 11 AND :CP_MES_FINAL &gt;= 11 THEN A3.QTD_SAIDA_11 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 12 AND :CP_MES_FINAL &gt;= 12 THEN A3.QTD_SAIDA_12 ELSE 0 END  ) / A3.PERIODO, 4) * -1 AS QTD_CONSUMO&#13;&#10;&#13;&#10;             , ROUND((CASE WHEN :CP_MES_INICIAL &lt;= 01 AND :CP_MES_FINAL &gt;= 01 THEN A3.VL_SAIDA_01  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 02 AND :CP_MES_FINAL &gt;= 02 THEN A3.VL_SAIDA_02  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 03 AND :CP_MES_FINAL &gt;= 03 THEN A3.VL_SAIDA_03  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 04 AND :CP_MES_FINAL &gt;= 04 THEN A3.VL_SAIDA_04  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 05 AND :CP_MES_FINAL &gt;= 05 THEN A3.VL_SAIDA_05  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 06 AND :CP_MES_FINAL &gt;= 06 THEN A3.VL_SAIDA_06  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 07 AND :CP_MES_FINAL &gt;= 07 THEN A3.VL_SAIDA_07  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 08 AND :CP_MES_FINAL &gt;= 08 THEN A3.VL_SAIDA_08  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 09 AND :CP_MES_FINAL &gt;= 09 THEN A3.VL_SAIDA_09  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 10 AND :CP_MES_FINAL &gt;= 10 THEN A3.VL_SAIDA_10  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 11 AND :CP_MES_FINAL &gt;= 11 THEN A3.VL_SAIDA_11  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 12 AND :CP_MES_FINAL &gt;= 12 THEN A3.VL_SAIDA_12  ELSE 0 END  ) / A3.PERIODO, 4) * -1 AS VL_CONSUMO&#13;&#10;&#13;&#10;             , ROUND((CASE WHEN :CP_MES_INICIAL &lt;= 01 AND :CP_MES_FINAL &gt;= 01 THEN A3.QTD_SAIDA_01 - A3.QTD_PERDA_01 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 02 AND :CP_MES_FINAL &gt;= 02 THEN A3.QTD_SAIDA_02 - A3.QTD_PERDA_02 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 03 AND :CP_MES_FINAL &gt;= 03 THEN A3.QTD_SAIDA_03 - A3.QTD_PERDA_03 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 04 AND :CP_MES_FINAL &gt;= 04 THEN A3.QTD_SAIDA_04 - A3.QTD_PERDA_04 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 05 AND :CP_MES_FINAL &gt;= 05 THEN A3.QTD_SAIDA_05 - A3.QTD_PERDA_05 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 06 AND :CP_MES_FINAL &gt;= 06 THEN A3.QTD_SAIDA_06 - A3.QTD_PERDA_06 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 07 AND :CP_MES_FINAL &gt;= 07 THEN A3.QTD_SAIDA_07 - A3.QTD_PERDA_07 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 08 AND :CP_MES_FINAL &gt;= 08 THEN A3.QTD_SAIDA_08 - A3.QTD_PERDA_08 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 09 AND :CP_MES_FINAL &gt;= 09 THEN A3.QTD_SAIDA_09 - A3.QTD_PERDA_09 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 10 AND :CP_MES_FINAL &gt;= 10 THEN A3.QTD_SAIDA_10 - A3.QTD_PERDA_10 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 11 AND :CP_MES_FINAL &gt;= 11 THEN A3.QTD_SAIDA_11 - A3.QTD_PERDA_11 ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 12 AND :CP_MES_FINAL &gt;= 12 THEN A3.QTD_SAIDA_12 - A3.QTD_PERDA_12 ELSE 0 END  ) / A3.PERIODO, 4) * -1 AS QTD_CONSUMO_PERDA&#13;&#10;&#13;&#10;             , ROUND((CASE WHEN :CP_MES_INICIAL &lt;= 01 AND :CP_MES_FINAL &gt;= 01 THEN A3.VL_SAIDA_01  - A3.VL_PERDA_01  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 02 AND :CP_MES_FINAL &gt;= 02 THEN A3.VL_SAIDA_02  - A3.VL_PERDA_02  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 03 AND :CP_MES_FINAL &gt;= 03 THEN A3.VL_SAIDA_03  - A3.VL_PERDA_03  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 04 AND :CP_MES_FINAL &gt;= 04 THEN A3.VL_SAIDA_04  - A3.VL_PERDA_04  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 05 AND :CP_MES_FINAL &gt;= 05 THEN A3.VL_SAIDA_05  - A3.VL_PERDA_05  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 06 AND :CP_MES_FINAL &gt;= 06 THEN A3.VL_SAIDA_06  - A3.VL_PERDA_06  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 07 AND :CP_MES_FINAL &gt;= 07 THEN A3.VL_SAIDA_07  - A3.VL_PERDA_07  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 08 AND :CP_MES_FINAL &gt;= 08 THEN A3.VL_SAIDA_08  - A3.VL_PERDA_08  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 09 AND :CP_MES_FINAL &gt;= 09 THEN A3.VL_SAIDA_09  - A3.VL_PERDA_09  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 10 AND :CP_MES_FINAL &gt;= 10 THEN A3.VL_SAIDA_10  - A3.VL_PERDA_10  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 11 AND :CP_MES_FINAL &gt;= 11 THEN A3.VL_SAIDA_11  - A3.VL_PERDA_11  ELSE 0 END +&#13;&#10;                      CASE WHEN :CP_MES_INICIAL &lt;= 12 AND :CP_MES_FINAL &gt;= 12 THEN A3.VL_SAIDA_12  - A3.VL_PERDA_12  ELSE 0 END  ) / A3.PERIODO, 4) * -1 AS VL_CONSUMO_PERDA&#13;&#10;             &#13;&#10;             , A3.QTD_ENTRADA_01&#13;&#10;             , A3.VL_ENTRADA_01&#13;&#10;             , A3.QTD_SAIDA_01&#13;&#10;             , A3.VL_SAIDA_01&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01, 4) AS QTD_SALDO_01&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 , 2) AS VL_SALDO_01&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_02&#13;&#10;             , A3.VL_ENTRADA_02&#13;&#10;             , A3.QTD_SAIDA_02&#13;&#10;             , A3.VL_SAIDA_02&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02, 4) AS QTD_SALDO_02&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 , 2) AS VL_SALDO_02&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_03&#13;&#10;             , A3.VL_ENTRADA_03&#13;&#10;             , A3.QTD_SAIDA_03&#13;&#10;             , A3.VL_SAIDA_03&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02  &#13;&#10;                                         + A3.QTD_ENTRADA_03 + A3.QTD_SAIDA_03, 4) AS QTD_SALDO_03&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 &#13;&#10;                                         + A3.VL_ENTRADA_03  + A3.VL_SAIDA_03 , 2) AS VL_SALDO_03&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_04&#13;&#10;             , A3.VL_ENTRADA_04&#13;&#10;             , A3.QTD_SAIDA_04&#13;&#10;             , A3.VL_SAIDA_04&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02  &#13;&#10;                                         + A3.QTD_ENTRADA_03 + A3.QTD_SAIDA_03  &#13;&#10;                                         + A3.QTD_ENTRADA_04 + A3.QTD_SAIDA_04, 4) AS QTD_SALDO_04&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 &#13;&#10;                                         + A3.VL_ENTRADA_03  + A3.VL_SAIDA_03 &#13;&#10;                                         + A3.VL_ENTRADA_04  + A3.VL_SAIDA_04 , 2) AS VL_SALDO_04&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_05&#13;&#10;             , A3.VL_ENTRADA_05&#13;&#10;             , A3.QTD_SAIDA_05&#13;&#10;             , A3.VL_SAIDA_05&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02  &#13;&#10;                                         + A3.QTD_ENTRADA_03 + A3.QTD_SAIDA_03  &#13;&#10;                                         + A3.QTD_ENTRADA_04 + A3.QTD_SAIDA_04  &#13;&#10;                                         + A3.QTD_ENTRADA_05 + A3.QTD_SAIDA_05, 4) AS QTD_SALDO_05&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 &#13;&#10;                                         + A3.VL_ENTRADA_03  + A3.VL_SAIDA_03 &#13;&#10;                                         + A3.VL_ENTRADA_04  + A3.VL_SAIDA_04 &#13;&#10;                                         + A3.VL_ENTRADA_05  + A3.VL_SAIDA_05 , 2) AS VL_SALDO_05&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_06&#13;&#10;             , A3.VL_ENTRADA_06&#13;&#10;             , A3.QTD_SAIDA_06&#13;&#10;             , A3.VL_SAIDA_06&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02  &#13;&#10;                                         + A3.QTD_ENTRADA_03 + A3.QTD_SAIDA_03  &#13;&#10;                                         + A3.QTD_ENTRADA_04 + A3.QTD_SAIDA_04  &#13;&#10;                                         + A3.QTD_ENTRADA_05 + A3.QTD_SAIDA_05  &#13;&#10;                                         + A3.QTD_ENTRADA_06 + A3.QTD_SAIDA_06, 4) AS QTD_SALDO_06&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 &#13;&#10;                                         + A3.VL_ENTRADA_03  + A3.VL_SAIDA_03 &#13;&#10;                                         + A3.VL_ENTRADA_04  + A3.VL_SAIDA_04 &#13;&#10;                                         + A3.VL_ENTRADA_05  + A3.VL_SAIDA_05 &#13;&#10;                                         + A3.VL_ENTRADA_06  + A3.VL_SAIDA_06 , 2) AS VL_SALDO_06&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_07&#13;&#10;             , A3.VL_ENTRADA_07&#13;&#10;             , A3.QTD_SAIDA_07&#13;&#10;             , A3.VL_SAIDA_07&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02  &#13;&#10;                                         + A3.QTD_ENTRADA_03 + A3.QTD_SAIDA_03  &#13;&#10;                                         + A3.QTD_ENTRADA_04 + A3.QTD_SAIDA_04  &#13;&#10;                                         + A3.QTD_ENTRADA_05 + A3.QTD_SAIDA_05  &#13;&#10;                                         + A3.QTD_ENTRADA_06 + A3.QTD_SAIDA_06  &#13;&#10;                                         + A3.QTD_ENTRADA_07 + A3.QTD_SAIDA_07, 4) AS QTD_SALDO_07&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 &#13;&#10;                                         + A3.VL_ENTRADA_03  + A3.VL_SAIDA_03 &#13;&#10;                                         + A3.VL_ENTRADA_04  + A3.VL_SAIDA_04 &#13;&#10;                                         + A3.VL_ENTRADA_05  + A3.VL_SAIDA_05 &#13;&#10;                                         + A3.VL_ENTRADA_06  + A3.VL_SAIDA_06 &#13;&#10;                                         + A3.VL_ENTRADA_07  + A3.VL_SAIDA_07 , 2) AS VL_SALDO_07&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_08&#13;&#10;             , A3.VL_ENTRADA_08&#13;&#10;             , A3.QTD_SAIDA_08&#13;&#10;             , A3.VL_SAIDA_08&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02  &#13;&#10;                                         + A3.QTD_ENTRADA_03 + A3.QTD_SAIDA_03  &#13;&#10;                                         + A3.QTD_ENTRADA_04 + A3.QTD_SAIDA_04  &#13;&#10;                                         + A3.QTD_ENTRADA_05 + A3.QTD_SAIDA_05  &#13;&#10;                                         + A3.QTD_ENTRADA_06 + A3.QTD_SAIDA_06  &#13;&#10;                                         + A3.QTD_ENTRADA_07 + A3.QTD_SAIDA_07  &#13;&#10;                                         + A3.QTD_ENTRADA_08 + A3.QTD_SAIDA_08, 4) AS QTD_SALDO_08&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 &#13;&#10;                                         + A3.VL_ENTRADA_03  + A3.VL_SAIDA_03 &#13;&#10;                                         + A3.VL_ENTRADA_04  + A3.VL_SAIDA_04 &#13;&#10;                                         + A3.VL_ENTRADA_05  + A3.VL_SAIDA_05 &#13;&#10;                                         + A3.VL_ENTRADA_06  + A3.VL_SAIDA_06 &#13;&#10;                                         + A3.VL_ENTRADA_07  + A3.VL_SAIDA_07 &#13;&#10;                                         + A3.VL_ENTRADA_08  + A3.VL_SAIDA_08 , 2) AS VL_SALDO_08&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_09&#13;&#10;             , A3.VL_ENTRADA_09&#13;&#10;             , A3.QTD_SAIDA_09&#13;&#10;             , A3.VL_SAIDA_09&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02  &#13;&#10;                                         + A3.QTD_ENTRADA_03 + A3.QTD_SAIDA_03  &#13;&#10;                                         + A3.QTD_ENTRADA_04 + A3.QTD_SAIDA_04  &#13;&#10;                                         + A3.QTD_ENTRADA_05 + A3.QTD_SAIDA_05  &#13;&#10;                                         + A3.QTD_ENTRADA_06 + A3.QTD_SAIDA_06  &#13;&#10;                                         + A3.QTD_ENTRADA_07 + A3.QTD_SAIDA_07  &#13;&#10;                                         + A3.QTD_ENTRADA_08 + A3.QTD_SAIDA_08  &#13;&#10;                                         + A3.QTD_ENTRADA_09 + A3.QTD_SAIDA_09, 4) AS QTD_SALDO_09&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 &#13;&#10;                                         + A3.VL_ENTRADA_03  + A3.VL_SAIDA_03 &#13;&#10;                                         + A3.VL_ENTRADA_04  + A3.VL_SAIDA_04 &#13;&#10;                                         + A3.VL_ENTRADA_05  + A3.VL_SAIDA_05 &#13;&#10;                                         + A3.VL_ENTRADA_06  + A3.VL_SAIDA_06 &#13;&#10;                                         + A3.VL_ENTRADA_07  + A3.VL_SAIDA_07 &#13;&#10;                                         + A3.VL_ENTRADA_08  + A3.VL_SAIDA_08 &#13;&#10;                                         + A3.VL_ENTRADA_09  + A3.VL_SAIDA_09 , 2) AS VL_SALDO_09&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_10&#13;&#10;             , A3.VL_ENTRADA_10&#13;&#10;             , A3.QTD_SAIDA_10&#13;&#10;             , A3.VL_SAIDA_10&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02  &#13;&#10;                                         + A3.QTD_ENTRADA_03 + A3.QTD_SAIDA_03  &#13;&#10;                                         + A3.QTD_ENTRADA_04 + A3.QTD_SAIDA_04  &#13;&#10;                                         + A3.QTD_ENTRADA_05 + A3.QTD_SAIDA_05  &#13;&#10;                                         + A3.QTD_ENTRADA_06 + A3.QTD_SAIDA_06  &#13;&#10;                                         + A3.QTD_ENTRADA_07 + A3.QTD_SAIDA_07  &#13;&#10;                                         + A3.QTD_ENTRADA_08 + A3.QTD_SAIDA_08  &#13;&#10;                                         + A3.QTD_ENTRADA_09 + A3.QTD_SAIDA_09  &#13;&#10;                                         + A3.QTD_ENTRADA_10 + A3.QTD_SAIDA_10, 4) AS QTD_SALDO_10&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 &#13;&#10;                                         + A3.VL_ENTRADA_03  + A3.VL_SAIDA_03 &#13;&#10;                                         + A3.VL_ENTRADA_04  + A3.VL_SAIDA_04 &#13;&#10;                                         + A3.VL_ENTRADA_05  + A3.VL_SAIDA_05 &#13;&#10;                                         + A3.VL_ENTRADA_06  + A3.VL_SAIDA_06 &#13;&#10;                                         + A3.VL_ENTRADA_07  + A3.VL_SAIDA_07 &#13;&#10;                                         + A3.VL_ENTRADA_08  + A3.VL_SAIDA_08 &#13;&#10;                                         + A3.VL_ENTRADA_09  + A3.VL_SAIDA_09 &#13;&#10;                                         + A3.VL_ENTRADA_10  + A3.VL_SAIDA_10 , 2) AS VL_SALDO_10&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_11&#13;&#10;             , A3.VL_ENTRADA_11&#13;&#10;             , A3.QTD_SAIDA_11&#13;&#10;             , A3.VL_SAIDA_11&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02  &#13;&#10;                                         + A3.QTD_ENTRADA_03 + A3.QTD_SAIDA_03  &#13;&#10;                                         + A3.QTD_ENTRADA_04 + A3.QTD_SAIDA_04  &#13;&#10;                                         + A3.QTD_ENTRADA_05 + A3.QTD_SAIDA_05  &#13;&#10;                                         + A3.QTD_ENTRADA_06 + A3.QTD_SAIDA_06  &#13;&#10;                                         + A3.QTD_ENTRADA_07 + A3.QTD_SAIDA_07  &#13;&#10;                                         + A3.QTD_ENTRADA_08 + A3.QTD_SAIDA_08  &#13;&#10;                                         + A3.QTD_ENTRADA_09 + A3.QTD_SAIDA_09  &#13;&#10;                                         + A3.QTD_ENTRADA_10 + A3.QTD_SAIDA_10  &#13;&#10;                                         + A3.QTD_ENTRADA_11 + A3.QTD_SAIDA_11, 4) AS QTD_SALDO_11&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 &#13;&#10;                                         + A3.VL_ENTRADA_03  + A3.VL_SAIDA_03 &#13;&#10;                                         + A3.VL_ENTRADA_04  + A3.VL_SAIDA_04 &#13;&#10;                                         + A3.VL_ENTRADA_05  + A3.VL_SAIDA_05 &#13;&#10;                                         + A3.VL_ENTRADA_06  + A3.VL_SAIDA_06 &#13;&#10;                                         + A3.VL_ENTRADA_07  + A3.VL_SAIDA_07 &#13;&#10;                                         + A3.VL_ENTRADA_08  + A3.VL_SAIDA_08 &#13;&#10;                                         + A3.VL_ENTRADA_09  + A3.VL_SAIDA_09 &#13;&#10;                                         + A3.VL_ENTRADA_10  + A3.VL_SAIDA_10 &#13;&#10;                                         + A3.VL_ENTRADA_11  + A3.VL_SAIDA_11 , 2) AS VL_SALDO_11&#13;&#10;&#13;&#10;             , A3.QTD_ENTRADA_12&#13;&#10;             , A3.VL_ENTRADA_12&#13;&#10;             , A3.QTD_SAIDA_12&#13;&#10;             , A3.VL_SAIDA_12&#13;&#10;             , ROUND(A3.QTD_ANO_ANTERIOR + A3.QTD_ENTRADA_01 + A3.QTD_SAIDA_01  &#13;&#10;                                         + A3.QTD_ENTRADA_02 + A3.QTD_SAIDA_02  &#13;&#10;                                         + A3.QTD_ENTRADA_03 + A3.QTD_SAIDA_03  &#13;&#10;                                         + A3.QTD_ENTRADA_04 + A3.QTD_SAIDA_04  &#13;&#10;                                         + A3.QTD_ENTRADA_05 + A3.QTD_SAIDA_05  &#13;&#10;                                         + A3.QTD_ENTRADA_06 + A3.QTD_SAIDA_06  &#13;&#10;                                         + A3.QTD_ENTRADA_07 + A3.QTD_SAIDA_07  &#13;&#10;                                         + A3.QTD_ENTRADA_08 + A3.QTD_SAIDA_08  &#13;&#10;                                         + A3.QTD_ENTRADA_09 + A3.QTD_SAIDA_09  &#13;&#10;                                         + A3.QTD_ENTRADA_10 + A3.QTD_SAIDA_10  &#13;&#10;                                         + A3.QTD_ENTRADA_11 + A3.QTD_SAIDA_11  &#13;&#10;                                         + A3.QTD_ENTRADA_12 + A3.QTD_SAIDA_12, 4) AS QTD_SALDO_12&#13;&#10;             , ROUND(A3.VL_ANO_ANTERIOR  + A3.VL_ENTRADA_01  + A3.VL_SAIDA_01 &#13;&#10;                                         + A3.VL_ENTRADA_02  + A3.VL_SAIDA_02 &#13;&#10;                                         + A3.VL_ENTRADA_03  + A3.VL_SAIDA_03 &#13;&#10;                                         + A3.VL_ENTRADA_04  + A3.VL_SAIDA_04 &#13;&#10;                                         + A3.VL_ENTRADA_05  + A3.VL_SAIDA_05 &#13;&#10;                                         + A3.VL_ENTRADA_06  + A3.VL_SAIDA_06 &#13;&#10;                                         + A3.VL_ENTRADA_07  + A3.VL_SAIDA_07 &#13;&#10;                                         + A3.VL_ENTRADA_08  + A3.VL_SAIDA_08 &#13;&#10;                                         + A3.VL_ENTRADA_09  + A3.VL_SAIDA_09 &#13;&#10;                                         + A3.VL_ENTRADA_10  + A3.VL_SAIDA_10 &#13;&#10;                                         + A3.VL_ENTRADA_11  + A3.VL_SAIDA_11 &#13;&#10;                                         + A3.VL_ENTRADA_12  + A3.VL_SAIDA_12 , 2) AS VL_SALDO_12&#13;&#10;          FROM (&#13;&#10;                SELECT B2.CD_ALMOXARIFADO&#13;&#10;                     , B2.DS_ALMOXARIFADO&#13;&#10;                     , B2.DISPENSA&#13;&#10;                     , C2.CD_UNIDADE_ESTOQUE&#13;&#10;                     , C2.DS_UNIDADE_ESTOQUE&#13;&#10;&#13;&#10;                     , CAST(CAST(D2.TP_MATERIAL           AS CHAR(1))               || '.' ||&#13;&#10;                                 LPAD(CAST(F2.CD_GRUPO    AS VARCHAR(20)), 3, '0')  || '.' ||&#13;&#10;                                 LPAD(CAST(E2.CD_GRUPO    AS VARCHAR(20)), 3, '0')  || '.' ||&#13;&#10;                                 LPAD(CAST(D2.CD_MATERIAL AS VARCHAR(20)), 6, '0')&#13;&#10;                                 AS VARCHAR(120) )          AS CD_CLASSIFICACAO&#13;&#10;                     , D2.CD_MATERIAL&#13;&#10;                     , D2.TP_MATERIAL&#13;&#10;                     , D2.DS_MATERIAL&#13;&#10;                     , D2.UN_MATERIAL&#13;&#10;                     , D2.DS_COMPLETA&#13;&#10;                     , F2.CD_GRUPO&#13;&#10;                     , F2.DS_GRUPO&#13;&#10;                     , E2.CD_GRUPO                          AS CD_SUBGRUPO&#13;&#10;                     , E2.DS_GRUPO                          AS DS_SUBGRUPO&#13;&#10;&#13;&#10;                     , CAST(CAST(:CP_MES_FINAL AS INTEGER) - CAST(:CP_MES_INICIAL AS INTEGER) + 1 AS INTEGER) AS PERIODO&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO &lt; :CP_ANO THEN A2.QTD_ENTRADA + A2.QTD_SAIDA                                                          ELSE 0 END), 4) AS QTD_ANO_ANTERIOR&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO &lt; :CP_ANO THEN A2.VL_ENTRADA  + A2.VL_SAIDA                                                           ELSE 0 END), 2) AS VL_ANO_ANTERIOR                &#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO &lt; :CP_ANO OR (A2.CP_ANO = :CP_ANO AND A2.CP_MES &lt; :CP_MES_INICIAL) THEN A2.QTD_ENTRADA + A2.QTD_SAIDA ELSE 0 END), 4) AS QTD_ANTERIOR&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO &lt; :CP_ANO OR (A2.CP_ANO = :CP_ANO AND A2.CP_MES &lt; :CP_MES_INICIAL) THEN A2.VL_ENTRADA  + A2.VL_SAIDA  ELSE 0 END), 2) AS VL_ANTERIOR&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES BETWEEN :CP_MES_INICIAL AND :CP_MES_FINAL  THEN A2.QTD_ENTRADA                ELSE 0 END), 4) AS QTD_ENT_PERIODO&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES BETWEEN :CP_MES_INICIAL AND :CP_MES_FINAL  THEN A2.QTD_SAIDA                  ELSE 0 END), 4) AS QTD_SAI_PERIODO&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO &lt; :CP_ANO OR (A2.CP_ANO = :CP_ANO AND A2.CP_MES &lt;= :CP_MES_FINAL ) THEN A2.QTD_ENTRADA + A2.QTD_SAIDA ELSE 0 END), 4) AS QTD_FINAL&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO &lt; :CP_ANO OR (A2.CP_ANO = :CP_ANO AND A2.CP_MES &lt;= :CP_MES_FINAL ) THEN A2.VL_ENTRADA  + A2.VL_SAIDA  ELSE 0 END), 2) AS VL_FINAL&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 1 THEN A2.QTD_ENTRADA  ELSE 0 END), 4) AS QTD_ENTRADA_01&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 1 THEN A2.VL_ENTRADA   ELSE 0 END), 2) AS VL_ENTRADA_01&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 1 THEN A2.QTD_SAIDA    ELSE 0 END), 4) AS QTD_SAIDA_01&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 1 THEN A2.VL_SAIDA     ELSE 0 END), 2) AS VL_SAIDA_01&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 1 THEN A2.QTD_PERDA    ELSE 0 END), 4) AS QTD_PERDA_01&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 1 THEN A2.VL_PERDA     ELSE 0 END), 2) AS VL_PERDA_01&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 2 THEN A2.QTD_ENTRADA  ELSE 0 END), 4) AS QTD_ENTRADA_02&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 2 THEN A2.VL_ENTRADA   ELSE 0 END), 2) AS VL_ENTRADA_02&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 2 THEN A2.QTD_SAIDA    ELSE 0 END), 4) AS QTD_SAIDA_02&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 2 THEN A2.VL_SAIDA     ELSE 0 END), 2) AS VL_SAIDA_02&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 2 THEN A2.QTD_PERDA    ELSE 0 END), 4) AS QTD_PERDA_02&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 2 THEN A2.VL_PERDA     ELSE 0 END), 2) AS VL_PERDA_02&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 3 THEN A2.QTD_ENTRADA  ELSE 0 END), 4) AS QTD_ENTRADA_03&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 3 THEN A2.VL_ENTRADA   ELSE 0 END), 2) AS VL_ENTRADA_03&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 3 THEN A2.QTD_SAIDA    ELSE 0 END), 4) AS QTD_SAIDA_03&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 3 THEN A2.VL_SAIDA     ELSE 0 END), 2) AS VL_SAIDA_03&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 3 THEN A2.QTD_PERDA    ELSE 0 END), 4) AS QTD_PERDA_03&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 3 THEN A2.VL_PERDA     ELSE 0 END), 2) AS VL_PERDA_03&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 4 THEN A2.QTD_ENTRADA  ELSE 0 END), 4) AS QTD_ENTRADA_04&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 4 THEN A2.VL_ENTRADA   ELSE 0 END), 2) AS VL_ENTRADA_04&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 4 THEN A2.QTD_SAIDA    ELSE 0 END), 4) AS QTD_SAIDA_04&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 4 THEN A2.VL_SAIDA     ELSE 0 END), 2) AS VL_SAIDA_04&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 4 THEN A2.QTD_PERDA    ELSE 0 END), 4) AS QTD_PERDA_04&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 4 THEN A2.VL_PERDA     ELSE 0 END), 2) AS VL_PERDA_04&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 5 THEN A2.QTD_ENTRADA  ELSE 0 END), 4) AS QTD_ENTRADA_05&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 5 THEN A2.VL_ENTRADA   ELSE 0 END), 2) AS VL_ENTRADA_05&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 5 THEN A2.QTD_SAIDA    ELSE 0 END), 4) AS QTD_SAIDA_05&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 5 THEN A2.VL_SAIDA     ELSE 0 END), 2) AS VL_SAIDA_05&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 5 THEN A2.QTD_PERDA    ELSE 0 END), 4) AS QTD_PERDA_05&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 5 THEN A2.VL_PERDA     ELSE 0 END), 2) AS VL_PERDA_05&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 6 THEN A2.QTD_ENTRADA  ELSE 0 END), 4) AS QTD_ENTRADA_06&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 6 THEN A2.VL_ENTRADA   ELSE 0 END), 2) AS VL_ENTRADA_06&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 6 THEN A2.QTD_SAIDA    ELSE 0 END), 4) AS QTD_SAIDA_06&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 6 THEN A2.VL_SAIDA     ELSE 0 END), 2) AS VL_SAIDA_06&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 6 THEN A2.QTD_PERDA    ELSE 0 END), 4) AS QTD_PERDA_06&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 6 THEN A2.VL_PERDA     ELSE 0 END), 2) AS VL_PERDA_06&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 7 THEN A2.QTD_ENTRADA  ELSE 0 END), 4) AS QTD_ENTRADA_07&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 7 THEN A2.VL_ENTRADA   ELSE 0 END), 2) AS VL_ENTRADA_07&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 7 THEN A2.QTD_SAIDA    ELSE 0 END), 4) AS QTD_SAIDA_07&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 7 THEN A2.VL_SAIDA     ELSE 0 END), 2) AS VL_SAIDA_07&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 7 THEN A2.QTD_PERDA    ELSE 0 END), 4) AS QTD_PERDA_07&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 7 THEN A2.VL_PERDA     ELSE 0 END), 2) AS VL_PERDA_07&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 8 THEN A2.QTD_ENTRADA  ELSE 0 END), 4) AS QTD_ENTRADA_08&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 8 THEN A2.VL_ENTRADA   ELSE 0 END), 2) AS VL_ENTRADA_08&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 8 THEN A2.QTD_SAIDA    ELSE 0 END), 4) AS QTD_SAIDA_08&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 8 THEN A2.VL_SAIDA     ELSE 0 END), 2) AS VL_SAIDA_08&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 8 THEN A2.QTD_PERDA    ELSE 0 END), 4) AS QTD_PERDA_08&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 8 THEN A2.VL_PERDA     ELSE 0 END), 2) AS VL_PERDA_08&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 9 THEN A2.QTD_ENTRADA  ELSE 0 END), 4) AS QTD_ENTRADA_09&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 9 THEN A2.VL_ENTRADA   ELSE 0 END), 2) AS VL_ENTRADA_09&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 9 THEN A2.QTD_SAIDA    ELSE 0 END), 4) AS QTD_SAIDA_09&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 9 THEN A2.VL_SAIDA     ELSE 0 END), 2) AS VL_SAIDA_09&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 9 THEN A2.QTD_PERDA    ELSE 0 END), 4) AS QTD_PERDA_09&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 9 THEN A2.VL_PERDA     ELSE 0 END), 2) AS VL_PERDA_09&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 10 THEN A2.QTD_ENTRADA ELSE 0 END), 4) AS QTD_ENTRADA_10&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 10 THEN A2.VL_ENTRADA  ELSE 0 END), 2) AS VL_ENTRADA_10&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 10 THEN A2.QTD_SAIDA   ELSE 0 END), 4) AS QTD_SAIDA_10&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 10 THEN A2.VL_SAIDA    ELSE 0 END), 2) AS VL_SAIDA_10&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 10 THEN A2.QTD_PERDA   ELSE 0 END), 4) AS QTD_PERDA_10&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 10 THEN A2.VL_PERDA    ELSE 0 END), 2) AS VL_PERDA_10&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 11 THEN A2.QTD_ENTRADA ELSE 0 END), 4) AS QTD_ENTRADA_11&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 11 THEN A2.VL_ENTRADA  ELSE 0 END), 2) AS VL_ENTRADA_11&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 11 THEN A2.QTD_SAIDA   ELSE 0 END), 4) AS QTD_SAIDA_11&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 11 THEN A2.VL_SAIDA    ELSE 0 END), 2) AS VL_SAIDA_11&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 11 THEN A2.QTD_PERDA   ELSE 0 END), 4) AS QTD_PERDA_11&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 11 THEN A2.VL_PERDA    ELSE 0 END), 2) AS VL_PERDA_11&#13;&#10;&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 12 THEN A2.QTD_ENTRADA ELSE 0 END), 4) AS QTD_ENTRADA_12&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 12 THEN A2.VL_ENTRADA  ELSE 0 END), 2) AS VL_ENTRADA_12&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 12 THEN A2.QTD_SAIDA   ELSE 0 END), 4) AS QTD_SAIDA_12&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 12 THEN A2.VL_SAIDA    ELSE 0 END), 2) AS VL_SAIDA_12&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 12 THEN A2.QTD_PERDA   ELSE 0 END), 4) AS QTD_PERDA_12&#13;&#10;                     , ROUND(SUM(CASE WHEN A2.CP_ANO = :CP_ANO AND A2.CP_MES = 12 THEN A2.VL_PERDA    ELSE 0 END), 2) AS VL_PERDA_12&#13;&#10;                  FROM (&#13;&#10;                        SELECT A.CP_ANO&#13;&#10;                             , A.CP_MES&#13;&#10;                             , A.ID_ALMOXARIFADO&#13;&#10;                             , A.ID_UNIDADE_ESTOQUE&#13;&#10;                             , B.ID_MATERIAL&#13;&#10;                             , SUM(CASE WHEN A.TP_LANCAMENTO = 0 THEN B.QTD      ELSE 0 END) AS QTD_ENTRADA&#13;&#10;                             , SUM(CASE WHEN A.TP_LANCAMENTO = 0 THEN B.VL_TOTAL ELSE 0 END) AS VL_ENTRADA&#13;&#10;                             , SUM(CASE WHEN A.TP_LANCAMENTO = 1 THEN B.QTD      ELSE 0 END) AS QTD_SAIDA&#13;&#10;                             , SUM(CASE WHEN A.TP_LANCAMENTO = 1 THEN B.VL_TOTAL ELSE 0 END) AS VL_SAIDA&#13;&#10;                             , SUM(CASE WHEN F.TP_SAIDA      = 3 THEN B.QTD      ELSE 0 END) AS QTD_PERDA&#13;&#10;                             , SUM(CASE WHEN F.TP_SAIDA      = 3 THEN B.VL_TOTAL ELSE 0 END) AS VL_PERDA&#13;&#10;                          FROM SUP_LANCAMENTO A&#13;&#10;                               LEFT JOIN  SUP_LANCAMENTO_IT         B ON B.ID_LANCAMENTO    = A.ID_LANCAMENTO AND &#13;&#10;                                                                    CASE WHEN :ID_RELATORIO_FILTRO &gt; 0 THEN B.ID_MATERIAL IN (SELECT SRF.ID_FILTRO FROM SIS_RELATORIO_FILTRO SRF WHERE SRF.ID_RELATORIO_FILTRO = :ID_RELATORIO_FILTRO)&#13;&#10;                                                                    	 ELSE 1=1 &#13;&#10;                                                                    END /*FILTRO_MATERIAL*/&#13;&#10;                               LEFT JOIN  SUP_MATERIAL              C ON C.ID_MATERIAL      = B.ID_MATERIAL&#13;&#10;                               LEFT JOIN  SUP_GRUPO                 D ON D.ID_GRUPO         = C.ID_GRUPO&#13;&#10;                               LEFT JOIN  SUP_USUARIO               G ON G.ID_USUARIO       = :ID_USUARIO&#13;&#10;                               LEFT JOIN  SUP_ACESSO_ALMOXARIFADO   E ON E.ID_ALMOXARIFADO  = A.ID_ALMOXARIFADO &#13;&#10;                                                                     AND E.ID_GRUPO_USUARIO = G.ID_GRUPO_USUARIO&#13;&#10;                               LEFT JOIN  SUP_LANCAMENTO_SAIDA      F ON F.ID_LANCAMENTO    = A.ID_LANCAMENTO&#13;&#10;&#13;&#10;                         WHERE (A.ID_ENTIDADE           = :ID_ENTIDADE                                      )                                                               &#13;&#10;                           AND (A.CP_ANO &lt; :CP_ANO OR (A.CP_ANO = :CP_ANO AND A.CP_MES &lt;= :CP_MES_FINAL)    )&#13;&#10;                           AND (A.ID_ALMOXARIFADO       = :ID_ALMOXARIFADO      OR -1 = :ID_ALMOXARIFADO    )&#13;&#10;                           AND (A.ID_UNIDADE_ESTOQUE    = :ID_UNIDADE_ESTOQUE   OR -1 = :ID_UNIDADE_ESTOQUE )&#13;&#10;                           AND (C.ID_GRUPO              = :ID_GRUPO             OR -1 = :ID_GRUPO           )&#13;&#10;                           AND (C.ATIVO                 = :ST_MATERIAL          OR -1 = :ST_MATERIAL        )&#13;&#10;                           AND (C.INVENTARIAVEL         = :INVENTARIAVEL        OR  0 = :INVENTARIAVEL      )&#13;&#10;                           AND (C.ID_MATERIAL           IS NOT NULL                                         )                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     &#13;&#10;                           AND (D.ID_GRUPO_PAI          = :ID_GRUPO_PAI         OR -1 = :ID_GRUPO_PAI       )&#13;&#10;                           AND (E.ALMOXARIFE            = 1                     OR  1 = E.CONSULTAR         )&#13;&#10;                         GROUP BY 1,2,3,4,5&#13;&#10;                       &#13;&#10;                       ) A2&#13;&#10;                       LEFT JOIN SUP_ALMOXARIFADO       B2 ON B2.ID_ALMOXARIFADO    = A2.ID_ALMOXARIFADO&#13;&#10;                       LEFT JOIN SUP_UNIDADE_ESTOQUE    C2 ON C2.ID_UNIDADE_ESTOQUE = A2.ID_UNIDADE_ESTOQUE&#13;&#10;                       LEFT JOIN SUP_MATERIAL           D2 ON D2.ID_MATERIAL        = A2.ID_MATERIAL&#13;&#10;                       LEFT JOIN SUP_GRUPO              E2 ON E2.ID_GRUPO           = D2.ID_GRUPO&#13;&#10;                       LEFT JOIN SUP_GRUPO              F2 ON F2.ID_GRUPO           = E2.ID_GRUPO_PAI&#13;&#10;&#13;&#10;                 GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16&#13;&#10;&#13;&#10;               ) A3&#13;&#10;&#13;&#10;         WHERE ( ( (A3.QTD_FINAL &lt;&gt; 0 OR A3.QTD_ENT_PERIODO &lt;&gt; 0 OR A3.QTD_SAI_PERIODO &lt;&gt; 0) AND 1 = :TP_SALDO_MOVIMENTO ) OR&#13;&#10;                 ( (A3.QTD_FINAL &lt;&gt; 0                                                      ) AND 2 = :TP_SALDO_MOVIMENTO ) OR&#13;&#10;                 ( (                     A3.QTD_ENT_PERIODO &lt;&gt; 0 OR A3.QTD_SAI_PERIODO &lt;&gt; 0) AND 3 = :TP_SALDO_MOVIMENTO )   )&#13;&#10;                 &#13;&#10;       ) A4&#13;&#10;       LEFT JOIN SIS_SEQUENCIA S4 ON S4.ID_SEQUENCIA &lt;= 3&#13;&#10;&#13;&#10; WHERE (S4.ID_SEQUENCIA = 3)&#13;&#10;    OR (S4.ID_SEQUENCIA = 1 AND 1 = :AGRUPAR_ALMOXARIFADO   )&#13;&#10;    OR (S4.ID_SEQUENCIA = 2 AND 1 = :AGRUPAR_UNIDADE_ESTOQUE)&#13;&#10;&#13;&#10; GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17&#13;&#10; ORDER BY 1&#13;&#10; LIMIT 15">
+        <Column Name="chave" DataType="System.String"/>
+        <Column Name="nivel" DataType="System.Int32"/>
+        <Column Name="cd_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <Column Name="cd_unidade_estoque" DataType="System.Int32"/>
+        <Column Name="ds_unidade_estoque" DataType="System.String"/>
+        <Column Name="dispensa" DataType="System.Int32"/>
+        <Column Name="cd_classificacao" DataType="System.String"/>
+        <Column Name="cd_material" DataType="System.Int32"/>
+        <Column Name="tp_material" DataType="System.Int32"/>
+        <Column Name="ds_material" DataType="System.String"/>
+        <Column Name="un_material" DataType="System.String"/>
+        <Column Name="ds_completa" DataType="System.String"/>
+        <Column Name="cd_grupo" DataType="System.Int32"/>
+        <Column Name="ds_grupo" DataType="System.String"/>
+        <Column Name="cd_subgrupo" DataType="System.Int32"/>
+        <Column Name="ds_subgrupo" DataType="System.String"/>
+        <Column Name="qtd_anterior" DataType="System.Double"/>
+        <Column Name="vl_anterior" DataType="System.Double"/>
+        <Column Name="qtd_consumo" DataType="System.Double"/>
+        <Column Name="vl_consumo" DataType="System.Double"/>
+        <Column Name="qtd_consumo_perda" DataType="System.Double"/>
+        <Column Name="vl_consumo_perda" DataType="System.Double"/>
+        <Column Name="qtd_entrada_01" DataType="System.Double"/>
+        <Column Name="vl_entrada_01" DataType="System.Double"/>
+        <Column Name="qtd_saida_01" DataType="System.Double"/>
+        <Column Name="vl_saida_01" DataType="System.Double"/>
+        <Column Name="qtd_saldo_01" DataType="System.Double"/>
+        <Column Name="vl_saldo_01" DataType="System.Double"/>
+        <Column Name="qtd_entrada_02" DataType="System.Double"/>
+        <Column Name="vl_entrada_02" DataType="System.Double"/>
+        <Column Name="qtd_saida_02" DataType="System.Double"/>
+        <Column Name="vl_saida_02" DataType="System.Double"/>
+        <Column Name="qtd_saldo_02" DataType="System.Double"/>
+        <Column Name="vl_saldo_02" DataType="System.Double"/>
+        <Column Name="qtd_entrada_03" DataType="System.Double"/>
+        <Column Name="vl_entrada_03" DataType="System.Double"/>
+        <Column Name="qtd_saida_03" DataType="System.Double"/>
+        <Column Name="vl_saida_03" DataType="System.Double"/>
+        <Column Name="qtd_saldo_03" DataType="System.Double"/>
+        <Column Name="vl_saldo_03" DataType="System.Double"/>
+        <Column Name="qtd_entrada_04" DataType="System.Double"/>
+        <Column Name="vl_entrada_04" DataType="System.Double"/>
+        <Column Name="qtd_saida_04" DataType="System.Double"/>
+        <Column Name="vl_saida_04" DataType="System.Double"/>
+        <Column Name="qtd_saldo_04" DataType="System.Double"/>
+        <Column Name="vl_saldo_04" DataType="System.Double"/>
+        <Column Name="qtd_entrada_05" DataType="System.Double"/>
+        <Column Name="vl_entrada_05" DataType="System.Double"/>
+        <Column Name="qtd_saida_05" DataType="System.Double"/>
+        <Column Name="vl_saida_05" DataType="System.Double"/>
+        <Column Name="qtd_saldo_05" DataType="System.Double"/>
+        <Column Name="vl_saldo_05" DataType="System.Double"/>
+        <Column Name="qtd_entrada_06" DataType="System.Double"/>
+        <Column Name="vl_entrada_06" DataType="System.Double"/>
+        <Column Name="qtd_saida_06" DataType="System.Double"/>
+        <Column Name="vl_saida_06" DataType="System.Double"/>
+        <Column Name="qtd_saldo_06" DataType="System.Double"/>
+        <Column Name="vl_saldo_06" DataType="System.Double"/>
+        <Column Name="qtd_entrada_07" DataType="System.Double"/>
+        <Column Name="vl_entrada_07" DataType="System.Double"/>
+        <Column Name="qtd_saida_07" DataType="System.Double"/>
+        <Column Name="vl_saida_07" DataType="System.Double"/>
+        <Column Name="qtd_saldo_07" DataType="System.Double"/>
+        <Column Name="vl_saldo_07" DataType="System.Double"/>
+        <Column Name="qtd_entrada_08" DataType="System.Double"/>
+        <Column Name="vl_entrada_08" DataType="System.Double"/>
+        <Column Name="qtd_saida_08" DataType="System.Double"/>
+        <Column Name="vl_saida_08" DataType="System.Double"/>
+        <Column Name="qtd_saldo_08" DataType="System.Double"/>
+        <Column Name="vl_saldo_08" DataType="System.Double"/>
+        <Column Name="qtd_entrada_09" DataType="System.Double"/>
+        <Column Name="vl_entrada_09" DataType="System.Double"/>
+        <Column Name="qtd_saida_09" DataType="System.Double"/>
+        <Column Name="vl_saida_09" DataType="System.Double"/>
+        <Column Name="qtd_saldo_09" DataType="System.Double"/>
+        <Column Name="vl_saldo_09" DataType="System.Double"/>
+        <Column Name="qtd_entrada_10" DataType="System.Double"/>
+        <Column Name="vl_entrada_10" DataType="System.Double"/>
+        <Column Name="qtd_saida_10" DataType="System.Double"/>
+        <Column Name="vl_saida_10" DataType="System.Double"/>
+        <Column Name="qtd_saldo_10" DataType="System.Double"/>
+        <Column Name="vl_saldo_10" DataType="System.Double"/>
+        <Column Name="qtd_entrada_11" DataType="System.Double"/>
+        <Column Name="vl_entrada_11" DataType="System.Double"/>
+        <Column Name="qtd_saida_11" DataType="System.Double"/>
+        <Column Name="vl_saida_11" DataType="System.Double"/>
+        <Column Name="qtd_saldo_11" DataType="System.Double"/>
+        <Column Name="vl_saldo_11" DataType="System.Double"/>
+        <Column Name="qtd_entrada_12" DataType="System.Double"/>
+        <Column Name="vl_entrada_12" DataType="System.Double"/>
+        <Column Name="qtd_saida_12" DataType="System.Double"/>
+        <Column Name="vl_saida_12" DataType="System.Double"/>
+        <Column Name="qtd_saldo_12" DataType="System.Double"/>
+        <Column Name="vl_saldo_12" DataType="System.Double"/>
+        <CommandParameter Name="AGRUPAR_ALMOXARIFADO" DataType="22" Expression="[agruparAlmoxarifado]"/>
+        <CommandParameter Name="AGRUPAR_UNIDADE_ESTOQUE" DataType="22" Expression="[agruparUnidadeEstoque]"/>
+        <CommandParameter Name="CP_MES_INICIAL" DataType="22" Expression="[cpMesIni]"/>
+        <CommandParameter Name="CP_MES_FINAL" DataType="22" Expression="[cpMesFin]"/>
+        <CommandParameter Name="CP_ANO" DataType="22" Expression="[cpAno]"/>
+        <CommandParameter Name="ID_USUARIO" DataType="9" Expression="[idUsuario]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+        <CommandParameter Name="ID_ALMOXARIFADO" DataType="22" Expression="[idAlmoxarifado]"/>
+        <CommandParameter Name="ID_UNIDADE_ESTOQUE" DataType="22" Expression="[idUnidadeEstoque]"/>
+        <CommandParameter Name="ID_GRUPO" DataType="22" Expression="[idGrupo]"/>
+        <CommandParameter Name="ST_MATERIAL" DataType="22" Expression="[stMaterial]"/>
+        <CommandParameter Name="INVENTARIAVEL" DataType="22" Expression="[somenteInventariavel]"/>
+        <CommandParameter Name="ID_GRUPO_PAI" DataType="22" Expression="[idGrupoPai]"/>
+        <CommandParameter Name="TP_SALDO_MOVIMENTO" DataType="22" Expression="[tpSaldoMovimento]"/>
+        <CommandParameter Name="ID_RELATORIO_FILTRO" DataType="9" Expression="[idRelatorioFiltro]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlAlmoxarifado" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_ALMOXARIFADO&#13;&#10;     , A.DS_ALMOXARIFADO&#13;&#10;  FROM SUP_ALMOXARIFADO A&#13;&#10; WHERE A.ID_ALMOXARIFADO = :ID_ALMOXARIFADO">
+        <Column Name="cd_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <CommandParameter Name="ID_ALMOXARIFADO" DataType="22" Expression="[idAlmoxarifado]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlGrupo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_GRUPO&#13;&#10;     , TRIM(A.DS_GRUPO) AS DS_GRUPO              &#13;&#10;  FROM SUP_GRUPO A&#13;&#10; WHERE A.ID_GRUPO = :ID_GRUPO_PAI">
+        <Column Name="cd_grupo" DataType="System.Int32"/>
+        <Column Name="ds_grupo" DataType="System.String"/>
+        <CommandParameter Name="ID_GRUPO_PAI" DataType="22" Expression="[idGrupoPai]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlUnidadeEstoque" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_UNIDADE_ESTOQUE&#13;&#10;     , A.DS_UNIDADE_ESTOQUE&#13;&#10;  FROM SUP_UNIDADE_ESTOQUE A&#13;&#10; WHERE A.ID_UNIDADE_ESTOQUE = :ID_UNIDADE_ESTOQUE">
+        <Column Name="cd_unidade_estoque" DataType="System.Int32"/>
+        <Column Name="ds_unidade_estoque" DataType="System.String"/>
+        <CommandParameter Name="ID_UNIDADE_ESTOQUE" DataType="22" Expression="[idUnidadeEstoque]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="SqlSubGrupo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_GRUPO AS CD_SUBGRUPO&#13;&#10;     , TRIM(A.DS_GRUPO) AS DS_SUBGRUPO&#13;&#10;  FROM SUP_GRUPO A&#13;&#10; WHERE A.ID_GRUPO = :ID_GRUPO">
+        <Column Name="cd_subgrupo" DataType="System.Int32"/>
+        <Column Name="ds_subgrupo" DataType="System.String"/>
+        <CommandParameter Name="ID_GRUPO" DataType="22" Expression="[idGrupo]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Saldo Geral Detalhado&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-123"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="62"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="2602"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="formato" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="codigoRelatorio" DataType="System.Int64" Expression="-123"/>
+    <Parameter Name="competencia" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="cpAno" DataType="System.String" Expression="&quot;2025&quot;"/>
+    <Parameter Name="cpMesIni" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="cpMesFin" DataType="System.String" Expression="&quot;8&quot;"/>
+    <Parameter Name="idAlmoxarifado" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idUnidadeEstoque" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idGrupo" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idGrupoPai" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="somenteInventariavel" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="stMaterial" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="agruparAlmoxarifado" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="agruparUnidadeEstoque" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="tpSaldoMovimento" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="exibirDescricaoCompleta" DataType="System.String" Expression="&quot;0&quot;"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho" Top="0">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="97.75">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child1" ZOrder="-1" Top="119.9" Width="718.2" Height="18.9">
+          <TextObject Name="Text227" Top="3.78" Width="718.2" Height="12.1" Border.Lines="All" Border.Color="White" Fill.Color="129, 245, 230, 207" CanGrow="true" Text="Período: &lt;b&gt;[IIf(ToInt32([CpMesIni]) == ToInt32([CpMesFin]), TitleCase(MonthName(ToInt32([CpMesIni]))), TitleCase(MonthName(ToInt32([CpMesIni]))) + &quot; a &quot; + TitleCase(MonthName(ToInt32([CpMesFin]))))] de [CpAno]&lt;/b&gt;[IIf(ToInt32([IdAlmoxarifado]) != -1, Format(&quot; | Almoxarifado: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlAlmoxarifado.CD_ALMOXARIFADO], [SqlAlmoxarifado.DS_ALMOXARIFADO]), &quot;&quot;)][IIf(ToInt32([IdUnidadeEstoque]) != -1, Format(&quot; | Un. estoque: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlUnidadeEstoque.CD_UNIDADE_ESTOQUE], [SqlUnidadeEstoque.DS_UNIDADE_ESTOQUE]), &quot;&quot;)][IIf(ToInt32([IdGrupoPai]) != -1, Format(&quot; | Grupo: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlGrupo.CD_GRUPO], [SqlGrupo.DS_GRUPO]), &quot;&quot;)][IIf(ToInt32([IdGrupo]) != -1, Format(&quot; | Subgrupo: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlSubgrupo.CD_SUBGRUPO], [SqlSubgrupo.DS_SUBGRUPO]), &quot;&quot;)][IIf(ToInt32([SomenteInventariavel]) == 1, &quot; | Somente materiais &lt;b&gt;inventariáveis&lt;/b&gt;&quot;, &quot;&quot;)]" VertAlign="Center" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="grpCabecalho" ZOrder="0" Top="142.06" Width="718.2" Height="47.25" RepeatOnEveryPage="true" Condition="[SqlEntidade.nome]">
+      <TextObject Name="Text213" Width="298.24" Height="29.86" Border.Lines="All" Fill.Color="42, 82, 118" Text="Material" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text214" Left="298.24" Width="139.86" Height="29.86" Border.Lines="All" Fill.Color="42, 82, 118" Text="Saldo anterior" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text215" Top="29.86" Width="80.14" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Classificação" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text216" Left="80.14" Top="29.86" Width="188.24" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Descrição" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text217" Left="268" Top="29.86" Width="29.86" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Unid." HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text218" Left="298.24" Top="29.86" Width="69.93" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Quantidade" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text219" Left="368.17" Top="29.86" Width="69.93" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Valor" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text220" Left="438.1" Top="29.86" Width="69.93" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Quantidade" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text221" Left="508.03" Top="29.86" Width="69.93" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Valor" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text222" Left="578.34" Top="29.86" Width="69.93" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Quantidade" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text223" Left="648.27" Top="29.86" Width="69.93" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Valor" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text224" Left="438.1" Top="15.12" Width="139.86" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Geral" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text225" Left="438.1" Width="280.1" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Média de consumo" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text226" Left="578.34" Top="15.12" Width="139.86" Height="15.12" Border.Lines="All" Fill.Color="42, 82, 118" Text="Desconsiderando perdas" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      <DataBand Name="bndN01" Top="192.56" Width="718.2" Height="12.1" BeforePrintEvent="bndN01_BeforePrint" DataSource="Table">
+        <TextObject Name="SqlConsumoDS_MATERIAL" Width="298.24" Height="12.1" Fill.Color="Gainsboro" Text="[SqlSaldo.cd_almoxarifado] - [SqlSaldo.ds_almoxarifado]" Font="Tahoma, 6pt, style=Bold"/>
+        <TextObject Name="SqlConsumoVL_MEDIO" Left="298.24" Width="139.86" Height="12.1" Fill.Color="Gainsboro" Text="[SqlSaldo.vl_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+        <TextObject Name="SqlConsumoVL_MEDIO_MES" Left="438.1" Width="139.86" Height="12.1" Fill.Color="Gainsboro" Text="[SqlSaldo.vl_consumo]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+        <TextObject Name="SqlConsumoULTIMO_VALOR" Left="578.34" Width="139.86" Height="12.1" Fill.Color="Gainsboro" Text="[SqlSaldo.vl_consumo_perda]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+        <ChildBand Name="bndN02" Top="207.91" Width="718.2" Height="12.1" BeforePrintEvent="bndN02_BeforePrint">
+          <TextObject Name="memUnidadeEstoque" Width="298.24" Height="12.1" Text="[SqlSaldo.cd_unidade_estoque] - [SqlSaldo.ds_unidade_estoque]" Font="Tahoma, 6pt, style=Bold"/>
+          <TextObject Name="Text206" Left="298.24" Width="139.86" Height="12.1" Text="[SqlSaldo.vl_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+          <TextObject Name="Text207" Left="438.1" Width="139.86" Height="12.1" Text="[SqlSaldo.vl_consumo_perda]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+          <TextObject Name="Text208" Left="578.34" Width="139.86" Height="12.1" Text="[SqlSaldo.vl_consumo]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+          <ChildBand Name="bndN03" Top="223.26" Width="718.2" Height="12.1" CanGrow="true" BeforePrintEvent="bndN03_BeforePrint" CanBreak="true" KeepChild="true" PrintIfDatabandEmpty="true">
+            <TextObject Name="Text196" Width="83.16" Height="12.1" Text="[SqlSaldo.CD_CLASSIFICACAO]" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="Text197" Left="80.14" Width="188.24" Height="12.1" CanGrow="true" Text="[SqlSaldo.ds_material]" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="Text198" Left="268" Width="29.86" Height="12.1" Text="[SqlSaldo.UN_MATERIAL]" HorzAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="Text199" Left="298.24" Width="69.93" Height="12.1" Text="[SqlSaldo.QTD_ANTERIOR]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="Text200" Left="368.17" Width="69.93" Height="12.1" Text="[SqlSaldo.VL_ANTERIOR]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="Text201" Left="438.1" Width="69.93" Height="12.1" Text="[SqlSaldo.QTD_CONSUMO]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="Text202" Left="508.03" Width="69.93" Height="12.1" Text="[SqlSaldo.VL_CONSUMO]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="Text203" Left="578.34" Width="69.93" Height="12.1" Text="[SqlSaldo.QTD_CONSUMO_PERDA]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="Text204" Left="648.27" Width="69.93" Height="12.1" Text="[SqlSaldo.VL_CONSUMO_PERDA]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+            <ChildBand Name="bndDescricaoCompleta" Top="238.61" Width="718.2" Height="12.1" CanGrow="true" BeforePrintEvent="bndDescricaoCompleta_BeforePrint" KeepChild="true" PrintIfDatabandEmpty="true">
+              <TextObject Name="Text194" Width="80.14" Height="12.1" Text="Desc. completa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+              <TextObject Name="Text195" Left="80.14" Width="638.06" Height="12.1" CanGrow="true" Text="[SqlSaldo.ds_completa]" VertAlign="Center" Font="Tahoma, 6pt"/>
+              <ChildBand Name="bndCabecalhoMes" Top="253.97" Width="718.2" Height="22.68" BeforePrintEvent="bndCabecalhoMes_BeforePrint" CanBreak="true" KeepChild="true">
+                <TextObject Name="Text185" Left="329.99" Top="9.83" Width="9.83" Height="12.85" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                <TextObject Name="Text190" Left="524.29" Top="9.83" Width="9.83" Height="12.85" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                <TextObject Name="Text191" Left="146.29" Top="9.83" Width="184.09" Height="12.85" Border.Lines="All" Border.Width="0.5" Text="Entradas por mês" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                <TextObject Name="Text192" Left="340.2" Top="9.83" Width="184.09" Height="12.85" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="Saídas por mês" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                <TextObject Name="Text193" Left="534.11" Top="9.83" Width="184.09" Height="12.85" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="Saldo final por mês" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                <ChildBand Name="bndMes01" Top="279.9" Width="718.2" Height="12.1" BeforePrintEvent="bndMes01_BeforePrint" KeepChild="true">
+                  <TextObject Name="Text1" Left="86.05" Width="60.1" Height="12.1" Text="JANEIRO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                  <TextObject Name="Text2" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text3" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_01]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text4" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text5" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_01]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text6" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text7" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text8" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_01]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text9" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text10" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_01]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text11" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text12" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text13" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_01]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text14" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <TextObject Name="Text15" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_01]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                  <ChildBand Name="bndMes02" Top="295.25" Width="718.2" Height="12.1" BeforePrintEvent="bndMes02_BeforePrint" KeepChild="true">
+                    <TextObject Name="Text16" Left="86.05" Width="60.1" Height="12.1" Text="FEVEREIRO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                    <TextObject Name="Text17" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text18" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_02]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text19" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text20" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_02]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text21" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text22" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text23" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_02]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text24" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text25" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_02]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text26" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text27" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text28" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_02]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text29" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text30" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_02]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                    <ChildBand Name="bndMes03" Top="310.6" Width="718.2" Height="12.1" BeforePrintEvent="bndMes03_BeforePrint" KeepChild="true">
+                      <TextObject Name="Text31" Left="86.05" Width="60.1" Height="12.1" Text="MARÇO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                      <TextObject Name="Text32" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text33" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_03]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text34" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text35" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_03]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text36" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text37" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text38" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_03]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text39" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text40" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_03]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text41" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text42" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text43" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_03]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text44" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text45" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_03]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                      <ChildBand Name="bndMes04" Top="325.95" Width="718.2" Height="12.1" BeforePrintEvent="bndMes04_BeforePrint" KeepChild="true">
+                        <TextObject Name="Text46" Left="86.05" Width="60.1" Height="12.1" Text="ABRIL" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                        <TextObject Name="Text47" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text48" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_04]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text49" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text50" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_04]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text51" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text52" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text53" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_04]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text54" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text55" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_04]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text56" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text57" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text58" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_04]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text59" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text60" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_04]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                        <ChildBand Name="bndMes05" Top="341.31" Width="718.2" Height="12.1" BeforePrintEvent="bndMes05_BeforePrint" KeepChild="true">
+                          <TextObject Name="Text61" Left="86.05" Width="60.1" Height="12.1" Text="MAIO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                          <TextObject Name="Text62" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text63" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_05]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text64" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text65" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_05]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text66" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text67" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text68" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_05]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text69" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text70" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_05]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text71" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text72" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text73" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_05]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text74" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <TextObject Name="Text75" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_05]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                          <ChildBand Name="bndMes06" Top="356.66" Width="718.2" Height="12.1" BeforePrintEvent="bndMes06_BeforePrint" KeepChild="true">
+                            <TextObject Name="Text76" Left="86.05" Width="60.1" Height="12.1" Text="JUNHO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                            <TextObject Name="Text77" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text78" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_06]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text79" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text80" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_06]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text81" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text82" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text83" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_06]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text84" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text85" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_06]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text86" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text87" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text88" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_06]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text89" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <TextObject Name="Text90" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_06]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                            <ChildBand Name="bndMes07" Top="372.01" Width="718.2" Height="12.1" BeforePrintEvent="bndMes07_BeforePrint" KeepChild="true">
+                              <TextObject Name="Text91" Left="86.05" Width="60.1" Height="12.1" Text="JULHO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                              <TextObject Name="Text92" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text93" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_07]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text94" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text95" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_07]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text96" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text97" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text98" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_07]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text99" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text100" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_07]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text101" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text102" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text103" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_07]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text104" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <TextObject Name="Text105" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_07]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                              <ChildBand Name="bndMes08" Top="387.36" Width="718.2" Height="12.1" BeforePrintEvent="bndMes08_BeforePrint" KeepChild="true">
+                                <TextObject Name="Text106" Left="86.05" Width="60.1" Height="12.1" Text="AGOSTO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                                <TextObject Name="Text107" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text108" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_08]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text109" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text110" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_08]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text111" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text112" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text113" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_08]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text114" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text115" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_08]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text116" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text117" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text118" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_08]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text119" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <TextObject Name="Text120" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_08]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                <ChildBand Name="bndMes09" Top="402.71" Width="718.2" Height="12.1" BeforePrintEvent="bndMes09_BeforePrint" KeepChild="true">
+                                  <TextObject Name="Text121" Left="86.05" Width="60.1" Height="12.1" Text="SETEMBRO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                                  <TextObject Name="Text122" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text123" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_09]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text124" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text125" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_09]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text126" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text127" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text128" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_09]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text129" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text130" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_09]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text131" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text132" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text133" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_09]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text134" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <TextObject Name="Text135" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_09]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                  <ChildBand Name="bndMes10" Top="418.07" Width="718.2" Height="12.1" BeforePrintEvent="bndMes10_BeforePrint" KeepChild="true">
+                                    <TextObject Name="Text136" Left="86.05" Width="60.1" Height="12.1" Text="OUTUBRO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                                    <TextObject Name="Text137" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text138" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_10]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text139" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text140" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_10]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text141" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text142" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text143" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_10]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text144" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text145" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_10]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text146" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text147" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text148" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_10]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text149" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <TextObject Name="Text150" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_10]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                    <ChildBand Name="bndMes11" Top="433.42" Width="718.2" Height="12.1" BeforePrintEvent="bndMes11_BeforePrint" KeepChild="true">
+                                      <TextObject Name="Text151" Left="86.05" Width="60.1" Height="12.1" Text="NOVEMBRO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                                      <TextObject Name="Text152" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text153" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_11]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text154" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text155" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_11]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text156" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text157" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text158" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_11]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text159" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text160" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_11]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text161" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text162" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text163" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_11]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text164" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <TextObject Name="Text165" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_11]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                      <ChildBand Name="bndMes12" Top="448.77" Width="718.2" Height="12.1" BeforePrintEvent="bndMes12_BeforePrint" KeepChild="true">
+                                        <TextObject Name="Text166" Left="86.05" Width="60.1" Height="12.1" Text="DEZEMBRO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                                        <TextObject Name="Text167" Left="146.16" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text168" Left="166.19" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_ENTRADA_12]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text169" Left="236.12" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text170" Left="259.93" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_ENTRADA_12]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text171" Left="329.86" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text172" Left="340.07" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text173" Left="360.1" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SAIDA_12]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text174" Left="430.03" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text175" Left="454.23" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SAIDA_12]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text176" Left="524.16" Width="9.83" Height="12.1" Border.Lines="Left, Right" Border.Width="0.5" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text177" Left="533.98" Width="29.48" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Qtd:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text178" Left="554.02" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.QTD_SALDO_12]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text179" Left="623.95" Width="33.64" Height="12.1" Border.Lines="Left, Top, Bottom" Border.Width="0.5" Text="Valor:" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <TextObject Name="Text180" Left="648.14" Width="69.93" Height="12.1" Border.Lines="Right, Top, Bottom" Border.Width="0.5" Text="[SqlSaldo.VL_SALDO_12]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt"/>
+                                        <ChildBand Name="bndRodapeMes" Top="464.12" Width="718.2" Height="20.03" BeforePrintEvent="bndRodapeMes_BeforePrint" KeepChild="true">
+                                          <LineObject Name="Line1" Top="9.83" Width="718.2"/>
+                                        </ChildBand>
+                                      </ChildBand>
+                                    </ChildBand>
+                                  </ChildBand>
+                                </ChildBand>
+                              </ChildBand>
+                            </ChildBand>
+                          </ChildBand>
+                        </ChildBand>
+                      </ChildBand>
+                    </ChildBand>
+                  </ChildBand>
+                </ChildBand>
+              </ChildBand>
+            </ChildBand>
+          </ChildBand>
+        </ChildBand>
+      </DataBand>
+      <GroupFooterBand Name="GroupFooter1" Top="487.4" Width="718.2"/>
+    </GroupHeaderBand>
+    <inherited Name="BndRodape" Top="490.66">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

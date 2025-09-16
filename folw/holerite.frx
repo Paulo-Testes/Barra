@@ -1,0 +1,351 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/06/2025 14:54:23" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;Filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;Personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;ImprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;ImprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }       
+      
+    private void Text12_BeforePrint(object sender, EventArgs e)
+    {
+      string social = ((String)Report.GetColumnValue(&quot;SqlCabecalho.nome_social&quot;));
+      
+      Text12.Visible = !string.IsNullOrEmpty(social);
+    }
+
+    private void Text5_BeforePrint(object sender, EventArgs e)
+    {
+      string social = ((String)Report.GetColumnValue(&quot;SqlCabecalho.nome_social&quot;));
+      
+      Text5.Visible = !string.IsNullOrEmpty(social); 
+    }
+
+    private void Line3_BeforePrint(object sender, EventArgs e)
+    {
+      string social = ((String)Report.GetColumnValue(&quot;SqlCabecalho.nome_social&quot;));
+      
+      Line3.Visible = !string.IsNullOrEmpty(social);
+    }
+  
+
+
+    /*private void MainPage_StartPage(object sender, EventArgs e)
+    {
+      object identidadeFonte = &quot;idEntidade&quot;;
+
+      if (identidadeFonte is int)
+      {
+        // Cria parâmetro como inteiro
+        Report.SetParameterValue(&quot;Identidade&quot;, (int)identidadeFonte);
+      }
+      else if (identidadeFonte is string)
+      {
+        // Cria parâmetro como string
+        Report.SetParameterValue(&quot;Identidade&quot;, (string)identidadeFonte);
+      }
+    } */
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O6SyEbBU9Cguq2+fs3MOjyA=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[IdEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[IdModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[IdLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[IdUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlCabecalho" DataType="System.Int32" Enabled="true" SelectCommand="SELECT                                               &#13;&#10;   a.c000                                                                              as REGISTRO,&#13;&#10;   CASE&#13;&#10;            WHEN a.c997 IS NOT NULL&#13;&#10;                AND a.c997 &lt;&gt; 0&#13;&#10;                AND EXISTS (&#13;&#10;                    SELECT 1&#13;&#10;                    FROM aac_parametros as ap&#13;&#10;                    WHERE ap.parametro =&#13;&#10;                        CASE&#13;&#10;                            WHEN a.vinculo_esocial = 1 THEN 'SEQFUNC'&#13;&#10;                            WHEN a.vinculo_esocial = 2 THEN 'SEQTERC'&#13;&#10;                            ELSE NULL&#13;&#10;                        END&#13;&#10;                    AND ap.valor = 'S'&#13;&#10;                )&#13;&#10;                &#13;&#10;            THEN a.c999 || '-' || a.c997::TEXT&#13;&#10;            ELSE a.c999::TEXT&#13;&#10;        END AS matricula,&#13;&#10;        d.competencia,&#13;&#10;        (select case &#13;&#10;      when a.parametro = 'EXIBREFF' and a.valor = 'S' then '&lt;b&gt;- Referência: &lt;/b&gt;' || g.cargo_letra else '' &#13;&#10;      end as salario_letra&#13;&#10;    from grh_es_contrato gg &#13;&#10;    left join grh_es_contrato_dados g on g.id_contrato = gg.id &#13;&#10;    left join aac_parametros a on a.parametro = 'EXIBREFF'&#13;&#10;    where g.registro_atual = 1&#13;&#10;    and gg.matricula= :matricula limit 1)                                              as REFF_letra&#13;&#10;          ,(select case &#13;&#10;      when a.parametro = 'EXIBREFC' and a.valor = 'S' then '&lt;b&gt;- Referência: &lt;/b&gt;' || g.cargo_letra else '' &#13;&#10;      end as salario_letra&#13;&#10;    from grh_es_contrato gg &#13;&#10;    left join grh_es_contrato_dados g on g.id_contrato = gg.id &#13;&#10;    left join aac_parametros a on a.parametro = 'EXIBREFC'&#13;&#10;    where g.registro_atual = 1&#13;&#10;    and gg.matricula= :matricula limit 1)                                              as REFC_letra&#13;&#10;  ,(select case &#13;&#10;      when a.parametro = 'ADDLETRA' and a.valor = 'S' then '&lt;b&gt;- Letra: &lt;/b&gt;' || g.cargo_letra else '' &#13;&#10;      end as cargo_letra&#13;&#10;    from grh_es_contrato gg &#13;&#10;    left join grh_es_contrato_dados g on g.id_contrato = gg.id &#13;&#10;    left join aac_parametros a on a.parametro = 'ADDLETRA'&#13;&#10;    where g.registro_atual = 1&#13;&#10;    and gg.matricula= :matricula limit 1)                                              as cargo_letra&#13;&#10;  ,(select case &#13;&#10;  			when a.parametro = 'ADDLETRF' and a.valor = 'S' then '&lt;b&gt;- Letra: &lt;/b&gt;' || g.func_letra else '' &#13;&#10;            end as cargo_letra&#13;&#10;    from grh_es_contrato gg &#13;&#10;    left join grh_es_contrato_dados g on g.id_contrato = gg.id &#13;&#10;    left join aac_parametros a on a.parametro = 'ADDLETRF'&#13;&#10;    where g.registro_atual = 1&#13;&#10;    and gg.matricula= :matricula limit 1)                                              as func_letra                    &#13;&#10;   ,a.c001                                                                             as NOME&#13;&#10;   ,pd.nome_social                                                                     as nome_social                                                 &#13;&#10;   ,COALESCE(f1.descricao,f2.descricao)                                                as FUNCAO&#13;&#10;   ,COALESCE(c1.descricao,c2.descricao)                                                as CARGO&#13;&#10;   --,d.c005 as cargo_new&#13;&#10; --  ,d.c059 as funcao_new&#13;&#10;   ,a.c030                                                                             as RG                                                    &#13;&#10;   ,a.c031                                                                             as CPF                     &#13;&#10;   ,Y.Descricao                                                                        as LOCAL_TRABALHO&#13;&#10;   ,udf_strzero(extract(day from CAST(a.c002 AS TIMESTAMP)), 2)   || '/' ||&#13;&#10;    udf_strzero(extract(month from CAST(a.c002 AS TIMESTAMP)), 2) || '/' || &#13;&#10;    udf_strzero(udf_int(extract(year from CAST(d.c002 AS TIMESTAMP))), 4)              as DATA_ADMISSAO&#13;&#10;   ,a.c032                                                                             as PIS&#13;&#10;FROM grh_cadastro_funcionarios a   &#13;&#10;LEFT JOIN grh_es_pessoa p        on  p.cpf  = a.c031                   &#13;&#10;LEFT JOIN grh_es_pessoa_dados pd on  pd.id_pessoa = p.id AND pd.registro_atual = 1&#13;&#10;LEFT JOIN grh_dados_mes d        on (d.c000 = a.c000 and d.competencia = :competencia and  d.suplementar = :suplementar)     &#13;&#10;LEFT JOIN grh_cargos c1          on c1.codigo_cargo = d.c059&#13;&#10;LEFT JOIN grh_cargos c2          on c2.codigo_cargo = a.c059&#13;&#10;LEFT JOIN grh_cargos f1          on f1.codigo_cargo = d.c005&#13;&#10;LEFT JOIN grh_cargos f2          on f2.codigo_cargo = a.c005&#13;&#10;LEFT JOIN GRH_LOCAL_TRABALHO Y   on (Y.CODIGO = d.C065)   &#13;&#10;WHERE                                                &#13;&#10;    a.c080 IS NOT NULL                               &#13;&#10;    AND a.c000 = :matricula                            &#13;&#10;    AND d.suplementar = :suplementar                                  &#13;&#10;ORDER BY                                             &#13;&#10;    d.competencia desc">
+        <Column Name="registro" DataType="System.Int32"/>
+        <Column Name="matricula" DataType="System.String"/>
+        <Column Name="cargo_letra" DataType="System.String"/>
+        <Column Name="func_letra" DataType="System.String"/>
+        <Column Name="nome" DataType="System.String"/>
+        <Column Name="nome_social" DataType="System.String"/>
+        <Column Name="funcao" DataType="System.String"/>
+        <Column Name="cargo" DataType="System.String"/>
+        <Column Name="rg" DataType="System.String"/>
+        <Column Name="cpf" DataType="System.String"/>
+        <Column Name="local_trabalho" DataType="System.String"/>
+        <Column Name="data_admissao" DataType="System.String"/>
+        <Column Name="pis" DataType="System.String"/>
+        <Column Name="competencia" DataType="System.String"/>
+        <Column Name="reff_letra" DataType="System.String"/>
+        <Column Name="refc_letra" DataType="System.String"/>
+        <CommandParameter Name="matricula" DataType="9" Expression="[matricula]"/>
+        <CommandParameter Name="competencia" DataType="6" Expression="[competencia]"/>
+        <CommandParameter Name="suplementar" DataType="9" Expression="[suplementar]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlConta" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;    a.CONTA,&#13;&#10;    cast(coalesce( a.conta_descricao, b.descricao ) as char(35)) as DESCRICAO,&#13;&#10;    cast(b.tipo as smallint) as TIPO,&#13;&#10;    cast(d.tipo_valor as integer) as TIPO_VALOR,&#13;&#10;    case when b.tipo = 3 then a.VALOR else 0 end as val_vencimento,&#13;&#10;    case when b.tipo = 2 then a.VALOR else 0 end as val_desconto,&#13;&#10;    case when b.tipo = 1 then a.VALOR else 0 end as val_calculo,        &#13;&#10;    CASE&#13;&#10;    WHEN d.tipo_valor = 2 AND d.decimais = 2 THEN &#13;&#10;        REPLACE(cast(ROUND(cast(c.valor as NUMERIC(16,2)), 2) as varchar(50)), '.', '/')&#13;&#10;    WHEN d.tipo_valor = 2 AND d.decimais = 3 THEN &#13;&#10;        REPLACE(cast(ROUND(cast(c.valor as NUMERIC(16,3)), 3) as varchar(50)), '.', '/')&#13;&#10;    ELSE '' end as REFER_MASCARA,&#13;&#10;    coalesce(c.valor,0) as REFER_SEM_MASCARA&#13;&#10;from&#13;&#10;    grh_movimentos a&#13;&#10;left join grh_plano_contas b on&#13;&#10;    a.conta = b.numero_conta&#13;&#10;left join grh_plano_contas d on&#13;&#10;    d.numero_conta = b.associa_a_conta&#13;&#10;left join grh_movimentos c on&#13;&#10;    c.chapa = a.chapa&#13;&#10;    and c.conta = b.associa_a_conta&#13;&#10;    and c.competencia = a.competencia&#13;&#10;    and c.suplementar = a.suplementar&#13;&#10;where&#13;&#10;    a.chapa = :matricula                &#13;&#10;    and a.competencia = :competencia&#13;&#10;    and a.suplementar = :suplementar&#13;&#10;    and a.valor &lt;&gt; 0&#13;&#10;    and a.valor is not null&#13;&#10;    and ( (b.tipo &gt; 1)&#13;&#10;    or (b.tipo = 1&#13;&#10;    and b.classificacao in (2,3,4,5,6,8,18,19,20,23,85,113,114)) )&#13;&#10;order by&#13;&#10;    3 desc,&#13;&#10;    1 asc">
+        <Column Name="conta" DataType="System.Int32"/>
+        <Column Name="descricao" DataType="System.String"/>
+        <Column Name="tipo" DataType="System.Int16"/>
+        <Column Name="tipo_valor" DataType="System.Int32"/>
+        <Column Name="val_vencimento" DataType="System.Double"/>
+        <Column Name="val_desconto" DataType="System.Double"/>
+        <Column Name="val_calculo" DataType="System.Double"/>
+        <Column Name="refer_mascara" DataType="System.String"/>
+        <Column Name="refer_sem_mascara" DataType="System.Double"/>
+        <CommandParameter Name="matricula" DataType="9" Expression="[matricula]"/>
+        <CommandParameter Name="competencia" DataType="6" Expression="[competencia]"/>
+        <CommandParameter Name="suplementar" DataType="9" Expression="[suplementar]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlSalarioBase" DataType="System.Int32" Enabled="true" SelectCommand="SELECT &#13;&#10;    b.valor as VALOR&#13;&#10;from&#13;&#10;    grh_dados_mes a&#13;&#10;left join grh_salarios b on&#13;&#10;    b.referencia = a.c006&#13;&#10;    and b.jornada = a.c007&#13;&#10;    and b.letra = a.c008&#13;&#10;    and b.competencia = a.competencia&#13;&#10;where&#13;&#10;    a.c000 = :matricula                &#13;&#10;    and a.competencia = :competencia&#13;&#10;    and a.suplementar = :suplementar &#13;&#10;order by&#13;&#10;    1 asc">
+        <Column Name="valor" DataType="System.Double"/>
+        <CommandParameter Name="matricula" DataType="9" Expression="[matricula]"/>
+        <CommandParameter Name="competencia" DataType="6" Expression="[competencia]"/>
+        <CommandParameter Name="suplementar" DataType="9" Expression="[suplementar]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlCompetencia" DataType="System.Int32" Enabled="true" SelectCommand="SELECT&#13;&#10;    distinct mo.competencia,&#13;&#10;    s.num_supl as suplementar,&#13;&#10;    cast(s.titulo as varchar(30)) as titulo,&#13;&#10;    case&#13;&#10;        when (s.DEMONSTRATIVO_PROVISORIO is null) then 'N'&#13;&#10;        else S.DEMONSTRATIVO_PROVISORIO&#13;&#10;    end as DEMONSTRATIVO_PROVISORIO,&#13;&#10;    udf_copy(mo.competencia,1,4) as exercicio,&#13;&#10;    case when udf_copy(mo.competencia,5,2) = '01' then 'Janeiro' &#13;&#10;         when udf_copy(mo.competencia,5,2) = '02' then 'Fevereiro'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '03' then 'Março'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '04' then 'Abril'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '05' then 'Maio'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '06' then 'Junho'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '07' then 'Julho'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '08' then 'Agosto'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '09' then 'Setembro'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '10' then 'Outubro'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '11' then 'Novembro'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '12' then 'Dezembro'&#13;&#10;         when udf_copy(mo.competencia,5,2) = '13' then 'Décimo Terceiro'             &#13;&#10;    end as mesextenso&#13;&#10;from&#13;&#10;    grh_movimentos mo&#13;&#10;inner join aac_competencias com on&#13;&#10;    (com.modulo = 'FOLW')&#13;&#10;    and (mo.competencia = com.competencia)&#13;&#10;inner join aac_suplementar s on&#13;&#10;    (s.modulo = com.modulo)&#13;&#10;    and (s.competencia = com.competencia)&#13;&#10;    and (s.num_supl = mo.suplementar)&#13;&#10;where&#13;&#10;    mo.chapa = :matricula&#13;&#10;    and mo.competencia = :competencia         &#13;&#10;    and s.exibe_web = 1&#13;&#10;    and&#13;&#10;    case&#13;&#10;        when (s.DEMONSTRATIVO_PROVISORIO = 'S'&#13;&#10;        and com.SITUACAO = 2) then 1&#13;&#10;        else&#13;&#10;            case&#13;&#10;                when s.DATAHOLWEB is null and com.situacao = 3 then 1&#13;&#10;                else&#13;&#10;                    case&#13;&#10;                    when s.DATAHOLWEB is null and com.situacao = 2 then 0&#13;&#10;                    else&#13;&#10;                        CASE&#13;&#10;                            WHEN s.DATAHOLWEB  &lt;= cast(CURRENT_TIMESTAMP as date) THEN 1&#13;&#10;                        else 0&#13;&#10;                    end&#13;&#10;                end&#13;&#10;            end&#13;&#10;    end = 1&#13;&#10;order by&#13;&#10;    1 desc">
+        <Column Name="competencia" DataType="System.String"/>
+        <Column Name="suplementar" DataType="System.Int32"/>
+        <Column Name="titulo" DataType="System.String"/>
+        <Column Name="demonstrativo_provisorio" DataType="System.String"/>
+        <Column Name="exercicio" DataType="System.String"/>
+        <Column Name="mesextenso" DataType="System.String"/>
+        <CommandParameter Name="matricula" DataType="9" Expression="[matricula]"/>
+        <CommandParameter Name="competencia" DataType="6" Expression="[competencia]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="SqlMensagem" DataType="System.Int32" Enabled="true" SelectCommand="select gch.texto_mensagem from grh_configuracao_holerith gch">
+        <Column Name="texto_mensagem" DataType="System.String"/>
+      </TableDataSource>
+      <TableDataSource Name="Table5" Alias="SqlCrypt" DataType="System.Int32" Enabled="true" SelectCommand="select CODIGO,&#13;&#10;REFCERTIDAO,&#13;&#10;udf_strzero(extract(day from CAST(CURRENT_TIMESTAMP AS TIMESTAMP)), 2) || '/' || udf_strzero(extract(month from CAST(CURRENT_TIMESTAMP AS TIMESTAMP)), 2) ||'/' || udf_strzero(udf_int(extract(year from CAST(CURRENT_TIMESTAMP AS TIMESTAMP))), 4) as DATA,    &#13;&#10;udf_strzero(extract(hour from CURRENT_TIMESTAMP), 2) || ':' || udf_strzero(extract(minute from CURRENT_TIMESTAMP), 2) ||':' || udf_strzero(udf_int(extract(second from CURRENT_TIMESTAMP)), 2) as HORA&#13;&#10;from ADE_CRYPT(&#13;&#10;cast(:matricula as integer),&#13;&#10;'HOL',&#13;&#10;0,&#13;&#10;'FOL')">
+        <Column Name="codigo" DataType="System.String"/>
+        <Column Name="refcertidao" DataType="System.Int32"/>
+        <Column Name="data" DataType="System.String"/>
+        <Column Name="hora" DataType="System.String"/>
+        <CommandParameter Name="matricula" DataType="9" Expression="[matricula]" DefaultValue="95016"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="TituloRelatorio" DataType="System.String" Expression="&quot;Holerite&quot;"/>
+    <Parameter Name="IdEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="IdModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="IdLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="IdUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="IdRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="Periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="Filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="Personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="ImprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="ImprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="matricula" DataType="System.Int64" Expression="21836"/>
+    <Parameter Name="suplementar" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="competencia" DataType="System.String" Expression="&quot;202411&quot;"/>
+    <Total Name="Total_vencimento" Expression="[SqlConta.val_vencimento]" Evaluator="Data3" PrintOn="ReportSummary1"/>
+    <Total Name="Total_desconto" Expression="[SqlConta.val_desconto]" Evaluator="Data3" PrintOn="ReportSummary1"/>
+    <Total Name="Total" Expression="([Total_vencimento]-[Total_desconto])" Evaluator="Data3" PrintOn="ReportSummary1"/>
+  </Dictionary>
+  <ReportPage Name="MainPage" Watermark.Font="Arial, 60pt" StartPageEvent="MainPage_StartPage">
+    <PageHeaderBand Name="BndCabecalho" Restrictions="DontResize, DontDelete" Top="20" Width="718.2" Height="94.5" Border.Lines="Bottom" BeforePrintEvent="parent_BndCabecalho_BeforePrint" KeepChild="true" Guides="18.9">
+      <PictureObject Name="ImgBrasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Width="75.6" Height="94.5" DataColumn="SqlEntidade.brasao" ImageAlign="Center_Center"/>
+      <TextObject Name="TxtEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Width="529.2" Height="18.9" Text="[SqlEntidade.nome]" VertAlign="Center" Font="Tahoma, 10pt, style=Bold"/>
+      <PictureObject Name="ImgLogo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="604.8" Width="113.4" Height="94.5" DataColumn="SqlEntidade.logo" ImageAlign="Center_Center"/>
+      <TextObject Name="TxtTituloModulo1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="18.9" Width="529.2" Height="18.9" Text="[SqlModulo.titulo_1]" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="TxtTituloModulo2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="37.8" Width="529.2" Height="18.9" Text="[SqlModulo.titulo_2]" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="TxtTituloRelatorio" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="56.7" Width="529.2" Height="18.9" Text="[TituloRelatorio]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="TxtPeriodo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="75.6" Width="529.2" Height="18.9" BeforePrintEvent="TxtCompetencia_BeforePrint" Text="[Periodo]" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+      <ChildBand Name="BndFiltro" Restrictions="DontResize, DontDelete" Top="134.5" Width="718.2" Height="18.9" CanGrow="true" BeforePrintEvent="parent_BndFiltro_BeforePrint">
+        <TextObject Name="TxtFiltro" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="3.78" Width="718.2" Height="11.34" Fill.Color="129, 245, 230, 207" Cursor="IBeam" CanGrow="true" Text="[Filtro]" Font="Tahoma, 7pt, style=Bold" Wysiwyg="true"/>
+      </ChildBand>
+    </PageHeaderBand>
+    <DataBand Name="Data1" Top="173.4" Width="718.2" Height="239.7" Guides="170.09999" DataSource="Table">
+      <LineObject Name="Line1" Top="83.16" Width="718.2"/>
+      <LineObject Name="Line2" Top="115.29" Width="718.2"/>
+      <LineObject Name="Line3" Top="51.03" Width="718.2" BeforePrintEvent="Line3_BeforePrint"/>
+      <LineObject Name="Line4" Top="147.42" Width="718.2"/>
+      <TextObject Name="Text1" Left="5.67" Top="18.9" Width="94.5" Height="13.23" Text="Nome" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+      <LineObject Name="Line5" Left="345.87" Top="18.9" Height="64.26"/>
+      <TextObject Name="Text2" Left="351.54" Top="18.9" Width="94.5" Height="13.23" Text="Matrícula" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+      <LineObject Name="Line6" Left="453.6" Top="18.9" Height="32.13"/>
+      <LineObject Name="Line7" Left="585.9" Top="18.9" Height="32.13"/>
+      <TextObject Name="Text3" Left="459.27" Top="18.9" Width="119.07" Height="13.23" Text="CPF" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+      <TextObject Name="Text4" Left="591.57" Top="18.9" Width="119.07" Height="13.23" Text="RG" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+      <TextObject Name="Text5" Left="5.67" Top="51.03" Width="94.5" Height="13.23" BeforePrintEvent="Text5_BeforePrint" Text="Nome Social" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+      <TextObject Name="Text6" Left="351.54" Top="51.03" Width="94.5" Height="13.23" Text="Cargo / Emprego" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+      <TextObject Name="Text7" Left="5.67" Top="83.16" Width="94.5" Height="13.23" Text="Função" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+      <LineObject Name="Line8" Left="453.6" Top="83.16" Height="32.13"/>
+      <LineObject Name="Line9" Left="585.9" Top="83.16" Height="32.13"/>
+      <TextObject Name="Text8" Left="459.27" Top="85.05" Width="94.5" Height="13.23" Text="PIS" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+      <TextObject Name="Text9" Left="591.57" Top="85.05" Width="94.5" Height="13.23" Text="Data Admissão" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+      <TextObject Name="Text10" Left="5.67" Top="115.29" Width="94.5" Height="13.23" Text="Local de Trabalho" VertAlign="Center" Font="Arial, 7pt, style=Bold"/>
+      <TextObject Name="Text11" Left="5.67" Top="34.02" Width="334.53" Height="15.12" Text="[SqlCabecalho.nome]" VertAlign="Center" Font="Arial, 7pt"/>
+      <TextObject Name="Text12" Left="5.67" Top="66.15" Width="334.53" Height="15.12" BeforePrintEvent="Text12_BeforePrint" Text="[SqlCabecalho.nome_social]" VertAlign="Center" Font="Arial, 7pt"/>
+      <TextObject Name="Text13" Left="5.67" Top="98.28" Width="438.48" Height="15.12" Text="[Trim([SqlCabecalho.funcao])]  [SqlCabecalho.func_letra]  [SqlCabecalho.reff_letra]" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+      <TextObject Name="Text14" Left="351.54" Top="66.15" Width="334.53" Height="15.12" Text="[Trim([SqlCabecalho.cargo])]  [SqlCabecalho.cargo_letra]  [SqlCabecalho.refc_letra]" VertAlign="Center" Font="Arial, 7pt" TextRenderType="HtmlTags"/>
+      <TextObject Name="Text15" Left="5.67" Top="132.3" Width="706.86" Height="15.12" Text="[SqlCabecalho.local_trabalho]" VertAlign="Center" Font="Arial, 7pt"/>
+      <TextObject Name="Text16" Left="351.54" Top="34.02" Width="94.5" Height="15.12" Text="[SqlCabecalho.matricula]" VertAlign="Center" Font="Arial, 7pt"/>
+      <TextObject Name="Text17" Left="459.27" Top="34.02" Width="119.07" Height="15.12" Text="[SqlCabecalho.cpf]" VertAlign="Center" Font="Arial, 7pt"/>
+      <TextObject Name="Text18" Left="591.57" Top="34.02" Width="119.07" Height="15.12" Text="[SqlCabecalho.cpf]" VertAlign="Center" Font="Arial, 7pt"/>
+      <TextObject Name="Text19" Left="459.27" Top="98.28" Width="119.07" Height="15.12" Text="[SqlCabecalho.pis]" VertAlign="Center" Font="Arial, 7pt"/>
+      <TextObject Name="Text20" Top="175.77" Width="718.2" Height="15.12" Text="[SqlCompetencia.exercicio] [SqlCompetencia.titulo]" HorzAlign="Center" VertAlign="Center" Font="Arial, 10pt, style=Bold"/>
+      <TextObject Name="Text21" Left="591.57" Top="98.28" Width="119.07" Height="15.12" Text="[SqlCabecalho.data_admissao]" VertAlign="Center" Font="Arial, 7pt"/>
+      <LineObject Name="Line10" Top="214.33" Width="718.2"/>
+      <TextObject Name="Text22" Top="221.13" Width="54.81" Height="15.12" Text="Código" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text23" Left="68.04" Top="221.13" Width="234.36" Height="15.12" Text="Descrição da Conta" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text24" Left="311.85" Top="221.13" Width="83.16" Height="15.12" Text="Referência" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text25" Left="410.13" Top="221.13" Width="94.5" Height="15.12" Text="Vencimento" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text26" Left="519.75" Top="221.13" Width="94.5" Height="15.12" Text="Desconto" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text27" Left="623.7" Top="221.13" Width="94.5" Height="15.12" Text="Cálculo" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <LineObject Name="Line11" Left="60.48" Top="215.08" Height="24.57" Border.Color="Silver"/>
+      <LineObject Name="Line12" Left="306.18" Top="215.08" Height="24.57" Border.Color="Silver"/>
+      <LineObject Name="Line13" Top="239.7" Width="718.2" Border.Color="Silver"/>
+      <LineObject Name="Line14" Left="402.35" Top="215.08" Height="24.57" Border.Color="Silver"/>
+      <LineObject Name="Line15" Left="512.3" Top="215.08" Height="24.57" Border.Color="Silver"/>
+      <LineObject Name="Line16" Left="618.25" Top="215.08" Height="24.57" Border.Color="Silver"/>
+      <LineObject Name="Line26" Top="18.9" Height="128.52"/>
+      <LineObject Name="Line27" Left="718.2" Top="18.9" Height="128.52"/>
+      <LineObject Name="Line28" Top="18.9" Width="718.2"/>
+      <LineObject Name="Line29" Top="214.33" Height="24.57"/>
+      <LineObject Name="Line31" Left="718.2" Top="214.33" Height="24.57"/>
+      <LineObject Name="Line35" Left="346.2" Top="51.03" Width="371.57"/>
+    </DataBand>
+    <DataBand Name="Data3" Top="433.1" Width="718.2" Height="24.57" DataSource="Table1">
+      <LineObject Name="Line22" Top="24.57" Width="718.2" Border.Color="Silver"/>
+      <TextObject Name="Text28" Top="3.78" Width="56.7" Height="15.12" Text="[SqlConta.conta]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text29" Left="66.15" Top="3.78" Width="236.25" Height="15.12" Text="[SqlConta.descricao]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text30" Left="311.85" Top="3.78" Width="83.16" Height="15.12" Text="[IIf([SqlConta.tipo_valor] == 2,[SqlConta.refer_mascara], IIf([SqlConta.tipo_valor] != 2, IIf([SqlConta.refer_sem_mascara] == 0, &quot;&quot;, [SqlConta.refer_sem_mascara]), &quot;&quot;))]" HideZeros="true" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text31" Left="410.13" Top="3.78" Width="94.5" Height="15.12" Text="[SqlConta.val_vencimento]" HideZeros="true" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text32" Left="519.75" Top="3.78" Width="94.5" Height="15.12" Text="[SqlConta.val_desconto]" HideZeros="true" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text33" Left="623.7" Top="3.78" Width="94.5" Height="15.12" Text="[SqlConta.val_calculo]" HideZeros="true" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt"/>
+      <LineObject Name="Line17" Left="60.48" Height="24.57" Border.Color="Silver"/>
+      <LineObject Name="Line18" Left="306.18" Height="24.57" Border.Color="Silver"/>
+      <LineObject Name="Line19" Left="512.19" Height="24.57" Border.Color="Silver"/>
+      <LineObject Name="Line20" Left="402.19" Height="24.57" Border.Color="Silver"/>
+      <LineObject Name="Line21" Left="618.41" Height="24.57" Border.Color="Silver"/>
+      <LineObject Name="Line30" Height="24.57" Anchor="Top, Bottom, Left"/>
+      <LineObject Name="Line32" Left="718.2" Height="24.57" Anchor="Top, Bottom, Left, Right"/>
+    </DataBand>
+    <ReportSummaryBand Name="ReportSummary1" Top="477.67" Width="718.2" Height="132.3" CanGrow="true">
+      <TextObject Name="Text34" Width="54.81" Height="15.12" Text="Total" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <LineObject Name="Line23" Top="15.12" Width="718.2" Border.Color="Silver"/>
+      <TextObject Name="Text35" Top="15.12" Width="92.61" Height="15.12" Text="Salário Base" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <LineObject Name="Line24" Top="30.24" Width="718.2" Border.Color="Silver"/>
+      <LineObject Name="Line25" Top="45.36" Width="718.2"/>
+      <TextObject Name="Text36" Top="30.24" Width="92.61" Height="15.12" Text="Salário Líquido" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text37" Left="410.13" Width="94.5" Height="15.12" Text="[Total_vencimento]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text38" Left="519.75" Width="94.5" Height="15.12" Text="[Total_desconto]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text39" Left="623.7" Top="15.12" Width="94.5" Height="15.12" Text="[SqlSalarioBase.valor]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text40" Left="623.7" Top="30.24" Width="94.5" Height="15.12" Text="[([Total_vencimento] - [Total_desconto])]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text41" Top="56.7" Width="716.31" Height="15.12" Text="[SqlMensagem.texto_mensagem]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text42" Top="85.05" Width="718.2" Height="47.25" Border.Lines="All" CanGrow="true" Text="2° via. emissão do Demonstrativo de Pagamento via internet em [SqlCrypt.data] [SqlCrypt.hora]&#13;&#10;Chave de Validação: [SqlCrypt.codigo]&#13;&#10;&#13;&#10; A autenticidade do Demonstrativo de Pagamento poderá ser confirmada no site da [Trim([SqlEntidade.nome])], na internet.&#13;&#10;" Font="Arial, 8pt"/>
+      <LineObject Name="Line33" Height="45.36"/>
+      <LineObject Name="Line34" Left="718.2" Height="45.36"/>
+    </ReportSummaryBand>
+    <PageFooterBand Name="BndRodape" Restrictions="DontResize, DontDelete" Top="629.97" Width="718.2" Height="30.24" Border.Lines="Top" CanGrow="true" BeforePrintEvent="parent_BndRodape_BeforePrint">
+      <TextObject Name="TxtRodape" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="18.9" Width="604.8" Height="11.34" Text="TxtRodape" Font="Tahoma, 7pt"/>
+      <TextObject Name="TxtPaginacao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="604.8" Top="18.9" Width="113.4" Height="11.34" Text="Página [Page#] de [TotalPages#]" HorzAlign="Right" Font="Tahoma, 7pt">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <TextObject Name="TxtEndereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="3.78" Width="718.2" Height="11.34" CanGrow="true" Text="[SqlEntidade.endereco] | Telefone: [SqlEntidade.telefone] | CNPJ: [SqlEntidade.cnpj]" HorzAlign="Justify" Font="Tahoma, 7pt">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+    </PageFooterBand>
+  </ReportPage>
+</Report>

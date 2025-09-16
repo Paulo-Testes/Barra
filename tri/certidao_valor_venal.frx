@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="05/30/2025 13:34:23" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }  
+    }
+   
+
+  }
+ 
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O5Iss/R94z4bPjjzyFHIj8A=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" DataType="System.String"/>
+        <Column Name="site" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlCrypt" DataType="System.Int32" Enabled="true" SelectCommand="select CODIGO,REFCERTIDAO from ADE_CRYPT(&#13;&#10;:referencial,&#13;&#10;'CVV',&#13;&#10;3,&#13;&#10;'IPTU',&#13;&#10;-1,&#13;&#10;'')">
+        <Column Name="codigo" DataType="System.String"/>
+        <Column Name="refcertidao" DataType="System.Int32"/>
+        <CommandParameter Name="referencial" DataType="22" Expression="[referencial]" DefaultValue="0"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlDadosCertidao" DataType="System.Int32" Enabled="true" SelectCommand="SELECT&#13;&#10;    LPAD(EXTRACT(DAY FROM ADE.data)::TEXT, 2, '0') || '/' ||&#13;&#10;    LPAD(EXTRACT(MONTH FROM ADE.data)::TEXT, 2, '0') || '/' ||&#13;&#10;    LPAD(EXTRACT(YEAR FROM ADE.data)::TEXT, 4, '0') AS DATA,&#13;&#10;&#13;&#10;    LPAD(EXTRACT(HOUR FROM ADE.data)::TEXT, 2, '0') || ':' ||&#13;&#10;    LPAD(EXTRACT(MINUTE FROM ADE.data)::TEXT, 2, '0') || ':' ||&#13;&#10;    LPAD(EXTRACT(SECOND FROM ADE.data)::INT::TEXT, 2, '0') AS HORA,&#13;&#10;&#13;&#10;    LPAD(EXTRACT(DAY FROM (ADE.data + (ADE.dias_validade || ' days')::INTERVAL))::TEXT, 2, '0') || '/' ||&#13;&#10;    LPAD(EXTRACT(MONTH FROM (ADE.data + (ADE.dias_validade || ' days')::INTERVAL))::TEXT, 2, '0') || '/' ||&#13;&#10;    LPAD(EXTRACT(YEAR FROM (ADE.data + (ADE.dias_validade || ' days')::INTERVAL))::TEXT, 4, '0') AS VALIDADE,&#13;&#10;&#13;&#10;    ADE.numero,&#13;&#10;    ADE.ano,&#13;&#10;    ADE.dias_validade,&#13;&#10;    ADE.referencial,&#13;&#10;substring(cast(:competencia as varchar(30)) from 1 for 4) as competencia  &#13;&#10;FROM AAC_DOCUMENTOS_EMISSAO ADE&#13;&#10;WHERE ADE.referencial = :IdReferencial;&#13;&#10;">
+        <Column Name="data" DataType="System.String"/>
+        <Column Name="hora" DataType="System.String"/>
+        <Column Name="validade" DataType="System.String"/>
+        <Column Name="numero" DataType="System.Int32"/>
+        <Column Name="ano" DataType="System.String"/>
+        <Column Name="dias_validade" DataType="System.Int32"/>
+        <Column Name="referencial" DataType="System.Int32"/>
+        <Column Name="competencia" DataType="System.String"/>
+        <CommandParameter Name="competencia" DataType="22" Expression="[competencia]" DefaultValue="0"/>
+        <CommandParameter Name="IdReferencial" DataType="9" Expression="[SqlCrypt.refcertidao]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlCertidao" DataType="System.Int32" Enabled="true" SelectCommand="select &#13;&#10; CAR.STATUS,&#13;&#10;  CAR.REFERENCIAL,&#13;&#10;  cast(:inscricao as varchar(30)) as inscricao,&#13;&#10;  cast(:ip_acessado as varchar(30)) as ip_acessado,&#13;&#10;  I.REFERENCIAL,&#13;&#10;  I.I051 AS MATRICULA,&#13;&#10;  case when I.I012 = 'S' then 'Ativa' else 'INATIVA' end as situacao,&#13;&#10;  cast(trim(p.nome_razao) as varchar) as PROPRIETARIO,&#13;&#10;  CAST(trim(p.documento_formatado) as varchar) as  CPF_PROPRIETARIO,&#13;&#10;  CAST(trim(p.documento_formatado) as varchar) as CNPJ_PROPRIETARIO,&#13;&#10;  cast(trim(pC.nome_razao) as varchar) as COMPROMISSARIO,&#13;&#10;  CAST(trim(pC.documento_formatado) as varchar) as  CPF_COMPROMISSARIO,&#13;&#10;  CAST(trim(pC.documento_formatado) as varchar) as CNPJ_COMPROMISSARIO,&#13;&#10;  trim(PCE.DES_PREFIXO) as PREFIXO,&#13;&#10;  trim(PCE.DES_TITULO) as TITULO,&#13;&#10;  trim(PCE.NOME) as LOGRADOURO,&#13;&#10;  trim(I.I007) as NUMERO,&#13;&#10;  I.I018 as LOTE,&#13;&#10;  trim(I.I008) as COMPLEMENTO,&#13;&#10;  trim(PCE.BAIRRO) as BAIRRO,&#13;&#10;  trim(I.I010) as CEP,&#13;&#10;  trim(PCE.CIDADE) as CIDADE,&#13;&#10;  trim(PCE.ESTADO) as ESTADO,&#13;&#10;  coalesce(nullif(x.area_terreno,0),i.i015)as area_terreno,&#13;&#10;  iif(x.area_terreno=0,i.i016,x.area_construida)as area_construida,&#13;&#10;  coalesce(vlr.valor_vvt,0) as vvt,&#13;&#10;  vvt.valorextenso as vvt_e,&#13;&#10;  coalesce(vlr.valor_vvc,0) as vvc,&#13;&#10;  vvc.valorextenso as vvc_e,&#13;&#10;  coalesce(vlr.valor_vvt,0) + coalesce(vlr.valor_vvc,0) as vvi,&#13;&#10;  vvi.valorextenso as vvi_e&#13;&#10;from ctec_imoveis i&#13;&#10;left join SIS_PESSOA p  on p.ID_PESSOA  = I.I001&#13;&#10;left join SIS_PESSOA pc on pc.ID_PESSOA = I.I011&#13;&#10;left join PROC_CTEC_ENDERECOS(I.I002) PCE on true&#13;&#10;left join lateral(select max(c2.referencial)as ref_carne, c2.competencia_base,coalesce(i2.I015,0) as AREA_TERRENO,coalesce(i2.I016,0) as AREA_CONSTRUIDA from iptu_dados_anuais i2&#13;&#10;left join iptu_carnes c2 on c2.referencial_dados = i2.referencial&#13;&#10;where i2.i000 = i.i000 and C2.STATUS in (2,3,4,5,8,10,11) and C2.TIPO_CARNE &lt; 15  and C2.COMPETENCIA = :competencia&#13;&#10;group by 2,3,4 order by 1 desc limit 1)x on true&#13;&#10;left join IPTU_CARNES CAR on car.referencial=x.ref_carne&#13;&#10;left join LATERAL(select&#13;&#10;max(case when TRIM(T.VARIAVEL)in('C_VVT','C_VVTERR') then l.valor end) as valor_vvt,&#13;&#10;max(case when TRIM(T.VARIAVEL)in('C_VVC','C_VVE','C_VVP','C_VVCONST') then l.valor end) as valor_vvc&#13;&#10;from IPTU_MOVIMENTOS L&#13;&#10;left join TRI_PLANO_CONTAS T on T.MODULO = 'IPTU' and t.conta=l.conta and t.competencia=x.competencia_base&#13;&#10;where t.variavel in('C_VVC','C_VVE','C_VVP','C_VVCONST','C_VVT','C_VVTERR') and L.REFERENCIAL_CARNE = x.ref_carne)vlr on true&#13;&#10;left join sis_retorna_extenso(cast(vlr.valor_vvt as numeric(10,2)), 'S')vvt on true&#13;&#10;left join sis_retorna_extenso(cast(vlr.valor_vvc as numeric(10,2)), 'S')vvc on true&#13;&#10;left join sis_retorna_extenso(cast(coalesce(vlr.valor_vvt,0) + coalesce(vlr.valor_vvc,0) as numeric(10,2)), 'S')vvi on true&#13;&#10;&#13;&#10;where I.I000 = :inscricao&#13;&#10;and cast(extract(year from current_date) || '00' as integer) = :competencia&#13;&#10;&#13;&#10;union&#13;&#10;&#13;&#10;select &#13;&#10; CAR.STATUS,&#13;&#10;  CAR.REFERENCIAL,&#13;&#10;  cast(:inscricao as varchar(30)) as inscricao,&#13;&#10;  cast(:ip_acessado as varchar(30)) as ip_acessado,&#13;&#10;  I.REFERENCIAL,&#13;&#10;  I.I051 AS MATRICULA,&#13;&#10;  case when I.I012 = 'S' then 'Ativa' else 'INATIVA' end as situacao,&#13;&#10;  cast(trim(p.nome_razao) as varchar) as PROPRIETARIO,&#13;&#10;  CAST(trim(p.documento_formatado) as varchar) as  CPF_PROPRIETARIO,&#13;&#10;  CAST(trim(p.documento_formatado) as varchar) as CNPJ_PROPRIETARIO,&#13;&#10;  cast(trim(pC.nome_razao) as varchar) as COMPROMISSARIO,&#13;&#10;  CAST(trim(pC.documento_formatado) as varchar) as  CPF_COMPROMISSARIO,&#13;&#10;  CAST(trim(pC.documento_formatado) as varchar) as CNPJ_COMPROMISSARIO,&#13;&#10;  trim(PCE.DES_PREFIXO) as PREFIXO,&#13;&#10;  trim(PCE.DES_TITULO) as TITULO,&#13;&#10;  trim(PCE.NOME) as LOGRADOURO,&#13;&#10;  trim(I.I007) as NUMERO,&#13;&#10;  I.I018 as LOTE,&#13;&#10;  trim(I.I008) as COMPLEMENTO,&#13;&#10;  trim(PCE.BAIRRO) as BAIRRO,&#13;&#10;  trim(I.I010) as CEP,&#13;&#10;  trim(PCE.CIDADE) as CIDADE,&#13;&#10;  trim(PCE.ESTADO) as ESTADO,&#13;&#10;  coalesce(nullif(x.area_terreno,0),i.i015)as area_terreno,&#13;&#10;  iif(x.area_terreno=0,i.i016,x.area_construida)as area_construida,&#13;&#10;  coalesce(vlr.valor_vvt,0) as vvt,&#13;&#10;  vvt.valorextenso as vvt_e,&#13;&#10;  coalesce(vlr.valor_vvc,0) as vvc,&#13;&#10;  vvc.valorextenso as vvc_e,&#13;&#10;  coalesce(vlr.valor_vvt,0) + coalesce(vlr.valor_vvc,0) as vvi,&#13;&#10;  vvi.valorextenso as vvi_e&#13;&#10;from ctec_imoveis i&#13;&#10;left join SIS_PESSOA p  on p.ID_PESSOA  = I.I001&#13;&#10;left join SIS_PESSOA pc on pc.ID_PESSOA = I.I011&#13;&#10;left join PROC_CTEC_ENDERECOS(I.I002) PCE on true&#13;&#10;left join lateral(select max(c2.referencial)as ref_carne, c2.competencia_base,coalesce(i2.I015,0) as AREA_TERRENO,coalesce(i2.I016,0) as AREA_CONSTRUIDA from iptu_dados_anuais i2&#13;&#10;left join iptu_carnes c2 on c2.referencial_dados = i2.referencial&#13;&#10;where i2.i000 = i.i000 and C2.STATUS in (2,3,4,5,8,10,11) and C2.TIPO_CARNE &lt; 15  and C2.COMPETENCIA = :competencia&#13;&#10;group by 2,3,4 order by 1 desc limit 1)x on true&#13;&#10;left join IPTU_CARNES CAR on car.referencial=x.ref_carne&#13;&#10;left join LATERAL(select&#13;&#10;max(case when TRIM(T.VARIAVEL)in('C_VVT','C_VVTERR') then l.valor end) as valor_vvt,&#13;&#10;max(case when TRIM(T.VARIAVEL)in('C_VVC','C_VVE','C_VVP','C_VVCONST') then l.valor end) as valor_vvc&#13;&#10;from IPTU_MOVIMENTOS L&#13;&#10;left join TRI_PLANO_CONTAS T on T.MODULO = 'IPTU' and t.conta=l.conta and t.competencia=x.competencia_base&#13;&#10;where t.variavel in('C_VVC','C_VVE','C_VVP','C_VVCONST','C_VVT','C_VVTERR') and L.REFERENCIAL_CARNE = x.ref_carne)vlr on true&#13;&#10;left join sis_retorna_extenso(cast(vlr.valor_vvt as numeric(10,2)), 'S')vvt on true&#13;&#10;left join sis_retorna_extenso(cast(vlr.valor_vvc as numeric(10,2)), 'S')vvc on true&#13;&#10;left join sis_retorna_extenso(cast(coalesce(vlr.valor_vvt,0) + coalesce(vlr.valor_vvc,0) as numeric(10,2)), 'S')vvi on true&#13;&#10;&#13;&#10;where I.I000 = :inscricao&#13;&#10;and cast(extract(year from current_date) || '00' as integer) &lt;&gt; :competencia&#13;&#10;order by 1 asc, 2 desc limit 1&#13;&#10;">
+        <Column Name="status" DataType="System.Int32"/>
+        <Column Name="referencial" DataType="System.Int32"/>
+        <Column Name="inscricao" DataType="System.String"/>
+        <Column Name="ip_acessado" DataType="System.String"/>
+        <Column Name="referencial1" DataType="System.Int32"/>
+        <Column Name="matricula" DataType="System.String"/>
+        <Column Name="situacao" DataType="System.String"/>
+        <Column Name="proprietario" DataType="System.String"/>
+        <Column Name="cpf_proprietario" DataType="System.String"/>
+        <Column Name="cnpj_proprietario" DataType="System.String"/>
+        <Column Name="compromissario" DataType="System.String"/>
+        <Column Name="cpf_compromissario" DataType="System.String"/>
+        <Column Name="cnpj_compromissario" DataType="System.String"/>
+        <Column Name="prefixo" DataType="System.String"/>
+        <Column Name="titulo" DataType="System.String"/>
+        <Column Name="logradouro" DataType="System.String"/>
+        <Column Name="numero" DataType="System.String"/>
+        <Column Name="lote" DataType="System.String"/>
+        <Column Name="complemento" DataType="System.String"/>
+        <Column Name="bairro" DataType="System.String"/>
+        <Column Name="cep" DataType="System.String"/>
+        <Column Name="cidade" DataType="System.String"/>
+        <Column Name="estado" DataType="System.String"/>
+        <Column Name="area_terreno" DataType="System.Double"/>
+        <Column Name="area_construida" DataType="System.Double"/>
+        <Column Name="vvt" DataType="System.Double"/>
+        <Column Name="vvt_e" DataType="System.String"/>
+        <Column Name="vvc" DataType="System.Double"/>
+        <Column Name="vvc_e" DataType="System.String"/>
+        <Column Name="vvi" DataType="System.Double"/>
+        <Column Name="vvi_e" DataType="System.String"/>
+        <CommandParameter Name="inscricao" DataType="22" Expression="[inscricao]" DefaultValue="0"/>
+        <CommandParameter Name="ip_acessado" DataType="22" Expression="[ipAcessado]" DefaultValue="0"/>
+        <CommandParameter Name="competencia" DataType="22" Expression="[competencia]" DefaultValue="0"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlQuadra" DataType="System.Int32" Enabled="true" SelectCommand="Select get_quadra(cast(:referencial as varchar))">
+        <Column Name="get_quadra" DataType="System.String"/>
+        <CommandParameter Name="referencial" DataType="22" Expression="[referencial]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Certidão de Valor Venal&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="ipAcessado" DataType="System.String" AsString=""/>
+    <Parameter Name="tipoCertidao" DataType="System.String" AsString=""/>
+    <Parameter Name="referencial" DataType="System.String" AsString=""/>
+    <Parameter Name="competencia" DataType="System.String" AsString=""/>
+    <Parameter Name="inscricao" DataType="System.String" Expression="&quot;&quot;"/>
+  </Dictionary>
+  <ReportPage Name="MainPage" Watermark.Font="Arial, 60pt">
+    <PageHeaderBand Name="BndCabecalho" Restrictions="DontResize, DontDelete" Top="20" Width="718.2" Height="94.5" BeforePrintEvent="parent_BndCabecalho_BeforePrint" KeepChild="true">
+      <PictureObject Name="ImgBrasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Width="75.6" Height="94.5" DataColumn="SqlEntidade.brasao" ImageAlign="Center_Center"/>
+      <TextObject Name="TxtEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Width="529.2" Height="18.9" Text="[SqlEntidade.nome]" VertAlign="Center" Font="Tahoma, 10pt, style=Bold"/>
+      <PictureObject Name="ImgLogo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="604.8" Width="113.4" Height="94.5" DataColumn="SqlEntidade.logo" ImageAlign="Center_Center"/>
+      <TextObject Name="TxtTituloModulo1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="18.9" Width="529.2" Height="18.9" Text="[SqlModulo.titulo_1]" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="TxtTituloModulo2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="37.8" Width="529.2" Height="18.9" Text="[SqlModulo.titulo_2]" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="TxtTituloRelatorio" Left="75.6" Top="56.7" Width="529.2" Height="18.9" Text="[TituloRelatorio]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="TxtPeriodo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="75.6" Width="529.2" Height="18.9" BeforePrintEvent="TxtCompetencia_BeforePrint" Text="[periodo]" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+      <ChildBand Name="BndFiltro" Restrictions="DontResize, DontDelete" Top="134.5" Width="718.2" Height="18.9" CanGrow="true" BeforePrintEvent="parent_BndFiltro_BeforePrint">
+        <TextObject Name="TxtFiltro" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="3.78" Width="718.2" Height="11.34" Fill.Color="129, 245, 230, 207" Cursor="IBeam" CanGrow="true" Text="[filtro]" Font="Tahoma, 7pt, style=Bold" Wysiwyg="true"/>
+      </ChildBand>
+    </PageHeaderBand>
+    <DataBand Name="Data2" Top="173.4" Width="718.2" Height="103.95" DataSource="Table1">
+      <LineObject Name="Line1" Top="6.8" Width="718.2"/>
+      <TextObject Name="Text1" Left="0.55" Top="20.83" Width="718.2" Height="28.35" Text="CERTIDÃO DE VALOR VENAL" HorzAlign="Center" VertAlign="Center" Font="Arial, 16pt, style=Bold" TextFill.Color="41, 82, 118"/>
+      <TextObject Name="Text2" Left="0.55" Top="56.09" Width="718.2" Height="37.8" Text="Número da Certidão: [SqlDadosCertidao.numero]/[SqlDadosCertidao.ano]&#13;&#10;&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 14pt"/>
+    </DataBand>
+    <DataBand Name="Data1" Top="297.35" Width="718.2" Height="248.74" DataSource="Table2">
+      <ContainerObject Name="Container3" Left="9.72" Top="37.82" Width="699.3" Height="69.17" Border.Lines="All" CanGrow="true">
+        <TextObject Name="Text41" Left="404.46" Width="294.08" Height="23.81" Border.Lines="Left, Top" Fill.Color="ButtonFace" Text="[SqlCertidao.situacao]" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text42" Left="141.75" Top="0.76" Width="182.95" Height="23.81" Border.Lines="Right" Fill.Color="ButtonFace" CanGrow="true" Text="[SqlCertidao.inscricao]" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text43" Left="141.75" Top="26.25" Width="557.17" Height="21.17" Fill.Color="ButtonFace" CanGrow="true" Text="[UpperCase([SqlCertidao.proprietario])]" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text47" Left="145.75" Top="46.15" Width="550.75" Height="20.79" CanGrow="true" CanBreak="false" Text="[UpperCase([SqlCertidao.prefixo])] [UpperCase([SqlCertidao.logradouro])],[SqlCertidao.numero] - [UpperCase([SqlCertidao.complemento])] - [UpperCase([SqlCertidao.bairro])], [SqlCertidao.cep], [UpperCase([SqlCertidao.cidade])] - [UpperCase([SqlCertidao.estado])] &lt;b&gt;QUADRA:&lt;/b&gt; [SqlQuadra.get_quadra] - &lt;b&gt;LOTE:&lt;/b&gt;[UpperCase([SqlCertidao.lote])]&#13;&#10;" VertAlign="Center" Font="Tahoma, 9pt" TextRenderType="HtmlParagraph" MergeMode="Vertical"/>
+        <TextObject Name="Text48" Left="5.45" Top="2.9" Width="132.68" Height="20.79" CanGrow="true" Text="Inscrição Cadastral:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+        <TextObject Name="Text49" Left="5.45" Top="46.15" Width="132.68" Height="20.79" CanGrow="true" AfterDataEvent="Text15_afterdata" CanBreak="false" Text="Endereço:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+        <LineObject Name="Line10" Top="24.9" Width="699.3" ShiftMode="WhenOverlapped"/>
+        <LineObject Name="Line11" Top="45.25" Width="699.3" ShiftMode="WhenOverlapped"/>
+        <TextObject Name="Text50" Left="335.75" Top="2.45" Width="66.53" Height="20.79" CanGrow="true" Text="Situação:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+        <LineObject Name="Line14" Left="141.75" Height="66.15" CanGrow="true" GrowToBottom="true"/>
+        <TextObject Name="Text46" Left="5.45" Top="26.25" Width="132.68" Height="21.17" CanGrow="true" Text="Proprietário:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+      </ContainerObject>
+      <TextObject Name="Text3" Left="9.45" Top="9.45" Width="325.08" Height="27.97" Border.Lines="Left, Right, Top" Fill.Color="ButtonFace" Text="Identificação no Cadastro Imobiliário" VertAlign="Center" Font="Tahoma, 12pt, style=Bold"/>
+      <TextObject Name="Text59" Left="9.45" Top="141.75" Width="325.08" Height="27.97" Border.Lines="Left, Right, Top" Fill.Color="ButtonFace" Text="Informações sobre o Imóvel" VertAlign="Center" Font="Tahoma, 12pt, style=Bold"/>
+      <ContainerObject Name="Container4" Left="9.72" Top="170.12" Width="699.3" Height="48.01" Border.Lines="All" CanGrow="true">
+        <TextObject Name="Text52" Left="141.75" Top="0.76" Width="557.17" Height="23.81" Border.Lines="Right" Fill.Color="ButtonFace" CanGrow="true" Text="[SqlCertidao.area_terreno]m²" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text53" Left="141.75" Top="26.25" Width="557.17" Height="21.17" Fill.Color="ButtonFace" CanGrow="true" Text="[SqlCertidao.area_construida]m²" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text55" Left="5.45" Top="2.9" Width="132.68" Height="20.79" CanGrow="true" Text="Área do Terreno:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+        <LineObject Name="Line15" Top="24.9" Width="699.3" ShiftMode="WhenOverlapped"/>
+        <LineObject Name="Line17" Left="141.75" Height="47.25" CanGrow="true" GrowToBottom="true"/>
+        <TextObject Name="Text58" Left="5.45" Top="26.25" Width="132.68" Height="21.17" CanGrow="true" Text="Área Construída:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+      </ContainerObject>
+    </DataBand>
+    <DataBand Name="Data4" Top="680.59" Width="718.2" Height="116.44" DataSource="Table2">
+      <ContainerObject Name="Container5" Left="9.72" Top="28.37" Width="699.3" Height="68.04" Border.Lines="All" CanGrow="true">
+        <TextObject Name="Text71" Left="273.05" Top="25.35" Width="426.01" Height="18.9" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[IIf([SqlCertidao.vvc] == 0, &quot;ZERO&quot;, [SqlCertidao.vvc_e])]" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text70" Left="142.75" Top="1" Width="131.17" Height="23.44" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="R$ [SqlCertidao.vvt]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text62" Left="274.05" Top="0.76" Width="425.25" Height="23.81" Border.Lines="Right" Fill.Color="ButtonFace" CanGrow="true" Text="[SqlCertidao.vvt_e]" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text65" Left="5.45" Top="2.9" Width="132.68" Height="20.79" CanGrow="true" Text="Terreno:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+        <TextObject Name="Text66" Left="5.45" Top="46.15" Width="132.68" Height="20.79" CanGrow="true" AfterDataEvent="Text15_afterdata" Text="Imóvel:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+        <LineObject Name="Line18" Top="24.9" Width="699.3" ShiftMode="WhenOverlapped"/>
+        <LineObject Name="Line19" Top="45.25" Width="699.3" ShiftMode="WhenOverlapped"/>
+        <LineObject Name="Line20" Left="141.75" Height="67.28" CanGrow="true" GrowToBottom="true"/>
+        <TextObject Name="Text68" Left="5.45" Top="26.25" Width="132.68" Height="21.17" CanGrow="true" BeforePrintEvent="Text68_BeforePrint" Text="Construção:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+        <TextObject Name="Text72" Left="141.75" Top="25.7" Width="131.17" Height="18.9" Fill.Color="ButtonFace" CanGrow="true" Text="R$ [SqlCertidao.vvc]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text73" Left="272.5" Top="46.49" Width="426.38" Height="18.9" Fill.Color="ButtonFace" CanGrow="true" Text="[SqlCertidao.vvi_e]" Font="Tahoma, 9pt, style=Bold"/>
+        <TextObject Name="Text74" Left="141.75" Top="46.49" Width="131.17" Height="18.9" Fill.Color="ButtonFace" CanGrow="true" Text="R$ [SqlCertidao.vvi]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" Font="Tahoma, 9pt, style=Bold"/>
+      </ContainerObject>
+      <TextObject Name="Text69" Left="9.45" Width="325.08" Height="27.97" Border.Lines="Left, Right, Top" Fill.Color="ButtonFace" Text="Composição dos Valores Venais" VertAlign="Center" Font="Tahoma, 12pt, style=Bold"/>
+      <DataHeaderBand Name="DataHeader1" Top="566.09" Width="718.2" Height="94.5">
+        <TextObject Name="Text60" Left="10.9" Top="33.8" Width="689.85" Height="56.7" Text="Certificamos, para os devidos fins, que o imóvel acima identificado, de acordo com as informações contidas no cadastro imobiliário desta Prefeitura, tem os seguintes lançamentos, conforme tabela de composição dos valores venais abaixo, atribuídos para o exercício de [SqlDadosCertidao.competencia]:" Font="Tahoma, 10pt"/>
+      </DataHeaderBand>
+      <DataFooterBand Name="DataFooter1" Top="817.03" Width="718.2" Height="122.85" PrintOnBottom="true">
+        <TextObject Name="Text75" Left="9.45" Width="670.95" Height="103.95" Text="Certidão emitida em &lt;b&gt;[SqlDadosCertidao.data]&lt;/b&gt; ás &lt;b&gt;[SqlDadosCertidao.hora]&lt;/b&gt; (data e hora de Brasília).&#13;&#10;Acessada pelo IP: &lt;b&gt;[SqlCertidao.ip_acessado]&lt;/b&gt;&#13;&#10;Código de Controle da Certidão: &lt;b&gt;[Sqlcrypt.codigo]&lt;/b&gt;&#13;&#10;&#13;&#10;Validade: &lt;b&gt;Vitalícia&lt;/b&gt; (conforme Lei nº 13.874, de 20 de setembro de 2019 - Planalto).&#13;&#10;&#13;&#10;A autenticidade desta certidão deverá ser confirmada na página da Prefeitura na Internet, no endereço &lt;u&gt;[SqlEntidade.site]&lt;/u&gt;&#13;&#10;&#13;&#10;Certidão expedida gratuitamente pela internet.&#13;&#10;" Font="Tahoma, 7pt" TextRenderType="HtmlParagraph"/>
+      </DataFooterBand>
+    </DataBand>
+    <PageFooterBand Name="BndRodape" Restrictions="DontResize, DontDelete" Top="959.88" Width="718.2" Height="30.24" Border.Lines="Top" CanGrow="true" BeforePrintEvent="parent_BndRodape_BeforePrint">
+      <TextObject Name="TxtRodape" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="18.9" Width="604.8" Height="11.34" Text="TxtRodape" Font="Tahoma, 7pt"/>
+      <TextObject Name="TxtPaginacao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="604.8" Top="18.9" Width="113.4" Height="11.34" Text="Página [Page#] de [TotalPages#]" HorzAlign="Right" Font="Tahoma, 7pt">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <TextObject Name="TxtEndereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="3.78" Width="718.2" Height="11.34" CanGrow="true" Text="[SqlEntidade.endereco] | Telefone: [SqlEntidade.telefone] | CNPJ: [SqlEntidade.cnpj]" HorzAlign="Justify" Font="Tahoma, 7pt">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+    </PageFooterBand>
+  </ReportPage>
+</Report>

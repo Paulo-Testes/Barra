@@ -1,0 +1,46 @@
+# Pipeline para execução de atualização de relatórios
+name: Docker Image CI
+on:
+  push:
+    branches:
+      - "staging"
+      - "production"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref_name == 'staging' || github.ref_name == 'production' }}
+    runs-on: [self-hosted]
+
+    env:
+      CLIENT_NAME: ${{ vars.CLIENT_NAME }}
+      INVENTORY: hosts-all
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Override client name for staging
+      if: ${{ github.ref_name == 'staging' }}
+      run: |
+        echo "CLIENT_NAME=dev-geosiap-application-production" >> $GITHUB_ENV
+        echo "INVENTORY=hosts-local" >> $GITHUB_ENV
+
+    - name: Print variables (for debugging)
+      run: |
+        echo "Client name is ${{ env.CLIENT_NAME }}"
+        echo "Inventory is ${{ env.INVENTORY }}"
+
+    - name: Update variables
+      run: |
+        echo "CLIENT_NAME=${{ env.CLIENT_NAME }}" >> $GITHUB_ENV
+        echo "INVENTORY=${{ env.INVENTORY }}" >> $GITHUB_ENV
+
+    - name: Run ansible
+      uses: geosiap/yaml-template/ansible@main
+      with:
+        client_name: ${{ env.CLIENT_NAME }}
+        role_name: task-gsr-reports-setup
+        ansible_inventory: inventories/${{ env.INVENTORY }}
+        playbook: projects.yml
+        vault_file: vault_secret.sh
+        working_directory: /srv/ansible/ansible-production

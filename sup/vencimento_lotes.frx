@@ -1,0 +1,333 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\Repositórios de Clientes\gsr-reports\base\paisagem.frx" BaseReportAbsolutePath="..\..\..\..\..\..\Repositórios de Clientes\gsr-reports\base\paisagem.frx" ScriptLanguage="CSharp" StartReportEvent="_StartReport" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/27/2025 16:52:59" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+    
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }    
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }    
+
+    private void grpLote_BeforePrint(object sender, EventArgs e)
+    {
+      grpLote.Visible = Convert.ToInt64(Report.GetParameterValue(&quot;TpVencimento&quot;)) == 2;
+    }
+
+    private void cabRelatorio_BeforePrint(object sender, EventArgs e)
+    {
+      long tpVencimento = Convert.ToInt64(Report.GetParameterValue(&quot;TpVencimento&quot;));
+
+      memCabLote.Width = (tpVencimento == 1 || tpVencimento == 2) ? 550 : 470;
+      memCabVencimento.Visible = (tpVencimento == 1 || tpVencimento == 2);
+      memCabVencimento.Text = (tpVencimento == 1) ? &quot;Vencido&quot; : &quot;Vencimento&quot;;
+    }
+
+    private void memVencimento_BeforePrint(object sender, EventArgs e)
+    {
+      long tpVencimento = Convert.ToInt64(Report.GetParameterValue(&quot;TpVencimento&quot;));
+      memVencimento.Visible = (tpVencimento == 1 || tpVencimento == 2);
+
+      if (tpVencimento == 1)
+      {
+        int diasVencidos = Convert.ToInt32(Report.GetColumnValue(&quot;SqlLote.DIAS_VENCIDOS&quot;));
+
+        if (diasVencidos == 0)
+          memVencimento.Text = &quot;Hoje&quot;;
+        else if (diasVencidos == 1)
+          memVencimento.Text = &quot;Ontem&quot;;
+        else
+          memVencimento.Text = string.Format(&quot;Há {0} dias&quot;, diasVencidos);
+      }
+      else if (tpVencimento == 2)
+      {
+        int diasParaVencer = Convert.ToInt32(Report.GetColumnValue(&quot;SqlLote.DIAS_PARA_VENCER&quot;));
+
+        if (diasParaVencer == 0)
+          memVencimento.Text = &quot;Hoje&quot;;
+        else if (diasParaVencer == 1)
+          memVencimento.Text = &quot;Amanhã&quot;;
+        else
+          memVencimento.Text = string.Format(&quot;Em {0} dias&quot;, diasParaVencer);
+      }
+    }
+
+    private void grfLote_BeforePrint(object sender, EventArgs e)
+    {
+      grfLote.Visible = Convert.ToInt64(Report.GetParameterValue(&quot;TpVencimento&quot;)) == 2;
+    }
+
+    private void _StartReport(object sender, EventArgs e)
+    {
+      if (Convert.ToInt64(Report.GetParameterValue(&quot;IdRelatorioFiltro&quot;)) &gt; 0)
+      {
+        // pega a fonte de dados
+        TableDataSource dataLote = Report.GetDataSource(&quot;SqlLote&quot;) as TableDataSource;
+
+        if (dataLote != null)
+        {
+          dataLote.SelectCommand = dataLote.SelectCommand
+            .Replace(&quot;/*FILTRO_MATERIAL*/&quot;, &quot;AND A.ID_MATERIAL = S.ID_FILTRO&quot;);
+        }
+      }
+    }
+
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAf45SGh+1JQ06HfUCwVjdXLyOtFr5FbmNWNqr1W8I2tPRGoPzSsFGNAQf85ceZvCGogRGJncwLI0VhpBoFVj/qSQKkbhjw8vK4wcDZgU0qxWH3yQn2n9pMAZgCfFvnsQg=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" PropName="Table" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" PropName="Table2" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" PropName="Table1" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlPeriodoVencimento" DataType="System.Int32" Enabled="true" SelectCommand="SELECT &#13;&#10;	make_date(CAST(:ANO_INI AS INTEGER), 1, 1) &#13;&#10;    + CAST((CAST((CAST(:MES_INI AS INTEGER) -1) AS varchar) || ' MONTH') AS interval) &#13;&#10;    + CAST((CAST((CAST(:DIA_INI AS INTEGER) -1) AS varchar) || ' DAY')   AS interval) AS DT_VENCIMENTO_INI&#13;&#10;  , make_date(CAST(:ANO_FIN AS INTEGER), 1, 1) &#13;&#10;    + CAST((CAST((CAST(:MES_FIN AS INTEGER) -1) AS varchar) || ' MONTH') AS interval) &#13;&#10;    + CAST((CAST((CAST(:DIA_FIN AS INTEGER) -1) AS varchar) || ' DAY')   AS interval) AS DT_VENCIMENTO_FIN&#13;&#10;    FROM SIS_SEQUENCIA A&#13;&#10; WHERE A.ID_SEQUENCIA = 1">
+        <Column Name="dt_vencimento_ini" DataType="System.DateTime"/>
+        <Column Name="dt_vencimento_fin" DataType="System.DateTime"/>
+        <CommandParameter Name="ANO_INI" DataType="22" Expression="ExtractYear([dtVencimentoIni])"/>
+        <CommandParameter Name="ANO_FIN" DataType="22" Expression="ExtractYear([dtVencimentoFin])"/>
+        <CommandParameter Name="DIA_INI" DataType="22" Expression="ExtractDay([dtVencimentoIni])"/>
+        <CommandParameter Name="DIA_FIN" DataType="22" Expression="ExtractDay([dtVencimentoFin])"/>
+        <CommandParameter Name="MES_INI" DataType="22" Expression="ExtractMonth([dtVencimentoIni])"/>
+        <CommandParameter Name="MES_FIN" DataType="22" Expression="ExtractMonth([dtVencimentoFin])"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlLote" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CAST(CASE WHEN 2 = :TP_VENCIMENTO AND A1.DIAS_PARA_VENCER &lt;= CAST(:DIAS_VENC_01     AS INTEGER) THEN '01'&#13;&#10;                 WHEN 2 = :TP_VENCIMENTO AND A1.DIAS_PARA_VENCER &gt;= CAST(:DIAS_VENC_02_INI AS INTEGER)&#13;&#10;                                         AND A1.DIAS_PARA_VENCER &lt;= CAST(:DIAS_VENC_02_FIN AS INTEGER) THEN '02'&#13;&#10;                 WHEN 2 = :TP_VENCIMENTO AND A1.DIAS_PARA_VENCER &gt;= CAST(:DIAS_VENC_03_INI AS INTEGER)&#13;&#10;                                         AND A1.DIAS_PARA_VENCER &lt;= CAST(:DIAS_VENC_03_FIN AS INTEGER) THEN '03'&#13;&#10;                 WHEN 2 = :TP_VENCIMENTO AND A1.DIAS_PARA_VENCER &gt;= CAST(:DIAS_VENC_04     AS INTEGER) THEN '04'&#13;&#10;                 ELSE '00'&#13;&#10;            END AS CHAR(2)) AS TP_AGRUPAMENTO&#13;&#10;     , A1.DIAS_PARA_VENCER&#13;&#10;     , A1.DIAS_VENCIDOS&#13;&#10;     , A1.ID_LOTE&#13;&#10;     , A1.NR_LOTE&#13;&#10;     , A1.DT_FABRICACAO&#13;&#10;     , A1.DT_VALIDADE&#13;&#10;     , A1.CD_ALMOXARIFADO&#13;&#10;     , A1.DS_ALMOXARIFADO&#13;&#10;     , A1.CD_CLASSIFICACAO&#13;&#10;     , A1.CD_MATERIAL&#13;&#10;     , A1.DS_MATERIAL&#13;&#10;     , A1.DS_COMPLETA&#13;&#10;     , A1.UN_MATERIAL&#13;&#10;     , A1.QTD&#13;&#10;     , CAST(LPAD(CAST(EXTRACT(DAY FROM A1.DT_FABRICACAO)   AS VARCHAR(2)), 2, '0') || '/' ||&#13;&#10;            LPAD(CAST(EXTRACT(MONTH FROM A1.DT_FABRICACAO) AS VARCHAR(2)), 2, '0') || '/' ||            &#13;&#10;            LPAD(CAST(EXTRACT(YEAR FROM A1.DT_FABRICACAO)  AS VARCHAR(4)), 4, '0')&#13;&#10;            AS VARCHAR(20)) AS DT_FABRICACAO_STR&#13;&#10;     , CAST(LPAD(CAST(EXTRACT(DAY FROM A1.DT_VALIDADE)     AS VARCHAR(2)), 2, '0') || '/' ||&#13;&#10;            LPAD(CAST(EXTRACT(MONTH FROM A1.DT_VALIDADE)   AS VARCHAR(2)), 2, '0') || '/' ||            &#13;&#10;            LPAD(CAST(EXTRACT(YEAR FROM A1.DT_VALIDADE)    AS VARCHAR(4)), 4, '0')&#13;&#10;            AS VARCHAR(20)) AS DT_VALIDADE_STR         &#13;&#10;  FROM (&#13;&#10;        SELECT A.ID_LOTE&#13;&#10;             , A.NR_LOTE&#13;&#10;             , A.DT_FABRICACAO&#13;&#10;             , A.DT_VALIDADE&#13;&#10;             , C.CD_ALMOXARIFADO&#13;&#10;             , C.DS_ALMOXARIFADO&#13;&#10;             , CAST(CAST(D.TP_MATERIAL           AS CHAR(1))               || '.' ||&#13;&#10;                         LPAD(CAST(F.CD_GRUPO    AS VARCHAR(20)), 3, '0')  || '.' ||&#13;&#10;                         LPAD(CAST(E.CD_GRUPO    AS VARCHAR(20)), 3, '0')  || '.' ||&#13;&#10;                         LPAD(CAST(D.CD_MATERIAL AS VARCHAR(20)), 6, '0')&#13;&#10;                         AS VARCHAR(120) )                                              AS CD_CLASSIFICACAO&#13;&#10;             , D.CD_MATERIAL&#13;&#10;             , D.DS_MATERIAL&#13;&#10;             , D.DS_COMPLETA&#13;&#10;             , D.UN_MATERIAL&#13;&#10;             , CURRENT_DATE                                                             AS HOJE&#13;&#10;             , CASE WHEN CURRENT_DATE &lt; CAST(A.DT_VALIDADE AS DATE)&#13;&#10;                         THEN CURRENT_DATE - CAST(A.DT_VALIDADE AS DATE)&#13;&#10;                         ELSE CURRENT_DATE - CURRENT_DATE END                           AS DIAS_PARA_VENCER  &#13;&#10;             , CASE WHEN CURRENT_DATE &gt; CAST(A.DT_VALIDADE AS DATE)&#13;&#10;                         THEN CAST(A.DT_VALIDADE AS DATE) - CURRENT_DATE&#13;&#10;                         ELSE CURRENT_DATE - CURRENT_DATE END                           AS DIAS_VENCIDOS&#13;&#10;             , SUM(B.QTD) AS QTD&#13;&#10;          FROM (&#13;&#10;                SELECT SRF.ID_FILTRO&#13;&#10;                  FROM SIS_RELATORIO_FILTRO SRF&#13;&#10;                 WHERE SRF.ID_RELATORIO_FILTRO = :ID_RELATORIO_FILTRO&#13;&#10;               ) S&#13;&#10;               RIGHT JOIN SUP_USUARIO                G ON G.ID_USUARIO           = :ID_USUARIO&#13;&#10;               LEFT JOIN  SUP_ACESSO_ALMOXARIFADO    H ON H.ID_GRUPO_USUARIO     = G.ID_GRUPO_USUARIO&#13;&#10;               LEFT JOIN  SUP_LOTE                   A ON A.ID_ALMOXARIFADO      = H.ID_ALMOXARIFADO&#13;&#10;                                                      /*FILTRO_MATERIAL*/&#13;&#10;               LEFT JOIN  SUP_LOTE_MOV               B ON B.ID_LOTE              = A.ID_LOTE&#13;&#10;               LEFT JOIN  SUP_ALMOXARIFADO           C ON C.ID_ALMOXARIFADO      = A.ID_ALMOXARIFADO&#13;&#10;               LEFT JOIN  SUP_MATERIAL               D ON D.ID_MATERIAL          = A.ID_MATERIAL&#13;&#10;               LEFT JOIN  SUP_GRUPO                  E ON E.ID_GRUPO             = D.ID_GRUPO&#13;&#10;               LEFT JOIN  SUP_GRUPO                  F ON F.ID_GRUPO             = E.ID_GRUPO_PAI&#13;&#10;         WHERE G.ID_USUARIO   = :ID_USUARIO&#13;&#10;           AND C.ID_ENTIDADE  = :ID_ENTIDADE                                                                                                    &#13;&#10;           AND ( H.ALMOXARIFE = 1 OR H.CONSULTAR = 1 )&#13;&#10;           AND A.ID_LOTE      IS NOT NULL&#13;&#10;           AND ( A.ID_ALMOXARIFADO = :ID_ALMOXARIFADO OR -1 = :ID_ALMOXARIFADO )&#13;&#10;           AND (E.ID_GRUPO = :ID_GRUPO OR -1 = :ID_GRUPO)&#13;&#10;           AND (F.ID_GRUPO = :ID_GRUPO_PAI OR -1 = :ID_GRUPO_PAI)&#13;&#10;           /*FILTRO_MATERIAL*/&#13;&#10;           AND ( (1 = :TP_VENCIMENTO AND A.DT_VALIDADE  &lt; CAST('TODAY' AS DATE)) OR 1 &lt;&gt; :TP_VENCIMENTO )&#13;&#10;           AND ( (2 = :TP_VENCIMENTO AND A.DT_VALIDADE &gt;= CAST('TODAY' AS DATE)&#13;&#10;                                     AND A.DT_VALIDADE &gt;= CAST(:DT_VENCIMENTO_INI AS DATE)&#13;&#10;                                     AND A.DT_VALIDADE &lt;= CAST(:DT_VENCIMENTO_FIN AS DATE)  ) OR 2 &lt;&gt; :TP_VENCIMENTO )&#13;&#10;        &#13;&#10;         GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14&#13;&#10;        HAVING (1 = :EXIBIR_SOMENTE_EM_ESTOQUE AND ROUND(SUM(B.QTD), 4) &gt; 0) OR&#13;&#10;               (0 = :EXIBIR_SOMENTE_EM_ESTOQUE)&#13;&#10;       ) A1&#13;&#10; ORDER BY 1,2,3,10">
+        <Column Name="tp_agrupamento" DataType="System.String"/>
+        <Column Name="dias_para_vencer" DataType="System.Int32"/>
+        <Column Name="dias_vencidos" DataType="System.Int32"/>
+        <Column Name="id_lote" DataType="System.Int32"/>
+        <Column Name="nr_lote" DataType="System.String"/>
+        <Column Name="dt_fabricacao" DataType="System.DateTime"/>
+        <Column Name="dt_validade" DataType="System.DateTime"/>
+        <Column Name="cd_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <Column Name="cd_classificacao" DataType="System.String"/>
+        <Column Name="cd_material" DataType="System.Int32"/>
+        <Column Name="ds_material" DataType="System.String"/>
+        <Column Name="ds_completa" DataType="System.String"/>
+        <Column Name="un_material" DataType="System.String"/>
+        <Column Name="qtd" DataType="System.Double"/>
+        <Column Name="dt_fabricacao_str" DataType="System.String"/>
+        <Column Name="dt_validade_str" DataType="System.String"/>
+        <CommandParameter Name="TP_VENCIMENTO" DataType="22" Expression="[tpVencimento]"/>
+        <CommandParameter Name="DIAS_VENC_01" DataType="22" Expression="[diasVencimento01]"/>
+        <CommandParameter Name="DIAS_VENC_02_INI" DataType="22" Expression="[diasVencimento02Ini]"/>
+        <CommandParameter Name="DIAS_VENC_02_FIN" DataType="22" Expression="[diasVencimento02Fin]"/>
+        <CommandParameter Name="DIAS_VENC_03_INI" DataType="22" Expression="[diasVencimento03Ini]"/>
+        <CommandParameter Name="DIAS_VENC_03_FIN" DataType="22" Expression="[diasVencimento03Fin]"/>
+        <CommandParameter Name="DIAS_VENC_04" DataType="22" Expression="[diasVencimento04]"/>
+        <CommandParameter Name="ID_RELATORIO_FILTRO" DataType="9" Expression="[idRelatorioFiltro]"/>
+        <CommandParameter Name="ID_USUARIO" DataType="9" Expression="[idUsuario]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+        <CommandParameter Name="ID_ALMOXARIFADO" DataType="22" Expression="[idAlmoxarifado]"/>
+        <CommandParameter Name="ID_GRUPO" DataType="22" Expression="[idGrupo]"/>
+        <CommandParameter Name="ID_GRUPO_PAI" DataType="22" Expression="[idGrupoPai]"/>
+        <CommandParameter Name="DT_VENCIMENTO_INI" DataType="21" Expression="[SqlPeriodoVencimento.dt_vencimento_ini]"/>
+        <CommandParameter Name="DT_VENCIMENTO_FIN" DataType="21" Expression="[SqlPeriodoVencimento.dt_vencimento_fin]"/>
+        <CommandParameter Name="EXIBIR_SOMENTE_EM_ESTOQUE" DataType="22" Expression="[somenteMateriaisEmEstoque]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlAlmoxarifado" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_ALMOXARIFADO&#13;&#10;     , TRIM(A.DS_ALMOXARIFADO) AS DS_ALMOXARIFADO              &#13;&#10;  FROM SUP_ALMOXARIFADO A&#13;&#10; WHERE A.ID_ALMOXARIFADO = :ID_ALMOXARIFADO">
+        <Column Name="cd_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <CommandParameter Name="ID_ALMOXARIFADO" DataType="22" Expression="[idAlmoxarifado]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="SqlGrupo" DataType="System.Int32" Enabled="true" SelectCommand=" SELECT A.CD_GRUPO&#13;&#10;     , TRIM(A.DS_GRUPO) AS DS_GRUPO              &#13;&#10;  FROM SUP_GRUPO A&#13;&#10; WHERE A.ID_GRUPO = :ID_GRUPO_PAI">
+        <Column Name="cd_grupo" DataType="System.Int32"/>
+        <Column Name="ds_grupo" DataType="System.String"/>
+        <CommandParameter Name="ID_GRUPO_PAI" DataType="22" Expression="[idGrupoPai]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table5" Alias="SqlSubGrupo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_GRUPO AS CD_SUBGRUPO&#13;&#10;     , TRIM(A.DS_GRUPO) AS DS_SUBGRUPO&#13;&#10;  FROM SUP_GRUPO A&#13;&#10; WHERE A.ID_GRUPO = :ID_GRUPO">
+        <Column Name="cd_subgrupo" DataType="System.Int32"/>
+        <Column Name="ds_subgrupo" DataType="System.String"/>
+        <CommandParameter Name="ID_GRUPO" DataType="22" Expression="[idGrupo]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Vencimento de lotes&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="62"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="2602"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="diasVencimento02Ini" DataType="System.String" Expression="&quot;11&quot;"/>
+    <Parameter Name="diasVencimento02Fin" DataType="System.String" Expression="&quot;20&quot;"/>
+    <Parameter Name="diasVencimento03Ini" DataType="System.String" Expression="&quot;21&quot;"/>
+    <Parameter Name="diasVencimento03Fin" DataType="System.String" Expression="&quot;30&quot;"/>
+    <Parameter Name="diasVencimento04" DataType="System.String" Expression="&quot;31&quot;"/>
+    <Parameter Name="idAlmoxarifado" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idGrupo" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idGrupoPai" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="tpVencimento" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="dtVencimentoIni" DataType="System.String" Expression="&quot;27/08/2025&quot;"/>
+    <Parameter Name="dtVencimentoFin" DataType="System.String" Expression="&quot;26/09/2025&quot;"/>
+    <Parameter Name="somenteMateriaisEmEstoque" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="diasVencimento01" DataType="System.String" Expression="&quot;10&quot;"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <TextObject Name="Text1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" ZOrder="7" Left="-9450" Top="-9450" Width="1047.06" Height="11.34" Fill.Color="129, 245, 230, 207" Cursor="IBeam" CanGrow="true" Text="[filtro]" Font="Tahoma, 7pt, style=Bold" Wysiwyg="true"/>
+      <inherited Name="BndFiltro" Top="97.2">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child1" ZOrder="-1" Top="118.81" Width="1047.06" Height="18.9" BeforePrintEvent="Child1_BeforePrint">
+          <TextObject Name="childFiltro" Top="3.78" Width="1047.06" Height="11.34" Border.Lines="All" Border.Color="White" Fill.Color="129, 245, 230, 207" CanGrow="true" Text="Vencimento: [IIf(ToInt32([TpVencimento]) == 1, &quot;&lt;b&gt;Lotes vencidos&lt;/b&gt;&quot;, IIf(ToInt32([TpVencimento]) == 2, &quot;&lt;b&gt;Lotes à vencer&lt;/b&gt;&quot;, &quot;Todos os lotes&quot;))][IIf(ToInt32([TpVencimento]) == 2, Format(&quot; | Data de vencimento entre &lt;b&gt;{0}&lt;/b&gt; e &lt;b&gt;{1}&lt;/b&gt;&quot;, [DtVencimentoIni], [DtVencimentoFin]), &quot;&quot;)][IIf(ToInt32([IdAlmoxarifado]) &gt; 0, Format(&quot; | Almoxarifado: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlAlmoxarifado.CD_ALMOXARIFADO], [SqlAlmoxarifado.DS_ALMOXARIFADO]), &quot;&quot;)][IIf(ToInt32([IdGrupoPai]) != -1, Format(&quot; | Grupo: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlGrupo.CD_GRUPO], [SqlGrupo.DS_GRUPO]), &quot;&quot;)][IIf(ToInt32([IdGrupo]) != -1, Format(&quot; | Subgrupo: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlSubgrupo.CD_SUBGRUPO], [SqlSubgrupo.DS_SUBGRUPO]), &quot;&quot;)]" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextRenderType="HtmlTags"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="grpLote" ZOrder="0" Top="140.41" Width="1047.06" Height="20.03" BeforePrintEvent="grpLote_BeforePrint" Condition="[SqlLote.tp_agrupamento]">
+      <TextObject Name="SqlLoteTP_AGRUPAMENTO" Width="1047.06" Height="20.03" Fill.Color="ButtonFace" Text="[IIf([SqlLote.TP_AGRUPAMENTO] == &quot;01&quot;, Format(&quot;Materiais com vencimento para os próximos {0} dias&quot;, ToInt32([DiasVencimento01])), IIf([SqlLote.TP_AGRUPAMENTO] == &quot;02&quot;, Format(&quot;Materiais com vencimento entre {0} e {1} dias&quot;, [DiasVencimento02Ini], [DiasVencimento02Fin]), IIf([SqlLote.TP_AGRUPAMENTO] == &quot;03&quot;, Format(&quot;Materiais com vencimento entre {0} e {1} dias&quot;, [DiasVencimento03Ini],[DiasVencimento03Fin]), IIf([SqlLote.TP_AGRUPAMENTO] == &quot;04&quot;, Format(&quot;Materiais com vencimento superior a {0} dias&quot;, [DiasVencimento04]), &quot;&quot;))))]" Font="Tahoma, 7pt, style=Bold"/>
+      <DataBand Name="Data1" Top="194.19" Width="1047.06" Height="12.1" CanGrow="true" CanBreak="true" DataSource="Table2" PrintIfDetailEmpty="true" PrintIfDatasourceEmpty="true">
+        <TextObject Name="Text94" Width="79.38" Height="12.1" Border.Color="White" CanGrow="true" Text="[SqlLote.cd_classificacao]&#13;&#10;" Font="Tahoma, 6pt" Wysiwyg="true"/>
+        <TextObject Name="Text95" Left="69.93" Width="387.07" Height="12.1" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlLote.ds_material]" Font="Tahoma, 6pt" Wysiwyg="true"/>
+        <TextObject Name="Text96" Left="457" Width="40.07" Height="12.1" Border.Color="White" CanGrow="true" Text="[SqlLote.un_material]" Format="Custom" Format.Format="0000000" HorzAlign="Center" Font="Tahoma, 6pt" Wysiwyg="true"/>
+        <TextObject Name="Text97" Left="497.07" Width="199.96" Height="12.1" Border.Color="White" CanGrow="true" Text="[SqlLote.cd_almoxarifado] - [SqlLote.ds_almoxarifado]" Font="Tahoma, 6pt" Wysiwyg="true"/>
+        <TextObject Name="Text98" Left="697.03" Width="69.93" Height="12.1" Border.Color="White" CanGrow="true" Text="[SqlLote.nr_lote]" Font="Tahoma, 6pt"/>
+        <TextObject Name="Text99" Left="766.96" Width="60.1" Height="12.1" Border.Color="White" CanGrow="true" Text="[SqlLote.dt_fabricacao_str]" Format="Date" Format.Format="dd/MM/yyyy" Font="Tahoma, 6pt"/>
+        <TextObject Name="Text100" Left="827.06" Width="60.1" Height="12.1" Border.Color="White" CanGrow="true" Text="[SqlLote.dt_validade_str]" Format="Date" Format.Format="dd/MM/yyyy" Font="Tahoma, 6pt"/>
+        <TextObject Name="MvMinimo" Left="887.17" Width="80.14" Height="12.1" Border.Color="White" CanGrow="true" Text="[SqlLote.qtd]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" Font="Tahoma, 6pt"/>
+        <TextObject Name="memVencimento" Left="966.92" Width="80.14" Height="12.1" Border.Color="White" CanGrow="true" BeforePrintEvent="memVencimento_BeforePrint" Format="Date" Format.Format="dd/MM/yyyy" HorzAlign="Center" Font="Tahoma, 6pt"/>
+        <DataHeaderBand Name="cabRelatorio" Top="163.14" Width="1047.06" Height="28.35" BeforePrintEvent="cabRelatorio_BeforePrint">
+          <TextObject Name="Text82" Width="497.07" Height="12.85" Anchor="Top, Left, Right" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Material" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+          <TextObject Name="Text83" Top="12.85" Width="69.93" Height="12.85" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Classificação" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+          <TextObject Name="memCabLote" Left="497.07" Width="549.99" Height="12.85" Anchor="Top, Left, Right" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Lote" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+          <TextObject Name="Text86" Left="69.93" Top="12.85" Width="387.07" Height="12.85" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="descrição" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White" Wysiwyg="true"/>
+          <TextObject Name="Text87" Left="457" Top="12.85" Width="40.07" Height="12.85" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="U.M." HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+          <TextObject Name="Text88" Left="497.07" Top="12.85" Width="199.96" Height="12.85" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Almoxarifado" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+          <TextObject Name="Text89" Left="697.03" Top="12.85" Width="69.93" Height="12.85" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Número" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+          <TextObject Name="Text90" Left="766.96" Top="12.85" Width="60.1" Height="12.85" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Fabricação" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White" Wysiwyg="true"/>
+          <TextObject Name="Text91" Left="827.06" Top="12.85" Width="60.1" Height="12.85" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Validade" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+          <TextObject Name="Text92" Left="887.17" Top="12.85" Width="80.14" Height="12.85" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Qualidade" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+          <TextObject Name="memCabVencimento" Left="966.92" Top="12.85" Width="80.14" Height="12.85" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Vencimento" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        </DataHeaderBand>
+      </DataBand>
+      <GroupFooterBand Name="grfLote" Top="209" Width="1047.06" Height="15.12" BeforePrintEvent="GroupFooter1_BeforePrint"/>
+    </GroupHeaderBand>
+    <inherited Name="BndRodape" Top="226.82">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

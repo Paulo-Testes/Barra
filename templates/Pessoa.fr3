@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<inherited ParentReport="Retrato" PreviewOptions.AllowEdit="False" PreviewOptions.Buttons="1535" ReportOptions.LastChange="44280,6949719907" ScriptText.Text="procedure mdtPessoaOnBeforePrint(Sender: TfrxComponent);&#13;&#10;begin&#13;&#10;  chdPessoaFisica.Visible := &#60;SqlPessoa.&#34;id_tp_entidade&#34;&#62; = 2;&#13;&#10;  chdPessoaJuridica.Visible := &#60;SqlPessoa.&#34;id_tp_entidade&#34;&#62; = 1;&#13;&#10;  chdEnderecoCorrespondencia.Visible := (&#60;SqlPessoa.&#34;tem_endereco_correspondencia&#34;&#62; = 1) and (&#60;SqlEndereco.&#34;entrega&#34;&#62; = 0);&#13;&#10;  chdCBO.Visible := (&#60;SqlPessoa.&#34;id_tp_entidade&#34;&#62; = 2) and (&#60;SqlPessoa.&#34;tem_cbo&#34;&#62; = 1);&#13;&#10;end;&#13;&#10;&#13;&#10;begin&#13;&#10;&#13;&#10;end." StoreInDFM="False">
+  <Datasets>
+    <item DataSet="SqlCliente" DataSetName="SqlCliente"/>
+    <item DataSet="SqlUsuario" DataSetName="SqlUsuario"/>
+    <item DataSet="SqlModulo" DataSetName="SqlModulo"/>
+    <item DataSet="SqlPessoa" DataSetName="SqlPessoa"/>
+    <item DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica"/>
+    <item DataSet="SqlPessoaJuridica" DataSetName="SqlPessoaJuridica"/>
+    <item DataSet="SqlEndereco" DataSetName="SqlEndereco"/>
+    <item DataSet="SqlEnderecoCorrespondencia" DataSetName="SqlEnderecoCorrespondencia"/>
+    <item DataSet="SqlCBO" DataSetName="SqlCBO"/>
+  </Datasets>
+  <Variables>
+    <item InheritedName=" Internas"/>
+    <item InheritedName="IdModulo"/>
+    <item InheritedName="Personalizado"/>
+    <item InheritedName="Formato"/>
+    <item InheritedName="CodigoRelatorio"/>
+    <item InheritedName=" Disponiveis"/>
+    <item InheritedName="IdEntidade"/>
+    <item InheritedName="IdRelatorioFiltro"/>
+    <item InheritedName="Competencia"/>
+    <item InheritedName=" Utilizadas"/>
+    <item InheritedName="IdUsuario"/>
+    <item Name="IdPessoa" Value="-1"/>
+  </Variables>
+  <inherited Name="Data">
+    <inherited Name="SqlCliente"/>
+    <inherited Name="SqlUsuario"/>
+    <inherited Name="SqlModulo"/>
+    <TfrxADOQuery Name="SqlPessoa" UserName="SqlPessoa" CloseDataSource="True" FieldAliases.Text="" BCDToCurrency="False" IgnoreDupParams="False" SQL.Text="SELECT&#13;&#10;  A.ID_PESSOA,&#13;&#10;  A.ID_TP_ENTIDADE,&#13;&#10;  B.DS_TP_ENTIDADE,&#13;&#10;  A.NOME_RAZAO,&#13;&#10;  A.DOCUMENTO_FORMATADO,&#13;&#10;  A.ID_PESSOA_FISICA,&#13;&#10;  A.ID_PESSOA_JURIDICA,&#13;&#10;  A.FONE1,&#13;&#10;  A.FONE2,&#13;&#10;  A.FAX,&#13;&#10;  A.CELULAR,&#13;&#10;  A.EMAIL,&#13;&#10;  A.EMAIL_ALTERNATIVO,&#13;&#10;  A.SITE,&#13;&#10;  CASE WHEN (SELECT E.ID_ENDERECO FROM SIS_ENDERECO E&#13;&#10;             WHERE E.ID_PESSOA = A.ID_PESSOA AND E.PRINCIPAL = 0 ROWS 1) IS NULL THEN 0&#13;&#10;       ELSE 1&#13;&#10;  END AS TEM_ENDERECO_CORRESPONDENCIA,&#13;&#10;  CASE WHEN (SELECT O.ID_CBO FROM SIS_PESSOA_CBO O&#13;&#10;             WHERE O.ID_PESSOA = A.ID_PESSOA ROWS 1) IS NULL THEN 0&#13;&#10;       ELSE 1&#13;&#10;  END AS TEM_CBO&#13;&#10;FROM SIS_PESSOA           A&#13;&#10;LEFT JOIN SIS_TP_ENTIDADE B ON B.ID_TP_ENTIDADE = A.ID_TP_ENTIDADE&#13;&#10;WHERE A.ID_PESSOA = :ID_PESSOA&#13;&#10;  " CommandTimeout="30" LockType="ltReadOnly" PropData="05704C65667402300470546F70039C000A506172616D657465727301010646204E616D653D2249445F504553534F41222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B4964506573736F61262336323B220000"/>
+    <TfrxADOQuery Name="SqlPessoaFisica" UserName="SqlPessoaFisica" CloseDataSource="True" FieldAliases.Text="" BCDToCurrency="False" IgnoreDupParams="False" SQL.Text="SELECT&#13;&#10;  A.ID_PESSOA_FISICA,&#13;&#10;  A.APELIDO,&#13;&#10;  A.NOME_CONJUGE,&#13;&#10;  A.PAI,&#13;&#10;  A.MAE,&#13;&#10;  A.ID_TP_ESTADO_CIVIL,&#13;&#10;  B.DS_TP_ESTADO_CIVIL,&#13;&#10;  A.ID_TP_SEXO,&#13;&#10;  C.DS_TP_SEXO,&#13;&#10;  A.DT_NASCIMENTO,&#13;&#10;  A.NATURALIDADE,&#13;&#10;  D.DS_MUNICIPIO AS MUNICIPIO_NATURALIDADE,&#13;&#10;  A.RG_NUMERO,&#13;&#10;  A.RG_ORGAO_EXPEDITOR,&#13;&#10;  A.RG_EXPEDICAO,&#13;&#10;  A.PIS_PASEP_NIT,&#13;&#10;  A.PROFISSAO&#13;&#10;FROM SIS_PESSOA_FISICA        A&#13;&#10;LEFT JOIN SIS_TP_ESTADO_CIVIL B ON B.ID_TP_ESTADO_CIVIL = A.ID_TP_ESTADO_CIVIL&#13;&#10;LEFT JOIN SIS_TP_SEXO         C ON C.ID_TP_SEXO         = A.ID_TP_SEXO&#13;&#10;LEFT JOIN SIS_MUNICIPIO       D ON D.ID_MUNICIPIO       = A.NATURALIDADE&#13;&#10;WHERE A.ID_PESSOA_FISICA = :ID_PESSOA_FISICA&#13;&#10;  " CommandTimeout="30" LockType="ltReadOnly" PropData="05704C656674027C0470546F70039C000A506172616D657465727301010669204E616D653D2249445F504553534F415F464953494341222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B53716C506573736F612E262333343B69645F706573736F615F666973696361262333343B262336323B220000"/>
+    <TfrxADOQuery Name="SqlPessoaJuridica" UserName="SqlPessoaJuridica" CloseDataSource="True" FieldAliases.Text="" BCDToCurrency="False" IgnoreDupParams="False" SQL.Text="SELECT&#13;&#10;  A.ID_PESSOA_JURIDICA,&#13;&#10;  A.FANTASIA,&#13;&#10;  A.ID_TP_ENQUADRAMENTO,&#13;&#10;  B.DS_TP_ENQUADRAMENTO,&#13;&#10;  A.IE,&#13;&#10;  C.UF AS UF_IE,&#13;&#10;  A.IM,&#13;&#10;  A.DT_CRIACAO_CNPJ&#13;&#10;FROM SIS_PESSOA_JURIDICA       A&#13;&#10;LEFT JOIN SIS_TP_ENQUADRAMENTO B ON B.ID_TP_ENQUADRAMENTO = A.ID_TP_ENQUADRAMENTO&#13;&#10;LEFT JOIN SIS_ESTADO           C ON C.ID_ESTADO           = A.ID_ESTADO_IE&#13;&#10;WHERE A.ID_PESSOA_JURIDICA = :ID_PESSOA_JURIDICA&#13;&#10;  " CommandTimeout="30" LockType="ltReadOnly" PropData="05704C65667403D8000470546F70039C000A506172616D65746572730101066D204E616D653D2249445F504553534F415F4A55524944494341222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B53716C506573736F612E262333343B69645F706573736F615F6A75726964696361262333343B262336323B220000"/>
+    <TfrxADOQuery Name="SqlEndereco" UserName="SqlEndereco" CloseDataSource="True" FieldAliases.Text="" BCDToCurrency="False" IgnoreDupParams="False" SQL.Text="SELECT&#13;&#10;  A.ID_ENDERECO,&#13;&#10;  A.ID_TP_LOGRADOURO,&#13;&#10;  B.DS_TP_LOGRADOURO,&#13;&#10;  A.DS_LOGRADOURO,&#13;&#10;  A.NR_ENDERECO,&#13;&#10;  A.BAIRRO,&#13;&#10;  A.COMPLEMENTO,&#13;&#10;  A.ID_MUNICIPIO,&#13;&#10;  C.DS_MUNICIPIO,&#13;&#10;  D.UF,&#13;&#10;  A.CEP,&#13;&#10;  A.ENTREGA&#13;&#10;FROM SIS_ENDERECO           A&#13;&#10;LEFT JOIN SIS_TP_LOGRADOURO B ON B.ID_TP_LOGRADOURO = A.ID_TP_LOGRADOURO&#13;&#10;LEFT JOIN SIS_MUNICIPIO     C ON C.ID_MUNICIPIO = A.ID_MUNICIPIO&#13;&#10;LEFT JOIN SIS_ESTADO        D ON D.ID_ESTADO = C.ID_ESTADO&#13;&#10;WHERE A.ID_PESSOA = :ID_PESSOA&#13;&#10;  AND A.PRINCIPAL = 1&#13;&#10;  " CommandTimeout="30" LockType="ltReadOnly" PropData="05704C65667402340470546F7003EC000A506172616D65746572730101065B204E616D653D2249445F504553534F41222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B53716C506573736F612E262333343B69645F706573736F61262333343B262336323B220000"/>
+    <TfrxADOQuery Name="SqlEnderecoCorrespondencia" UserName="SqlEnderecoCorrespondencia" CloseDataSource="True" FieldAliases.Text="" BCDToCurrency="False" IgnoreDupParams="False" SQL.Text="SELECT&#13;&#10;  A.ID_ENDERECO,&#13;&#10;  A.ID_TP_LOGRADOURO,&#13;&#10;  B.DS_TP_LOGRADOURO,&#13;&#10;  A.DS_LOGRADOURO,&#13;&#10;  A.NR_ENDERECO,&#13;&#10;  A.BAIRRO,&#13;&#10;  A.COMPLEMENTO,&#13;&#10;  A.ID_MUNICIPIO,&#13;&#10;  C.DS_MUNICIPIO,&#13;&#10;  D.UF,&#13;&#10;  A.CEP&#13;&#10;FROM SIS_ENDERECO           A&#13;&#10;LEFT JOIN SIS_TP_LOGRADOURO B ON B.ID_TP_LOGRADOURO = A.ID_TP_LOGRADOURO&#13;&#10;LEFT JOIN SIS_MUNICIPIO     C ON C.ID_MUNICIPIO = A.ID_MUNICIPIO&#13;&#10;LEFT JOIN SIS_ESTADO        D ON D.ID_ESTADO = C.ID_ESTADO&#13;&#10;WHERE A.ID_PESSOA = :ID_PESSOA&#13;&#10;  AND A.PRINCIPAL = 0&#13;&#10;  " CommandTimeout="30" LockType="ltReadOnly" PropData="05704C65667403AC000470546F7003EC000A506172616D65746572730101065B204E616D653D2249445F504553534F41222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B53716C506573736F612E262333343B69645F706573736F61262333343B262336323B220000"/>
+    <TfrxADOQuery Name="SqlCBO" UserName="SqlCBO" CloseDataSource="True" FieldAliases.Text="" BCDToCurrency="False" IgnoreDupParams="False" SQL.Text="SELECT&#13;&#10;  A.ID_PESSOA,&#13;&#10;  A.ID_CBO,&#13;&#10;  A.PADRAO,&#13;&#10;  B.CD_CBO,&#13;&#10;  B.DS_CBO&#13;&#10;FROM SIS_PESSOA_CBO A&#13;&#10;LEFT JOIN SIS_CBO   B ON B.ID_CBO = A.ID_CBO&#13;&#10;WHERE A.ID_PESSOA = :ID_PESSOA&#13;&#10;ORDER BY&#13;&#10;  B.CD_CBO    " CommandTimeout="30" LockType="ltReadOnly" PropData="05704C6566740324010470546F7003EC000A506172616D65746572730101065B204E616D653D2249445F504553534F41222044617461547970653D226674496E7465676572222045787072657373696F6E3D22262336303B53716C506573736F612E262333343B69645F706573736F61262333343B262336323B220000"/>
+  </inherited>
+  <inherited Name="Page1" PaperSize="9">
+    <inherited Name="bndCabecalho" Top="18,89765">
+      <inherited Name="Logo"/>
+      <inherited Name="Brasao"/>
+      <inherited Name="TxtNomeCliente"/>
+      <inherited Name="TxtTitulo1"/>
+      <inherited Name="TxtTitulo2"/>
+      <inherited Name="TxtTituloRelatorio" Text="Cadastro da Pessoa"/>
+      <inherited Name="Line1" Visible="False"/>
+      <inherited Name="TxtData"/>
+      <inherited Name="TxtHora"/>
+      <inherited Name="TxtCompetencia"/>
+    </inherited>
+    <inherited Name="bndRodape" Top="755,906">
+      <inherited Name="Line2"/>
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao"/>
+      <inherited Name="TxtDataHora"/>
+    </inherited>
+    <TfrxMasterData Name="mdtPessoa" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="37,7953" Left="0" Top="151,1812" Width="718,1107" OnBeforePrint="mdtPessoaOnBeforePrint" Child="chdContatos" ColumnWidth="0" ColumnGap="0" DataSet="SqlPessoa" DataSetName="SqlPessoa" PrintChildIfInvisible="True" PrintIfDetailEmpty="True" RowCount="0">
+      <TfrxMemoView Name="SqlPessoads_tp_entidade" IndexTag="1" AllowVectorExport="True" Left="0" Top="0" Width="400,63018" Height="18,8976378" AutoWidth="True" DataSet="SqlPessoa" DataSetName="SqlPessoa" Font.Charset="1" Font.Color="16777215" Font.Height="-11" Font.Name="Tahoma" Font.Style="1" Frame.Typ="0" Fill.BackColor="7754282" GapX="5" ParentFont="False" VAlign="vaCenter" Text="[SqlPessoa.&#34;ds_tp_entidade&#34;]:  [SqlPessoa.&#34;documento_formatado&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo26" Align="baWidth" AllowVectorExport="True" Left="81,22047" Top="18,89765" Width="636,89023" Height="18,8976378" DataField="nome_razao" DataSet="SqlPessoa" DataSetName="SqlPessoa" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="1" Frame.Typ="15" GapX="5" ParentFont="False" VAlign="vaCenter" Text="[SqlPessoa.&#34;nome_razao&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo32" Align="baLeft" AllowVectorExport="True" Left="0" Top="18,89765" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="[IIF(&#60;SqlPessoa.&#34;id_tp_entidade&#34;&#62; = 1, 'Razão Social:', 'Nome:')]"/>
+    </TfrxMasterData>
+    <TfrxChild Name="chdPessoaFisica" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="94,48825" Left="0" Top="291,02381" Width="718,1107" Child="chdPessoaJuridica" PrintChildIfInvisible="True" ToNRows="0" ToNRowsMode="rmCount">
+      <TfrxMemoView Name="Memo2" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="0" Width="277,79527071" Height="18,8976378" DataField="apelido" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;apelido&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo3" Align="baLeft" AllowVectorExport="True" Left="0" Top="0" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Apelido:"/>
+      <TfrxMemoView Name="Memo4" Align="baWidth" AllowVectorExport="True" Left="451,57480071" Top="0" Width="266,53589929" Height="18,8976378" DataField="nome_conjuge" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;nome_conjuge&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo5" Align="baLeft" AllowVectorExport="True" Left="359,01574071" Top="0" Width="92,55906" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Cônjuge:"/>
+      <TfrxMemoView Name="Memo6" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="18,89765" Width="277,79527071" Height="18,8976378" DataField="pai" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;pai&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo7" Align="baLeft" AllowVectorExport="True" Left="0" Top="18,89765" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Nome do Pai:"/>
+      <TfrxMemoView Name="Memo8" Align="baWidth" AllowVectorExport="True" Left="451,57480071" Top="18,89765" Width="266,53589929" Height="18,8976378" DataField="mae" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;mae&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo9" Align="baLeft" AllowVectorExport="True" Left="359,01574071" Top="18,89765" Width="92,55906" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Nome da Mãe:"/>
+      <TfrxMemoView Name="Memo10" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="37,7953" Width="81,25971071" Height="18,8976378" DataField="ds_tp_estado_civil" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;ds_tp_estado_civil&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo11" Align="baLeft" AllowVectorExport="True" Left="0" Top="37,7953" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Estado Civil:"/>
+      <TfrxMemoView Name="Memo12" Align="baLeft" AllowVectorExport="True" Left="198,34629071" Top="37,7953" Width="54,80300071" Height="18,8976378" DataField="ds_tp_sexo" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;ds_tp_sexo&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo13" Align="baLeft" AllowVectorExport="True" Left="162,48018071" Top="37,7953" Width="35,86611" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Sexo:"/>
+      <TfrxMemoView Name="Memo14" Align="baLeft" AllowVectorExport="True" Left="292,79493142" Top="37,7953" Width="66,14159071" Height="18,8976378" DataField="dt_nascimento" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;dt_nascimento&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo15" Align="baLeft" AllowVectorExport="True" Left="253,14929142" Top="37,7953" Width="39,64564" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Nasc.:"/>
+      <TfrxMemoView Name="Memo16" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="56,69295" Width="277,79527071" Height="18,8976378" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;rg_numero&#34;] [IIF(&#60;SqlPessoaFisica.&#34;rg_orgao_expeditor&#34;&#62; = '', '', '- ' + &#60;SqlPessoaFisica.&#34;rg_orgao_expeditor&#34;&#62;)] [IIF(&#60;SqlPessoaFisica.&#34;rg_expedicao&#34;&#62; = 0, '', '- ' + FormatDateTime('dd/mm/yyyy',&#60;SqlPessoaFisica.&#34;rg_expedicao&#34;&#62;))]">
+        <Formats>
+          <item/>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo17" Align="baLeft" AllowVectorExport="True" Left="0" Top="56,69295" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="RG:"/>
+      <TfrxMemoView Name="Memo19" Align="baLeft" AllowVectorExport="True" Left="358,93652213" Top="37,7953" Width="92,59842764" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Naturalidade:"/>
+      <TfrxMemoView Name="Memo20" Align="baWidth" AllowVectorExport="True" Left="451,57480071" Top="56,69295" Width="266,53589929" Height="18,8976378" DataField="pis_pasep_nit" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;pis_pasep_nit&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo21" Align="baLeft" AllowVectorExport="True" Left="359,01574071" Top="56,69295" Width="92,55906" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="PIS/Pasep/NIT:"/>
+      <TfrxMemoView Name="Memo22" Align="baWidth" AllowVectorExport="True" Left="81,22047" Top="75,5906" Width="636,89023" Height="18,8976378" DataField="profissao" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;profissao&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo23" Align="baLeft" AllowVectorExport="True" Left="0" Top="75,5906" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Profissão:"/>
+      <TfrxMemoView Name="Memo18" Align="baWidth" AllowVectorExport="True" Left="451,53494977" Top="37,7953" Width="266,57575023" Height="18,8976378" DataField="municipio_naturalidade" DataSet="SqlPessoaFisica" DataSetName="SqlPessoaFisica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaFisica.&#34;municipio_naturalidade&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+    </TfrxChild>
+    <TfrxChild Name="chdPessoaJuridica" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="37,7953" Left="0" Top="408,18924" Width="718,1107" Child="chdEndereco" PrintChildIfInvisible="True" ToNRows="0" ToNRowsMode="rmCount">
+      <TfrxMemoView Name="Memo27" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="0" Width="277,79527071" Height="18,8976378" DataField="fantasia" DataSet="SqlPessoaJuridica" DataSetName="SqlPessoaJuridica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaJuridica.&#34;fantasia&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo28" Align="baLeft" AllowVectorExport="True" Left="0" Top="0" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Nome Fantasia:"/>
+      <TfrxMemoView Name="Memo29" Align="baWidth" AllowVectorExport="True" Left="451,57480071" Top="0" Width="266,53589929" Height="18,8976378" DataField="ds_tp_enquadramento" DataSet="SqlPessoaJuridica" DataSetName="SqlPessoaJuridica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaJuridica.&#34;ds_tp_enquadramento&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo30" Align="baLeft" AllowVectorExport="True" Left="359,01574071" Top="0" Width="92,55906" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Enquadramento:"/>
+      <TfrxMemoView Name="Memo31" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="18,89765" Width="145,51177929" Height="18,8976378" DataSet="SqlPessoaJuridica" DataSetName="SqlPessoaJuridica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaJuridica.&#34;ie&#34;] [IIF(&#60;SqlPessoaJuridica.&#34;uf_ie&#34;&#62; = '', '', '- ' + &#60;SqlPessoaJuridica.&#34;uf_ie&#34;&#62;)]"/>
+      <TfrxMemoView Name="Memo33" Align="baLeft" AllowVectorExport="True" Left="0" Top="18,89765" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="IE:"/>
+      <TfrxMemoView Name="Memo35" Align="baLeft" AllowVectorExport="True" Left="226,73224929" Top="18,89765" Width="24,56692425" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="IM:"/>
+      <TfrxMemoView Name="Memo38" Align="baLeft" AllowVectorExport="True" Left="251,29917354" Top="18,89765" Width="107,71653543" Height="18,8976378" DataField="im" DataSet="SqlPessoaJuridica" DataSetName="SqlPessoaJuridica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaJuridica.&#34;im&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo44" Align="baWidth" AllowVectorExport="True" Left="451,57476897" Top="18,89765" Width="266,53593103" Height="18,8976378" DataField="dt_criacao_cnpj" DataSet="SqlPessoaJuridica" DataSetName="SqlPessoaJuridica" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoaJuridica.&#34;dt_criacao_cnpj&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo45" Align="baLeft" AllowVectorExport="True" Left="359,01570897" Top="18,89765" Width="92,55906" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Data Insc. CNPJ:"/>
+    </TfrxChild>
+    <TfrxChild Name="chdContatos" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="56,69295" Left="0" Top="211,65368" Width="718,1107" Child="chdPessoaFisica" PrintChildIfInvisible="True" ToNRows="0" ToNRowsMode="rmCount">
+      <TfrxMemoView Name="Memo37" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="0" Width="107,71642071" Height="18,8976378" DataField="fone1" DataSet="SqlPessoa" DataSetName="SqlPessoa" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoa.&#34;fone1&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo39" Align="baLeft" AllowVectorExport="True" Left="0" Top="0" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Telefone 1:"/>
+      <TfrxMemoView Name="Memo42" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="18,89765" Width="277,79532929" Height="18,8976378" DataField="email" DataSet="SqlPessoa" DataSetName="SqlPessoa" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoa.&#34;email&#34;]"/>
+      <TfrxMemoView Name="Memo43" Align="baLeft" AllowVectorExport="True" Left="0" Top="18,89765" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="E-Mail:"/>
+      <TfrxMemoView Name="Memo48" Align="baWidth" AllowVectorExport="True" Left="451,57485929" Top="18,89765" Width="266,53584071" Height="18,8976378" DataField="email_alternativo" DataSet="SqlPessoa" DataSetName="SqlPessoa" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoa.&#34;email_alternativo&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo49" Align="baLeft" AllowVectorExport="True" Left="359,01579929" Top="18,89765" Width="92,55906" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="E-Mail Alternativo:"/>
+      <TfrxMemoView Name="Memo50" Align="baLeft" AllowVectorExport="True" Left="251,25971071" Top="0" Width="107,71642071" Height="18,8976378" DataField="fone2" DataSet="SqlPessoa" DataSetName="SqlPessoa" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoa.&#34;fone2&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo51" Align="baLeft" AllowVectorExport="True" Left="188,93689071" Top="0" Width="62,32282" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Telefone 2:"/>
+      <TfrxMemoView Name="Memo52" Align="baLeft" AllowVectorExport="True" Left="451,53519142" Top="0" Width="107,71642071" Height="18,8976378" DataField="celular" DataSet="SqlPessoa" DataSetName="SqlPessoa" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoa.&#34;celular&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo53" Align="baLeft" AllowVectorExport="True" Left="358,97613142" Top="0" Width="92,55906" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Celular:"/>
+      <TfrxMemoView Name="Memo54" Align="baWidth" AllowVectorExport="True" Left="610,23584213" Top="0" Width="107,87485787" Height="18,8976378" DataField="fax" DataSet="SqlPessoa" DataSetName="SqlPessoa" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoa.&#34;fax&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo55" Align="baLeft" AllowVectorExport="True" Left="559,25161213" Top="0" Width="50,98423" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Fax:"/>
+      <TfrxMemoView Name="Memo56" Align="baWidth" AllowVectorExport="True" Left="81,22047" Top="37,7953" Width="636,89023" Height="18,8976378" DataField="site" DataSet="SqlPessoa" DataSetName="SqlPessoa" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlPessoa.&#34;site&#34;]"/>
+      <TfrxMemoView Name="Memo57" Align="baLeft" AllowVectorExport="True" Left="0" Top="37,7953" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Site:"/>
+    </TfrxChild>
+    <TfrxChild Name="chdEndereco" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="75,5906" Left="0" Top="468,66172" Width="718,1107" Child="chdEnderecoCorrespondencia" PrintChildIfInvisible="True" ToNRows="0" ToNRowsMode="rmCount">
+      <TfrxMemoView Name="Memo58" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="18,89765" Width="553,70096071" Height="18,8976378" DataField="ds_logradouro" DataSet="SqlEndereco" DataSetName="SqlEndereco" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEndereco.&#34;ds_logradouro&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo59" Align="baLeft" AllowVectorExport="True" Left="0" Top="18,89765" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="[IIF(&#60;SqlEndereco.&#34;id_tp_logradouro&#34;&#62; = 0, 'Logradouro:', &#60;SqlEndereco.&#34;ds_tp_logradouro&#34;&#62;)]"/>
+      <TfrxMemoView Name="Memo62" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="37,7953" Width="277,79532929" Height="18,8976378" DataField="bairro" DataSet="SqlEndereco" DataSetName="SqlEndereco" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEndereco.&#34;bairro&#34;]"/>
+      <TfrxMemoView Name="Memo63" Align="baLeft" AllowVectorExport="True" Left="0" Top="37,7953" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Bairro:"/>
+      <TfrxMemoView Name="Memo64" Align="baLeft" AllowVectorExport="True" Left="634,92143071" Top="18,89765" Width="24,56692425" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Nº:"/>
+      <TfrxMemoView Name="Memo65" Align="baWidth" AllowVectorExport="True" Left="659,48835496" Top="18,89765" Width="58,62234504" Height="18,8976378" DataField="nr_endereco" DataSet="SqlEndereco" DataSetName="SqlEndereco" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEndereco.&#34;nr_endereco&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo66" Align="baWidth" AllowVectorExport="True" Left="451,57485929" Top="37,7953" Width="266,53584071" Height="18,8976378" DataField="complemento" DataSet="SqlEndereco" DataSetName="SqlEndereco" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEndereco.&#34;complemento&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo67" Align="baLeft" AllowVectorExport="True" Left="359,01579929" Top="37,7953" Width="92,55906" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Complemento:"/>
+      <TfrxMemoView Name="memEndereco" AllowVectorExport="True" Left="0" Top="3,77953" Width="60,47248" Height="15,11812" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Tahoma" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="Endereço"/>
+      <TfrxMemoView Name="Memo60" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="56,69295" Width="444,09464929" Height="18,8976378" DataField="ds_municipio" DataSet="SqlEndereco" DataSetName="SqlEndereco" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEndereco.&#34;ds_municipio&#34;]"/>
+      <TfrxMemoView Name="Memo61" Align="baLeft" AllowVectorExport="True" Left="0" Top="56,69295" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Cidade:"/>
+      <TfrxMemoView Name="Memo69" Align="baWidth" AllowVectorExport="True" Left="617,87408897" Top="56,69295" Width="100,23661103" Height="18,8976378" DataSet="SqlEndereco" DataSetName="SqlEndereco" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[IIF(Length(&#60;SqlEndereco.&#34;cep&#34;&#62;) = 8, Copy(&#60;SqlEndereco.&#34;cep&#34;&#62;, 1, 5) + '-' + Copy(&#60;SqlEndereco.&#34;cep&#34;&#62;, 6, 3), &#60;SqlEndereco.&#34;cep&#34;&#62;)]"/>
+      <TfrxMemoView Name="Memo70" Align="baLeft" AllowVectorExport="True" Left="585,78750897" Top="56,69295" Width="32,08658" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="CEP:"/>
+      <TfrxMemoView Name="Memo84" Align="baLeft" AllowVectorExport="True" Left="525,31511929" Top="56,69295" Width="24,56692425" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="UF:"/>
+      <TfrxMemoView Name="Memo85" Align="baLeft" AllowVectorExport="True" Left="549,88204354" Top="56,69295" Width="35,90546543" Height="18,8976378" DataField="uf" DataSet="SqlEndereco" DataSetName="SqlEndereco" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEndereco.&#34;uf&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+    </TfrxChild>
+    <TfrxChild Name="chdEnderecoCorrespondencia" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="75,5906" Left="0" Top="566,9295" Width="718,1107" Child="chdCBO" PrintChildIfInvisible="True" ToNRows="0" ToNRowsMode="rmCount">
+      <TfrxMemoView Name="Memo71" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="18,89765" Width="553,70096071" Height="18,8976378" DataField="ds_logradouro" DataSet="SqlEnderecoCorrespondencia" DataSetName="SqlEnderecoCorrespondencia" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEnderecoCorrespondencia.&#34;ds_logradouro&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo72" Align="baLeft" AllowVectorExport="True" Left="0" Top="18,89765" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="[IIF(&#60;SqlEnderecoCorrespondencia.&#34;id_tp_logradouro&#34;&#62; = 0, 'Logradouro:', &#60;SqlEnderecoCorrespondencia.&#34;ds_tp_logradouro&#34;&#62;)]"/>
+      <TfrxMemoView Name="Memo73" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="37,7953" Width="277,79532929" Height="18,8976378" DataField="bairro" DataSet="SqlEnderecoCorrespondencia" DataSetName="SqlEnderecoCorrespondencia" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEnderecoCorrespondencia.&#34;bairro&#34;]"/>
+      <TfrxMemoView Name="Memo74" Align="baLeft" AllowVectorExport="True" Left="0" Top="37,7953" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Bairro:"/>
+      <TfrxMemoView Name="Memo75" Align="baLeft" AllowVectorExport="True" Left="634,92143071" Top="18,89765" Width="24,56692425" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Nº:"/>
+      <TfrxMemoView Name="Memo76" Align="baWidth" AllowVectorExport="True" Left="659,48835496" Top="18,89765" Width="58,62234504" Height="18,8976378" DataField="nr_endereco" DataSet="SqlEnderecoCorrespondencia" DataSetName="SqlEnderecoCorrespondencia" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEnderecoCorrespondencia.&#34;nr_endereco&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo77" Align="baWidth" AllowVectorExport="True" Left="451,57485929" Top="37,7953" Width="266,53584071" Height="18,8976378" DataField="complemento" DataSet="SqlEnderecoCorrespondencia" DataSetName="SqlEnderecoCorrespondencia" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEnderecoCorrespondencia.&#34;complemento&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+      <TfrxMemoView Name="Memo78" Align="baLeft" AllowVectorExport="True" Left="359,01579929" Top="37,7953" Width="92,55906" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Complemento:"/>
+      <TfrxMemoView Name="memEnderecoCorrespondencia" AllowVectorExport="True" Left="0" Top="3,77953" Width="170,07885" Height="15,11812" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Tahoma" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="Endereço de Correspondência"/>
+      <TfrxMemoView Name="Memo80" Align="baLeft" AllowVectorExport="True" Left="81,22047" Top="56,69295" Width="444,09464929" Height="18,8976378" DataField="ds_municipio" DataSet="SqlEnderecoCorrespondencia" DataSetName="SqlEnderecoCorrespondencia" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEnderecoCorrespondencia.&#34;ds_municipio&#34;]"/>
+      <TfrxMemoView Name="Memo81" Align="baLeft" AllowVectorExport="True" Left="0" Top="56,69295" Width="81,22047" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Cidade:"/>
+      <TfrxMemoView Name="Memo83" Align="baLeft" AllowVectorExport="True" Left="525,31511929" Top="56,69295" Width="24,52752" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="UF:"/>
+      <TfrxMemoView Name="Memo82" Align="baWidth" AllowVectorExport="True" Left="617,83468472" Top="56,69295" Width="100,27601528" Height="18,8976378" DataSet="SqlEnderecoCorrespondencia" DataSetName="SqlEnderecoCorrespondencia" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[IIF(Length(&#60;SqlEnderecoCorrespondencia.&#34;cep&#34;&#62;) = 8, Copy(&#60;SqlEnderecoCorrespondencia.&#34;cep&#34;&#62;, 1, 5) + '-' + Copy(&#60;SqlEnderecoCorrespondencia.&#34;cep&#34;&#62;, 6, 3), &#60;SqlEnderecoCorrespondencia.&#34;cep&#34;&#62;)]"/>
+      <TfrxMemoView Name="Memo86" Align="baLeft" AllowVectorExport="True" Left="585,74810472" Top="56,69295" Width="32,08658" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="CEP:"/>
+      <TfrxMemoView Name="Memo87" Align="baLeft" AllowVectorExport="True" Left="549,84263929" Top="56,69295" Width="35,90546543" Height="18,8976378" DataField="uf" DataSet="SqlEnderecoCorrespondencia" DataSetName="SqlEnderecoCorrespondencia" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" GapX="5" ParentFont="False" WordWrap="False" VAlign="vaCenter" Text="[SqlEnderecoCorrespondencia.&#34;uf&#34;]">
+        <Formats>
+          <item/>
+          <item/>
+        </Formats>
+      </TfrxMemoView>
+    </TfrxChild>
+    <TfrxChild Name="chdCBO" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="30,23624" Left="0" Top="665,19728" Width="718,1107" PrintChildIfInvisible="True" ToNRows="0" ToNRowsMode="rmCount">
+      <TfrxMemoView Name="memCBO" AllowVectorExport="True" Left="0" Top="3,77953" Width="245,66945" Height="15,11812" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Tahoma" Font.Style="1" Frame.Typ="0" ParentFont="False" Text="CBO - Classificação Brasileira de Ocupações"/>
+      <TfrxSubreport Name="repCBO" Align="baWidth" AllowVectorExport="True" Left="0" Top="18,89765" Width="718,1107" Height="11,33859" Page="Page2"/>
+    </TfrxChild>
+  </inherited>
+  <TfrxReportPage Name="Page2" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="tahoma" Font.Style="0" PaperWidth="210" PaperHeight="297" PaperSize="9" LeftMargin="10" RightMargin="10" TopMargin="10" BottomMargin="10" ColumnWidth="0" ColumnPositions.Text="" Frame.Typ="0" MirrorMode="0" HGuides.Text="" VGuides.Text="">
+    <TfrxMasterData Name="mdtCBO" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="18,89765" Left="0" Top="60,47248" Width="718,1107" ColumnWidth="0" ColumnGap="0" DataSet="SqlCBO" DataSetName="SqlCBO" RowCount="0">
+      <TfrxMemoView Name="dtsDescricaoCBO" IndexTag="1" Align="baWidth" AllowVectorExport="True" Left="86,92919" Top="0" Width="631,18151" Height="18,89765" DataField="ds_cbo" DataSet="SqlCBO" DataSetName="SqlCBO" Frame.Typ="15" VAlign="vaCenter" Text="[SqlCBO.&#34;ds_cbo&#34;]"/>
+      <TfrxMemoView Name="dtsCodigoCBO" IndexTag="1" Align="baLeft" AllowVectorExport="True" Left="0" Top="0" Width="86,92919" Height="18,89765" DataField="cd_cbo" DataSet="SqlCBO" DataSetName="SqlCBO" Frame.Typ="15" VAlign="vaCenter" Text="[SqlCBO.&#34;cd_cbo&#34;]"/>
+    </TfrxMasterData>
+    <TfrxGroupHeader Name="grpCBO" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="18,89765" Left="0" Top="18,89765" Width="718,1107" Condition="SqlCBO.&#34;id_pessoa&#34;">
+      <TfrxMemoView Name="memCodigoCBO" Align="baLeft" AllowVectorExport="True" Left="0" Top="0" Width="86,92916803" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Código"/>
+      <TfrxMemoView Name="memDescricaoCBO" Align="baWidth" AllowVectorExport="True" Left="86,92916803" Top="0" Width="631,18153197" Height="18,8976378" Font.Charset="1" Font.Color="-16777208" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Frame.Typ="15" Fill.BackColor="15790320" GapX="4" ParentFont="False" VAlign="vaCenter" Text="Descrição"/>
+    </TfrxGroupHeader>
+  </TfrxReportPage>
+</inherited>

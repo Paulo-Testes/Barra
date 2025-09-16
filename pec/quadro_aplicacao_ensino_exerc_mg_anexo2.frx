@@ -1,0 +1,418 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\gsr-reports\base\PecRetrato.frx" BaseReportAbsolutePath="C:\gsr-reports\base\PecRetrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="09/03/2025 11:56:05" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+       
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+      string periodo = (String)Report.GetParameterValue(&quot;periodo&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtOrgao.Top = (!string.IsNullOrWhiteSpace(periodo)) ? (float) 56.7 : (float) 37.8;
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtOrgao.Top = (!string.IsNullOrWhiteSpace(periodo)) ? (float) 75.6 : (float) 56.7;
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtOrgao.Top = (!string.IsNullOrWhiteSpace(periodo)) ? (float) 75.6 : (float) 56.7;
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }      
+       
+    
+//==================================================================================================================      
+
+    private void Data1_BeforePrint(object sender, EventArgs e)
+    { 
+      TextObject Text = Text16;
+      double valor = ((Double)Report.GetColumnValue(&quot;SqlReceita.vl_acumulado&quot;));
+      if (valor == 0)
+        Text.TextColor = Color.Transparent;
+      else if (valor &lt; 0)
+        Text.TextColor = Color.Red;
+      else
+        Text.TextColor = Color.Black;
+      } 
+    
+//==================================================================================================================
+    
+    private void Data2_BeforePrint(object sender, EventArgs e)
+    {
+      TextObject Text = Text21;
+      double valor = ((Double)Report.GetColumnValue(&quot;SqlResumo.vl_acumulado&quot;));
+      if (valor == 0)
+        Text.TextColor = Color.Transparent;
+      else if (valor &lt; 0)
+        Text.TextColor = Color.Red;
+      else
+        Text.TextColor = Color.Black;
+     }  
+    
+//==================================================================================================================
+    
+    private void Text15_BeforePrint(object sender, EventArgs e)
+    {
+      int negro = ((Int16)Report.GetColumnValue(&quot;SqlReceita.negrito&quot;));
+      TextObject Text = Text15;
+      if (negro == 1)
+        {
+         Text.Font = new Font (Text.Font,FontStyle.Bold);
+          }
+      
+      TextObject text = sender as TextObject;
+
+      if (((Int16)Report.GetColumnValue(&quot;SqlReceita.nivel&quot;)) == 2)
+      {
+        //text.Padding = &quot;10;0;2;0&quot;;
+        Text.Text = &quot;    &quot; + ((string)Report.GetColumnValue(&quot;SqlReceita.descricao&quot;));
+      } 
+      else if (((Int16)Report.GetColumnValue(&quot;SqlReceita.nivel&quot;)) == 3)
+      {
+        Text.Text = &quot;         &quot; + ((string)Report.GetColumnValue(&quot;SqlReceita.descricao&quot;));
+      }
+      else if (((Int16)Report.GetColumnValue(&quot;SqlReceita.nivel&quot;)) == 4)
+      {
+        Text.Text = &quot;             &quot; + ((string)Report.GetColumnValue(&quot;SqlReceita.descricao&quot;));
+      }
+    }
+    
+//==================================================================================================================
+    
+    private void Text16_BeforePrint(object sender, EventArgs e)
+    {
+      int negro = ((Int16)Report.GetColumnValue(&quot;SqlReceita.negrito&quot;));
+      TextObject Text166 = Text16;
+      if (negro == 1)
+      {
+        Text166.Font = new Font (Text166.Font,FontStyle.Bold);
+      } 
+    }
+    
+//==================================================================================================================    
+  
+    private void Text22_BeforePrint(object sender, EventArgs e)
+    {
+      int negro = ((Int16)Report.GetColumnValue(&quot;SqlResumo.negrito&quot;));
+      TextObject Text = Text22;
+      if (negro == 1)
+      {
+        Text.Font = new Font (Text.Font,FontStyle.Bold);
+      }
+      
+      TextObject text = sender as TextObject;
+
+      if (((Int16)Report.GetColumnValue(&quot;SqlResumo.nivel&quot;)) == 2)
+      {
+        //text.Padding = &quot;10;0;2;0&quot;;
+        Text.Text = &quot;    &quot; + ((string)Report.GetColumnValue(&quot;SqlResumo.descricao&quot;));
+      } 
+      else if (((Int16)Report.GetColumnValue(&quot;SqlResumo.nivel&quot;)) == 3)
+      {
+        Text.Text = &quot;         &quot; + ((string)Report.GetColumnValue(&quot;SqlResumo.descricao&quot;));
+      }
+      else if (((Int16)Report.GetColumnValue(&quot;SqlResumo.nivel&quot;)) == 4)
+      {
+        Text.Text = &quot;             &quot; + ((string)Report.GetColumnValue(&quot;SqlResumo.descricao&quot;));
+      }
+      
+//==================================================================================================================      
+      
+    }
+
+    private void Text21_BeforePrint(object sender, EventArgs e)
+    {
+      int negro = ((Int16)Report.GetColumnValue(&quot;SqlResumo.negrito&quot;));
+      TextObject Text = Text21;
+      if (negro == 1)
+      {
+        Text.Font = new Font (Text.Font,FontStyle.Bold);
+      }  
+    }
+
+//==================================================================================================================    
+    
+    private void Text23_BeforePrint(object sender, EventArgs e)
+    {
+      TextObject Text = Text23;
+      double valor = ((Double)Report.GetColumnValue(&quot;SqlResumo.vl_percentual&quot;));
+      if (valor == 0)
+        Text.TextColor = Color.Transparent;
+      else if (valor &lt; 0)
+        Text.TextColor = Color.Red;
+      else
+        Text.TextColor = Color.Black;
+    }
+    
+//==================================================================================================================        
+   
+  
+    private void parent_FooterAssinante_BeforePrint(object sender, EventArgs e)
+    {
+      TxtAssinante1.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel1&quot;));
+      TxtAssinante2.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel2&quot;));
+      TxtAssinante3.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel3&quot;));
+      TxtAssinante4.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel4&quot;));
+    }
+}
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAf45SGh+1JQ06HfUCwVjdXkCyXOd9RvbMkV2y8PKTmYL5ELmpgxhEufvvYXggj47AbdjnR2ZIhTO/eV8u1e+0GGnzcUAf+WFwuI5rmwA1gxrF8I729e8LbLhiluYrrAVU=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlAssinante" DataType="System.Int32" PropName="Table" Enabled="true" SelectCommand="SELECT TRIM(C1.NOME_RAZAO) AS NOME_RESPONSAVEL1&#13;&#10;     , C.CARGO AS CARGO_RESPONSAVEL1&#13;&#10;     , CAST(C.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL1&#13;&#10;     , CAST(C3.MATRICULA AS VARCHAR(20)) AS MATRICULA1&#13;&#10;&#13;&#10;     , TRIM(D1.NOME_RAZAO) AS NOME_RESPONSAVEL2&#13;&#10;     , D.CARGO AS CARGO_RESPONSAVEL2&#13;&#10;     , CAST(D.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL2&#13;&#10;     , CAST(D3.MATRICULA AS VARCHAR(20)) AS MATRICULA2&#13;&#10;&#13;&#10;     , TRIM(E1.NOME_RAZAO) AS NOME_RESPONSAVEL3&#13;&#10;     , E.CARGO AS CARGO_RESPONSAVEL3&#13;&#10;     , CAST(E.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL3&#13;&#10;     , CAST(E3.MATRICULA AS VARCHAR(20)) AS MATRICULA3&#13;&#10;&#13;&#10;     , TRIM(F1.NOME_RAZAO) AS NOME_RESPONSAVEL4&#13;&#10;     , F.CARGO AS CARGO_RESPONSAVEL4&#13;&#10;     , CAST(F.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL4&#13;&#10;     , CAST(F3.MATRICULA AS VARCHAR(20)) AS MATRICULA4&#13;&#10;&#13;&#10;     , CAST(MAKE_DATE(CAST(:ANO AS INTEGER), CAST(:MES AS INTEGER), CAST(:DIA AS INTEGER)) AS TIMESTAMP) AS DT_RELATORIO&#13;&#10;&#13;&#10;  FROM SIS_RELATORIO R&#13;&#10;       LEFT JOIN PEC_RELATORIO           A  ON A.ID_RELATORIO           = R.ID_RELATORIO&#13;&#10;       LEFT JOIN PEC_RELATORIO_ASSINANTE B  ON B.ID_RELATORIO_GRUPO     = A.ID_RELATORIO_GRUPO&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL C  ON C.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_01&#13;&#10;       LEFT JOIN SIS_PESSOA              C1 ON C1.ID_PESSOA             = C.ID_PESSOA&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL D  ON D.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_02&#13;&#10;       LEFT JOIN SIS_PESSOA              D1 ON D1.ID_PESSOA             = D.ID_PESSOA&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL E  ON E.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_03&#13;&#10;       LEFT JOIN SIS_PESSOA              E1 ON E1.ID_PESSOA             = E.ID_PESSOA&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL F  ON F.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_04&#13;&#10;       LEFT JOIN SIS_PESSOA              F1 ON F1.ID_PESSOA             = F.ID_PESSOA&#13;&#10;&#13;&#10;&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(C1.DOCUMENTO) C3 ON 1=1&#13;&#10;                                                         AND C3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND C3.DT_DEMISSAO IS NULL&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(D1.DOCUMENTO) D3 ON 1=1&#13;&#10;                                                         AND D3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND D3.DT_DEMISSAO IS NULL&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(E1.DOCUMENTO) E3 ON 1=1&#13;&#10;                                                         AND E3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND E3.DT_DEMISSAO IS NULL&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(F1.DOCUMENTO) F3 ON 1=1&#13;&#10;                                                         AND F3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND F3.DT_DEMISSAO IS NULL&#13;&#10;&#13;&#10; WHERE R.ID_MODULO    = :ID_MODULO&#13;&#10;   AND R.CD_RELATORIO = :CD_RELATORIO&#13;&#10;   AND R.GERADO       = 0&#13;&#10;   AND B.DT_INICIO   &lt;= MAKE_DATE(CAST(:ANO AS INTEGER), CAST(:MES AS INTEGER), CAST(:DIA AS INTEGER))&#13;&#10;   AND A.ID_ENTIDADE  = :ID_ENTIDADE&#13;&#10; ORDER BY&#13;&#10;       B.DT_INICIO DESC&#13;&#10; LIMIT 1">
+        <Column Name="nome_responsavel1" DataType="System.String"/>
+        <Column Name="cargo_responsavel1" DataType="System.String"/>
+        <Column Name="documento_responsavel1" DataType="System.String"/>
+        <Column Name="matricula1" DataType="System.String"/>
+        <Column Name="nome_responsavel2" DataType="System.String"/>
+        <Column Name="cargo_responsavel2" DataType="System.String"/>
+        <Column Name="documento_responsavel2" DataType="System.String"/>
+        <Column Name="matricula2" DataType="System.String"/>
+        <Column Name="nome_responsavel3" DataType="System.String"/>
+        <Column Name="cargo_responsavel3" DataType="System.String"/>
+        <Column Name="documento_responsavel3" DataType="System.String"/>
+        <Column Name="matricula3" DataType="System.String"/>
+        <Column Name="nome_responsavel4" DataType="System.String"/>
+        <Column Name="cargo_responsavel4" DataType="System.String"/>
+        <Column Name="documento_responsavel4" DataType="System.String"/>
+        <Column Name="matricula4" DataType="System.String"/>
+        <Column Name="dt_relatorio" DataType="System.DateTime"/>
+        <CommandParameter Name="ANO" DataType="22" Expression="ExtractYear([dataAssinante])"/>
+        <CommandParameter Name="MES" DataType="22" Expression="ExtractMonth([dataAssinante])"/>
+        <CommandParameter Name="DIA" DataType="22" Expression="ExtractDay([dataAssinante])"/>
+        <CommandParameter Name="ID_MODULO" DataType="9" Expression="[idModulo]"/>
+        <CommandParameter Name="CD_RELATORIO" DataType="9" Expression="[codigoRelatorio]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlReceita" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CODIGO&#13;&#10;     , A.GRUPO&#13;&#10;     , A.NIVEL&#13;&#10;     , A.DESCRICAO&#13;&#10;     , CASE WHEN 01 = :CP_MES_FIN THEN A.VL_01_ARR&#13;&#10;            WHEN 02 = :CP_MES_FIN THEN A.VL_02_ARR&#13;&#10;            WHEN 03 = :CP_MES_FIN THEN A.VL_03_ARR&#13;&#10;            WHEN 04 = :CP_MES_FIN THEN A.VL_04_ARR&#13;&#10;            WHEN 05 = :CP_MES_FIN THEN A.VL_05_ARR&#13;&#10;            WHEN 06 = :CP_MES_FIN THEN A.VL_06_ARR&#13;&#10;            WHEN 07 = :CP_MES_FIN THEN A.VL_07_ARR&#13;&#10;            WHEN 08 = :CP_MES_FIN THEN A.VL_08_ARR&#13;&#10;            WHEN 09 = :CP_MES_FIN THEN A.VL_09_ARR&#13;&#10;            WHEN 10 = :CP_MES_FIN THEN A.VL_10_ARR&#13;&#10;            WHEN 11 = :CP_MES_FIN THEN A.VL_11_ARR&#13;&#10;            WHEN 12 = :CP_MES_FIN THEN A.VL_12_ARR&#13;&#10;            ELSE 0&#13;&#10;        END                                                     AS VL_ACUMULADO&#13;&#10;     , A.COR&#13;&#10;     , A.NEGRITO&#13;&#10;  FROM PEC_REL_EDUCACAO_REC A&#13;&#10; WHERE A.CP_ANO = :CP_ANO&#13;&#10;   AND A.ANEXO  = 'EXEC-MG'&#13;&#10;   AND A.QUADRO = 1&#13;&#10;   AND A.GRUPO  = 1&#13;&#10; ORDER BY&#13;&#10;       A.QUADRO&#13;&#10;     , A.GRUPO&#13;&#10;     , A.CODIGO">
+        <Column Name="codigo" DataType="System.String"/>
+        <Column Name="grupo" DataType="System.Int16"/>
+        <Column Name="nivel" DataType="System.Int16"/>
+        <Column Name="descricao" DataType="System.String"/>
+        <Column Name="vl_acumulado" DataType="System.Double"/>
+        <Column Name="cor" DataType="System.String"/>
+        <Column Name="negrito" DataType="System.Int16"/>
+        <CommandParameter Name="CP_MES_FIN" DataType="9" Expression="[CpMesFin]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[CpAno]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlResumo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CODIGO&#13;&#10;     , A.GRUPO&#13;&#10;     , A.NIVEL&#13;&#10;     , A.DESCRICAO&#13;&#10;     , CASE WHEN 01 = :CP_MES_FIN THEN A.VL_01_PAG&#13;&#10;            WHEN 02 = :CP_MES_FIN THEN A.VL_02_PAG&#13;&#10;            WHEN 03 = :CP_MES_FIN THEN A.VL_03_PAG&#13;&#10;            WHEN 04 = :CP_MES_FIN THEN A.VL_04_PAG&#13;&#10;            WHEN 05 = :CP_MES_FIN THEN A.VL_05_PAG&#13;&#10;            WHEN 06 = :CP_MES_FIN THEN A.VL_06_PAG&#13;&#10;            WHEN 07 = :CP_MES_FIN THEN A.VL_07_PAG&#13;&#10;            WHEN 08 = :CP_MES_FIN THEN A.VL_08_PAG&#13;&#10;            WHEN 09 = :CP_MES_FIN THEN A.VL_09_PAG&#13;&#10;            WHEN 10 = :CP_MES_FIN THEN A.VL_10_PAG&#13;&#10;            WHEN 11 = :CP_MES_FIN THEN A.VL_11_PAG&#13;&#10;            WHEN 12 = :CP_MES_FIN THEN A.VL_12_PAG&#13;&#10;            ELSE 0&#13;&#10;        END                                                     AS VL_ACUMULADO&#13;&#10;     , CASE WHEN A.CODIGO = '01' AND 01 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 02 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 03 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 04 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 05 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 06 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 07 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 08 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 09 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 10 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 11 = :CP_MES_FIN THEN 25&#13;&#10;            WHEN A.CODIGO = '01' AND 12 = :CP_MES_FIN THEN 25&#13;&#10;&#13;&#10;            WHEN A.CODIGO = '02' AND 01 = :CP_MES_FIN THEN A.VL_01_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 02 = :CP_MES_FIN THEN A.VL_02_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 03 = :CP_MES_FIN THEN A.VL_03_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 04 = :CP_MES_FIN THEN A.VL_04_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 05 = :CP_MES_FIN THEN A.VL_05_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 06 = :CP_MES_FIN THEN A.VL_06_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 07 = :CP_MES_FIN THEN A.VL_07_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 08 = :CP_MES_FIN THEN A.VL_08_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 09 = :CP_MES_FIN THEN A.VL_09_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 10 = :CP_MES_FIN THEN A.VL_10_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 11 = :CP_MES_FIN THEN A.VL_11_ATU&#13;&#10;            WHEN A.CODIGO = '02' AND 12 = :CP_MES_FIN THEN A.VL_12_ATU&#13;&#10;        END                                                     AS VL_PERCENTUAL&#13;&#10;     , A.COR&#13;&#10;     , A.NEGRITO&#13;&#10;  FROM PEC_REL_EDUCACAO_RES A&#13;&#10; WHERE A.CP_ANO = :CP_ANO&#13;&#10;   AND A.ANEXO  = 'EXEC-MG'&#13;&#10;   AND A.QUADRO = 1&#13;&#10;   AND A.GRUPO  = 1&#13;&#10; ORDER BY&#13;&#10;       A.QUADRO&#13;&#10;     , A.GRUPO&#13;&#10;     , A.CODIGO">
+        <Column Name="codigo" DataType="System.String"/>
+        <Column Name="grupo" DataType="System.Int16"/>
+        <Column Name="nivel" DataType="System.Int16"/>
+        <Column Name="descricao" DataType="System.String"/>
+        <Column Name="vl_acumulado" DataType="System.Double"/>
+        <Column Name="vl_percentual" DataType="System.Double"/>
+        <Column Name="cor" DataType="System.String"/>
+        <Column Name="negrito" DataType="System.Int16"/>
+        <CommandParameter Name="CP_MES_FIN" DataType="9" Expression="[CpMesFin]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[cpano]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="dataAssinante" DataType="System.String" Expression="&quot;01/01/1900&quot;"/>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Anexo II - Demonstrativo das Receitas e Despesas com Manutenção e Desenvolvimento do Ensino&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="formato" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="orgao" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="codigoRelatorio" DataType="System.Int64" Expression="-123"/>
+    <Parameter Name="competencia" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="cpAno" DataType="System.Int64" Expression="2024"/>
+    <Parameter Name="cpMesFin" DataType="System.Int64" Expression="05"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="TxtOrgao"/>
+      <inherited Name="BndFiltro">
+        <inherited Name="TxtFiltro"/>
+      </inherited>
+    </inherited>
+    <inherited Name="HeaderAssinante">
+      <inherited Name="bndAssinante">
+        <DataBand ZOrder="0" Top="267.42" Width="718.2" Height="13.23" CanGrow="true" BeforePrintEvent="Data1_BeforePrint" DataSource="Table1">
+          <TextObject Name="Text15" Top="1" Width="618.03" Height="12.1" Border.Lines="Left" CanGrow="true" BeforePrintEvent="Text15_BeforePrint" Text="[SqlReceita.descricao]&#13;&#10;" VertAlign="Center" Font="Arial, 8pt">
+            <Highlight>
+              <Condition Expression="[SqlReceita.COR] == &quot;$00DCDCDC&quot; " Fill.Color="Gainsboro" TextFill.Color="White" Font="Arial, 7.8pt, style=Bold" ApplyFill="true" ApplyTextFill="false" ApplyFont="true"/>
+              <Condition Expression="[SqlReceita.COR] == &quot;$00D2D2D2&quot; " Fill.Color="LightGray" Font="Arial, 7.8pt, style=Bold" ApplyFill="true" ApplyTextFill="false" ApplyFont="true"/>
+              <Condition Expression="[SqlReceita.COR] == &quot;$00C8C8C8&quot; " Fill.Color="Silver" Font="Arial, 7.8pt, style=Bold" ApplyFill="true" ApplyTextFill="false" ApplyFont="true"/>
+              <Condition Expression="[SqlReceita.COR] == &quot;$00EFEFEF&quot;" Fill.Color="WhiteSmoke" Font="Arial, 7.8pt, style=Bold" ApplyFill="true" ApplyTextFill="false" ApplyFont="true"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text16" Left="618.03" Top="1" Width="100.17" Height="13.23" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" BeforePrintEvent="Text16_BeforePrint" Text="[SqlReceita.vl_acumulado]&#13;&#10;" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="[SqlReceita.COR] == &quot;$00DCDCDC&quot; " Fill.Color="Gainsboro" TextFill.Color="White" Font="Arial, 7.8pt, style=Bold" ApplyFill="true" ApplyTextFill="false" ApplyFont="true"/>
+              <Condition Expression="[SqlReceita.COR] == &quot;$00D2D2D2&quot; " Fill.Color="LightGray" Font="Arial, 7.8pt, style=Bold" ApplyFill="true" ApplyTextFill="false" ApplyFont="true"/>
+              <Condition Expression="[SqlReceita.COR] == &quot;$00C8C8C8&quot; " Fill.Color="Silver" Font="Arial, 7.8pt, style=Bold" ApplyFill="true" ApplyTextFill="false" ApplyFont="true"/>
+              <Condition Expression="[SqlReceita.COR] == &quot;$00EFEFEF&quot;" Fill.Color="WhiteSmoke" Font="Arial, 7.8pt, style=Bold" ApplyFill="true" ApplyTextFill="false" ApplyFont="true"/>
+            </Highlight>
+          </TextObject>
+          <DataHeaderBand Name="DataHeader1" Top="232.3" Width="718.2" Height="15.12" Border.Lines="Left, Right, Top" RepeatOnEveryPage="true">
+            <TextObject Name="Text14" Left="618.03" Width="100.17" Height="15.12" Fill.Color="42, 82, 118" Text="Valor" VertAlign="Center" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+            <TextObject Name="Text13" Width="618.03" Height="15.12" Border.Lines="Right" Border.Color="White" Fill.Color="42, 82, 118" Text="Receita" VertAlign="Center" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+          </DataHeaderBand>
+          <DataFooterBand Name="DataFooter1" Top="300.65" Width="718.2" Height="1.45" Border.Lines="Left, Right">
+            <LineObject Name="Line1" Top="1.45" Width="718.2"/>
+          </DataFooterBand>
+        </DataBand>
+        <DataBand Name="Data2" ZOrder="1" Top="371.67" Width="718.2" Height="14.15" Border.Lines="Left, Right" CanGrow="true" BeforePrintEvent="Data2_BeforePrint" DataSource="Table2">
+          <TextObject Name="Text21" Left="518.24" Width="99.79" Height="12.1" BeforePrintEvent="Text21_BeforePrint" Text="[SqlResumo.vl_acumulado]&#13;&#10;" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt">
+            <Highlight>
+              <Condition Expression="[SqlReceita.COR] == &quot;$0076522A&quot;" TextFill.Color="White" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text22" Top="2.05" Width="518.24" Height="12.1" CanGrow="true" GrowToBottom="true" BeforePrintEvent="Text22_BeforePrint" Text="[SqlResumo.descricao]&#13;&#10;" VertAlign="Center" Font="Arial, 8pt">
+            <Highlight>
+              <Condition Expression="[SqlReceita.COR] == &quot;$0076522A&quot;" TextFill.Color="White" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text23" Left="618.03" Top="0.05" Width="100.17" Height="12.1" Border.Lines="Left" CanGrow="true" GrowToBottom="true" BeforePrintEvent="Text23_BeforePrint" Text="[SqlResumo.vl_percentual]&#13;&#10;" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt">
+            <Highlight>
+              <Condition Expression="[SqlReceita.COR] == &quot;$0076522A&quot;" TextFill.Color="White" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <DataHeaderBand Name="DataHeader2" Top="322.1" Width="718.2" Height="29.57" RepeatOnEveryPage="true">
+            <TextObject Name="Text20" Left="518.24" Top="14.4" Width="99.79" Height="15.12" Fill.Color="42, 82, 118" Text="Valor" VertAlign="Center" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+            <TextObject Name="Text18" Top="14.45" Width="518.24" Height="15.12" Border.Lines="Right" Border.Color="White" Fill.Color="42, 82, 118" Text="Exercício Atual" VertAlign="Center" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+            <TextObject Name="Text19" Width="718.2" Height="15.12" Border.Lines="Right" Text="Resumo da Aplicação na Manutenção e Desenvolvimento do Ensino" HorzAlign="Center" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+            <TextObject Name="Text17" Left="618.03" Top="14.45" Width="100.17" Height="15.12" Border.Lines="Left" Border.Color="White" Fill.Color="42, 82, 118" Text="Percentual" VertAlign="Center" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+          </DataHeaderBand>
+          <DataFooterBand Name="DataFooter2" Top="405.82" Width="718.2" Height="9.45" Border.Lines="Top">
+            <LineObject Name="Line2" Top="4.45" Width="718.2" Visible="false"/>
+          </DataFooterBand>
+        </DataBand>
+      </inherited>
+      <inherited Name="FooterAssinante" Top="435.27" BeforePrintEvent="parent_FooterAssinante_BeforePrint">
+        <inherited Name="TxtAssinante1"/>
+        <inherited Name="TxtAssinante2"/>
+        <inherited Name="TxtAssinante3"/>
+        <inherited Name="TxtAssinante4"/>
+        <inherited Name="Text5"/>
+        <inherited Name="Text6"/>
+        <inherited Name="Text7"/>
+        <inherited Name="Text8"/>
+        <inherited Name="Text9"/>
+        <inherited Name="Text10"/>
+        <inherited Name="Text11"/>
+        <inherited Name="Text12"/>
+      </inherited>
+    </inherited>
+    <inherited Name="BndRodape" Top="543.35">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao"/>
+      <inherited Name="TxtEndereco"/>
+    </inherited>
+  </inherited>
+</inherited>

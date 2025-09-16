@@ -1,0 +1,704 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="C:\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="C:\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" StartReportEvent="_StartReport" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="06/18/2025 17:13:42" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {    
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }  
+
+    //========================================================================================================================================   
+    
+    decimal vl_total_item;
+    decimal vl_total_unidade_adm;
+    decimal vl_total_geral;
+    
+    //========================================================================================================================================   
+     
+    private void BndGrupoItemMaterial_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item = ((Int32)Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));
+      
+      BndGrupoItemMaterial.Visible = tp_item == 1;
+    }
+    
+    //========================================================================================================================================       
+    
+    private void BndGrupoItemServico_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item = ((Int32)Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));
+      
+      BndGrupoItemServico.Visible = tp_item == 2;  
+    }
+
+    //========================================================================================================================================       
+    
+    private void BndGrupoItemCatalogo_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item = ((Int32)Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));
+      
+      BndGrupoItemCatalogo.Visible = tp_item == 3;
+    }
+    
+    //======================================================================================================================================== 
+    
+    private void BndItemMaterial_OnBeforePrint(object sender, EventArgs e)
+    {
+      int tp_item     = ((Int32)Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));
+      string nr_ficha = ((String)Report.GetColumnValue(&quot;SqlDetalhes.nr_ficha&quot;));
+      long imprimeDot = ((Int64)Report.GetParameterValue(&quot;imprimeDotacao&quot;));
+      
+      vl_total_item        += Convert.ToDecimal((Double)Report.GetColumnValue(&quot;SqlDetalhes.vl_total&quot;)); 
+      vl_total_unidade_adm += Convert.ToDecimal((Double)Report.GetColumnValue(&quot;SqlDetalhes.vl_total&quot;)); 
+      vl_total_geral       += Convert.ToDecimal((Double)Report.GetColumnValue(&quot;SqlDetalhes.vl_total&quot;));
+
+      BndItemMaterial.Visible = tp_item == 1;
+      
+      if((Int64)Report.GetParameterValue(&quot;emBranco&quot;) == 1){                    
+        MemMatVlUnitario.TextColor = Color.White;
+        MemMatVlTotal.TextColor    = Color.White;
+      }
+      
+      BndDotMaterial.Visible = (tp_item == 1 &amp;&amp; imprimeDot == 1);
+      BndSemDotMaterial.Visible = (BndDotMaterial.Visible == true &amp;&amp; string.IsNullOrWhiteSpace(nr_ficha));  
+      
+      BndDotServico.Visible = (tp_item &gt; 1 &amp;&amp; imprimeDot == 1);
+      BndSemDotServico.Visible = (BndDotServico.Visible == true &amp;&amp; string.IsNullOrWhiteSpace(nr_ficha)); 
+    }
+    
+    //========================================================================================================================================
+    
+    private void BndItemMaterialDsCompleta_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item          = ((Int32) Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));
+      int imprime_ds_compl = ((Int16)Report.GetColumnValue(&quot;SqlDetalhes.imprime_ds_completa&quot;));
+      string ds_compl      = ((String)Report.GetColumnValue(&quot;SqlDetalhes.ds_completa&quot;));
+      
+      BndItemMaterialDsCompleta.Visible = tp_item == 1 &amp;&amp; imprime_ds_compl == 1 &amp;&amp; !string.IsNullOrWhiteSpace(ds_compl);
+    }
+    
+    //========================================================================================================================================
+  
+    private void BndItemMaterialEspecificao_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item    = ((Int32) Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));
+      string espe    = ((String)Report.GetColumnValue(&quot;SqlDetalhes.especificacao&quot;));
+      
+      BndItemMaterialEspecificao.Visible = tp_item == 1 &amp;&amp; !string.IsNullOrWhiteSpace(espe);
+    }
+      
+    //========================================================================================================================================      
+    
+    private void BndItemServico_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item      = ((Int32) Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));
+      Int64 em_branco  = ((Int64)Report.GetParameterValue(&quot;emBranco&quot;));
+      int quantitativo = ((Int16)Report.GetColumnValue(&quot;SqlDetalhes.quantitativo&quot;));
+      
+      BndItemServico.Visible = tp_item == 2;
+      
+      if(em_branco == 1){
+        if(quantitativo == 1){
+          MemServVlUnitario.TextColor = Color.White;
+        }else {
+          MemServVlUnitario.TextColor = SystemColors.WindowText;
+        }
+        
+        MemServVlUnitario.TextColor = Color.White;
+      }
+    }
+    
+    //========================================================================================================================================          
+
+    private void BndItemServicoEspecificacao_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item    = ((Int32) Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));
+      string espe    = ((String)Report.GetColumnValue(&quot;SqlDetalhes.especificacao&quot;));
+      
+      BndItemServicoEspecificacao.Visible = tp_item == 2 &amp;&amp; !string.IsNullOrWhiteSpace(espe);
+    }
+    
+    //========================================================================================================================================          
+    
+    private void BndItemServicoUnMedida_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item   = ((Int32) Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));
+      string un_ser = ((String)Report.GetColumnValue(&quot;SqlDetalhes.un_servico&quot;));
+      
+      BndItemServicoUnMedida.Visible = tp_item == 2 &amp;&amp; !string.IsNullOrWhiteSpace(un_ser);
+    }
+    
+    //========================================================================================================================================          
+    
+    private void BndItemCatalogo_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item      = ((Int32) Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));
+      Int64 em_branco  = ((Int64)Report.GetParameterValue(&quot;emBranco&quot;));
+      
+      MemCatVlTotal.TextColor = em_branco == 1 ? Color.White : Color.Black;
+      
+      BndItemCatalogo.Visible = tp_item == 3;  
+    }          
+       
+    //========================================================================================================================================          
+    
+    private void BndDotacaoMaterial_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item = ((Int32) Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));                 
+      Int64   imp = ((Int64)Report.GetParameterValue(&quot;imprimeDotacao&quot;));
+      
+      BndDotacaoMaterial.Visible = tp_item == 1 &amp;&amp; imp == 1;
+    }       
+    
+    //========================================================================================================================================              
+
+    private void BndDotacaoServico_BeforePrint(object sender, EventArgs e)
+    {
+      int tp_item = ((Int32) Report.GetColumnValue(&quot;SqlDetalhes.tp_item&quot;));                 
+      long imp = (long)Report.GetParameterValue(&quot;imprimeDotacao&quot;);
+      
+      BndDotacaoServico.Visible = tp_item &gt; 1 &amp;&amp; imp == 1 ; 
+    }
+    
+    //========================================================================================================================================              
+
+    private void BndGrupoSolicitacaoSumario_BeforePrint(object sender, EventArgs e)
+    {
+      Int64 em_branco      = ((Int64)Report.GetParameterValue(&quot;emBranco&quot;));
+      Int64 id_unidade_adm = ((Int64)Report.GetParameterValue(&quot;idUnidadeAdm&quot;));
+      
+      if(em_branco == 1){
+        MemTotalGeral.FillColor = Color.White;
+        MemTotalGeral.TextColor = Color.White;
+      }
+      if(id_unidade_adm != -123){
+        MemAssSolicitante.Visible = false;
+        MemAssAprovador.Visible   = false; 
+      }
+    }
+    
+    //========================================================================================================================================              
+
+    private void BndGrupoItemSumario_BeforePrint(object sender, EventArgs e)
+    {
+      Int64 em_branco  = ((Int64)Report.GetParameterValue(&quot;emBranco&quot;));
+      
+      MemTotVlTotal.TextColor = em_branco == 1 ? Color.White : Color.Black;
+      
+      MemTotVlTotal.Text = vl_total_item.ToString(&quot;#,0.00&quot;);
+      vl_total_item = 0;
+    }
+    
+    //========================================================================================================================================              
+
+    private void BndGrupoUnidadeAdmSumario_BeforePrint(object sender, EventArgs e)
+    {
+      Int64 em_branco  = ((Int64)Report.GetParameterValue(&quot;emBranco&quot;));
+      
+      if(em_branco == 1){
+        MemTotUnidadeAdm.FillColor = Color.White;
+        MemTotUnidadeAdm.TextColor = Color.White;
+      }
+    }
+
+    private void MemTotUnidadeAdm_BeforePrint(object sender, EventArgs e)
+    {
+      MemTotUnidadeAdm.Text = vl_total_unidade_adm.ToString(&quot;#,0.00&quot;);
+      vl_total_unidade_adm = 0;
+    }
+
+    private void MemTotalGeral_BeforePrint(object sender, EventArgs e)
+    {
+      MemTotalGeral.Text = vl_total_geral.ToString(&quot;#,0.00&quot;);
+    }
+
+    private void _StartReport(object sender, EventArgs e)
+    {
+      vl_total_item = 0;
+      vl_total_unidade_adm = 0;
+      vl_total_geral = 0;
+    }
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O2uFSfcuznLDqShUfzRW/yE=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlSolicitacaoRegistro" DataType="System.Int32" Enabled="true" SelectCommand="SELECT SSRP.ID_SOLICITACAO_RP&#13;&#10;     , SSRP.ID_ST_SOLICITACAO_RP&#13;&#10;     , SSRP.ID_SOLICITANTE&#13;&#10;     , SSRP.NR_SOLICITACAO_RP&#13;&#10;     , SSRP.CP_ANO&#13;&#10;     , SSRP.DT_SOLICITACAO_RP&#13;&#10;     , STSR.ID_TP_SOLICITACAO_RP&#13;&#10;     , STSR.DS_TP_SOLICITACAO_RP&#13;&#10;     , SSSR.DS_ST_SOLICITACAO_RP&#13;&#10;     , SSRP.OBS&#13;&#10;     , SUSL.DS_USUARIO                AS SOLICITANTE_LOGIN&#13;&#10;     , SUSL.NOME_USUARIO              AS SOLICITANTE_NOME&#13;&#10;     , SUAP.DS_USUARIO                AS APROVADOR_LOGIN&#13;&#10;     , SUAP.NOME_USUARIO              AS APROVADOR_NOME&#13;&#10;     , STPE.DS_TP_ENTREGA&#13;&#10;     , SSRP.PRAZO_ENTREGA&#13;&#10;     , STMP.DS_TP_MEDIDA_PRAZO&#13;&#10;     , UNCO.SIGLA AS SIGLA_UNIDADE_COMPRA&#13;&#10;     , UNCO.DS_UNIDADE_COMPRA                                                          &#13;&#10;  FROM SUP_SOLICITACAO_RP SSRP&#13;&#10;       LEFT JOIN SUP_TP_SOLICITACAO_RP STSR ON STSR.ID_TP_SOLICITACAO_RP    = SSRP.ID_TP_SOLICITACAO_RP&#13;&#10;       LEFT JOIN SUP_ST_SOLICITACAO_RP SSSR ON SSSR.ID_ST_SOLICITACAO_RP    = SSRP.ID_ST_SOLICITACAO_RP&#13;&#10;       LEFT JOIN SIS_USUARIO           SUSL ON SUSL.ID_USUARIO              = SSRP.ID_SOLICITANTE&#13;&#10;       LEFT JOIN SIS_USUARIO           SUAP ON SUAP.ID_USUARIO              = SSRP.ID_USUARIO&#13;&#10;                                           AND SSSR.ID_ST_SOLICITACAO_RP    IN (2,4,5,6,8)&#13;&#10;       LEFT JOIN SUP_TP_MEDIDA_PRAZO   STMP ON STMP.ID_TP_MEDIDA_PRAZO      = SSRP.ID_TP_MEDIDA_PRAZO&#13;&#10;       LEFT JOIN SUP_TP_ENTREGA        STPE ON STPE.TP_ENTREGA              = SSRP.TP_ENTREGA&#13;&#10;       LEFT JOIN SUP_UNIDADE_COMPRA    UNCO ON UNCO.ID_UNIDADE_COMPRA       = SSRP.ID_UNIDADE_COMPRA                                                                                                                                                                                                                                                  &#13;&#10; WHERE SSRP.ID_SOLICITACAO_RP=:ID_SOLICITACAO_RP&#13;&#10; ORDER BY&#13;&#10;       SSRP.NR_SOLICITACAO_RP">
+        <Column Name="obs" DataType="System.String"/>
+        <Column Name="id_solicitacao_rp" DataType="System.Int32"/>
+        <Column Name="id_st_solicitacao_rp" DataType="System.Int16"/>
+        <Column Name="id_solicitante" DataType="System.Int32"/>
+        <Column Name="nr_solicitacao_rp" DataType="System.Int32"/>
+        <Column Name="cp_ano" DataType="System.Int16"/>
+        <Column Name="dt_solicitacao_rp" DataType="System.DateTime"/>
+        <Column Name="id_tp_solicitacao_rp" DataType="System.Int32"/>
+        <Column Name="ds_tp_solicitacao_rp" DataType="System.String"/>
+        <Column Name="ds_st_solicitacao_rp" DataType="System.String"/>
+        <Column Name="solicitante_login" DataType="System.String"/>
+        <Column Name="solicitante_nome" DataType="System.String"/>
+        <Column Name="aprovador_login" DataType="System.String"/>
+        <Column Name="aprovador_nome" DataType="System.String"/>
+        <Column Name="ds_tp_entrega" DataType="System.String"/>
+        <Column Name="prazo_entrega" DataType="System.Int16"/>
+        <Column Name="ds_tp_medida_prazo" DataType="System.String"/>
+        <Column Name="sigla_unidade_compra" DataType="System.String"/>
+        <Column Name="ds_unidade_compra" DataType="System.String"/>
+        <CommandParameter Name="id_solicitacao_rp" DataType="9" Expression="[idsolicitacaoRP]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="SqlDetalhes" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CASE WHEN SSRI.ID_MATERIAL       IS NOT NULL THEN 1&#13;&#10;            WHEN SSRI.ID_GRUPO_SERVICO  IS NOT NULL THEN 2&#13;&#10;            WHEN SSRI.ID_CATALOGO       IS NOT NULL THEN 3&#13;&#10;            ELSE 9&#13;&#10;       END                                        AS TP_ITEM&#13;&#10;     , SSRI.ORDEM&#13;&#10;     , SSRI.ID_SOLIC_RP_ITEM&#13;&#10;     , SSRI.ID_MATERIAL&#13;&#10;     , SSRI.ID_GRUPO_SERVICO&#13;&#10;     , SSRI.ID_CATALOGO&#13;&#10;&#13;&#10;     , SMAT.TP_MATERIAL&#13;&#10;     , SGMT.CD_GRUPO                              AS CD_SUBGRUPO_MATERIAL&#13;&#10;     , GRMT.CD_GRUPO                              AS CD_GRUPO_MATERIAL&#13;&#10;     , SMAT.CD_MATERIAL&#13;&#10;     , SMAT.DS_MATERIAL&#13;&#10;     , SMAT.UN_MATERIAL&#13;&#10;     , SMAT.IMPRIME_DS_COMPLETA&#13;&#10;     , SMAT.DS_COMPLETA&#13;&#10;&#13;&#10;     , GRSV.CD_GRUPO_SERVICO                      AS CD_GRUPO_SERVICO&#13;&#10;     , GRSV.DS_GRUPO_SERVICO                      AS DS_GRUPO_SERVICO&#13;&#10;     , SGSV.CD_GRUPO_SERVICO                      AS CD_SUBGRUPO_SERVICO&#13;&#10;     , SGSV.DS_GRUPO_SERVICO                      AS DS_SUBGRUPO_SERVICO&#13;&#10;     , SSRI.UN_SERVICO&#13;&#10;&#13;&#10;     , SCAT.CD_CATALOGO&#13;&#10;     , SCAT.DS_CATALOGO&#13;&#10;     , SCAT.DT_INICIO                             AS DT_INICIAL_CATALOGO&#13;&#10;     , SCAT.DT_FIM                                AS DT_FINAL_CATALOGO&#13;&#10;&#13;&#10;     , SSRI.ESPECIFICACAO                                                &#13;&#10;&#13;&#10;     , SSRI.QUANTITATIVO&#13;&#10;     , SSUA.QTD&#13;&#10;     , SSRI.VL_UNITARIO_ESTIMADO                  AS VL_UNITARIO&#13;&#10;     , CASE WHEN SSRI.QUANTITATIVO = 1&#13;&#10;            THEN ROUND(ROUND(SSUA.QTD * SSRI.VL_UNITARIO_ESTIMADO, 4), 2)              &#13;&#10;            ELSE ROUND(SSUA.VL_SERVICO, 2)         &#13;&#10;       END                                        AS VL_TOTAL&#13;&#10;     , SSUA.ID_UNIDADE_ADM&#13;&#10;     , SADM.CD_UNIDADE_ADM&#13;&#10;     , SADM.DS_UNIDADE_ADM&#13;&#10;     &#13;&#10;     , CAST(lpad(PECF.NR_FICHA, 5, '0') as varchar(5)) as NR_FICHA&#13;&#10;     , cast(PECF.DOTACAO as varchar(255)) as DOTACAO&#13;&#10;&#13;&#10;  FROM SUP_SOLIC_RP_ITEM SSRI&#13;&#10;       LEFT JOIN SUP_SOLIC_RP_UNIDADE_ADM SSUA ON SSUA.ID_SOLIC_RP_ITEM        = SSRI.ID_SOLIC_RP_ITEM&#13;&#10;       LEFT JOIN SUP_SOLIC_RP_FICHA       SRPF ON SRPF.ID_SOLIC_RP_UNIDADE_ADM = SSUA.ID_SOLIC_RP_UNIDADE_ADM&#13;&#10;       LEFT JOIN PEC_FICHA_VIEW           PECF ON PECF.ID_FICHA                = SRPF.ID_CONTA_FUNCIONAL&#13;&#10;       LEFT JOIN SUP_UNIDADE_ADM		  SADM ON SADM.ID_UNIDADE_ADM          = ssua.ID_UNIDADE_ADM&#13;&#10;       LEFT JOIN SUP_MATERIAL             SMAT ON SMAT.ID_MATERIAL             = SSRI.ID_MATERIAL&#13;&#10;       LEFT JOIN SUP_GRUPO                SGMT ON SGMT.ID_GRUPO                = SMAT.ID_GRUPO&#13;&#10;       LEFT JOIN SUP_GRUPO                GRMT ON GRMT.ID_GRUPO                = SGMT.ID_GRUPO_PAI&#13;&#10;       LEFT JOIN SUP_GRUPO_SERVICO        SGSV ON SGSV.ID_GRUPO_SERVICO        = SSRI.ID_GRUPO_SERVICO&#13;&#10;       LEFT JOIN SUP_GRUPO_SERVICO        GRSV ON GRSV.ID_GRUPO_SERVICO        = SGSV.ID_GRUPO_SERVICO_PAI&#13;&#10;       LEFT JOIN SUP_CATALOGO             SCAT ON SCAT.ID_CATALOGO             = SSRI.ID_CATALOGO&#13;&#10;&#13;&#10; WHERE SSRI.ID_SOLICITACAO_RP = :ID_SOLICITACAO_RP&#13;&#10;   AND ( SADM.ID_UNIDADE_ADM  = :ID_UNIDADE_ADM OR -123 = COALESCE(:ID_UNIDADE_ADM,-123) )&#13;&#10;&#13;&#10; ORDER BY 31, 1, 2, 32">
+        <Column Name="tp_item" DataType="System.Int32"/>
+        <Column Name="ordem" DataType="System.Int16"/>
+        <Column Name="id_solic_rp_item" DataType="System.Int32"/>
+        <Column Name="id_material" DataType="System.Int32"/>
+        <Column Name="id_grupo_servico" DataType="System.Int32"/>
+        <Column Name="id_catalogo" DataType="System.Int32"/>
+        <Column Name="tp_material" DataType="System.Int16"/>
+        <Column Name="cd_subgrupo_material" DataType="System.Int32"/>
+        <Column Name="cd_grupo_material" DataType="System.Int32"/>
+        <Column Name="cd_material" DataType="System.Int32"/>
+        <Column Name="ds_material" DataType="System.String"/>
+        <Column Name="un_material" DataType="System.String"/>
+        <Column Name="imprime_ds_completa" DataType="System.Int16"/>
+        <Column Name="ds_completa" DataType="System.String"/>
+        <Column Name="cd_grupo_servico" DataType="System.Int32"/>
+        <Column Name="ds_grupo_servico" DataType="System.String"/>
+        <Column Name="cd_subgrupo_servico" DataType="System.Int32"/>
+        <Column Name="ds_subgrupo_servico" DataType="System.String"/>
+        <Column Name="un_servico" DataType="System.String"/>
+        <Column Name="cd_catalogo" DataType="System.Int32"/>
+        <Column Name="ds_catalogo" DataType="System.String"/>
+        <Column Name="dt_inicial_catalogo" DataType="System.DateTime"/>
+        <Column Name="dt_final_catalogo" DataType="System.DateTime"/>
+        <Column Name="especificacao" DataType="System.String"/>
+        <Column Name="quantitativo" DataType="System.Int16"/>
+        <Column Name="qtd" DataType="System.Double"/>
+        <Column Name="vl_unitario" DataType="System.Double"/>
+        <Column Name="vl_total" DataType="System.Double"/>
+        <Column Name="id_unidade_adm" DataType="System.Int32"/>
+        <Column Name="cd_unidade_adm" DataType="System.Int32"/>
+        <Column Name="ds_unidade_adm" DataType="System.String"/>
+        <Column Name="nr_ficha" DataType="System.String"/>
+        <Column Name="dotacao" DataType="System.String"/>
+        <CommandParameter Name="id_solicitacao_rp" DataType="9" Expression="[SqlSolicitacaoRegistro.id_solicitacao_rp]"/>
+        <CommandParameter Name="id_unidade_adm" DataType="9" Expression="[idunidadeadm]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="IIf([idUnidadeAdm] == -123, &quot;SOLICITAÇÃO DE REGISTRO&quot;, &quot;DEFINIÇÃO DE QUANTIDADE (s)/VALOR(es) DA SOLICITAÇÃO DE REGISTRO&quot;)"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-123"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idSolicitacaoRp" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="tipoDeRelatorio" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="idUnidadeAdm" DataType="System.Int64" Expression="-123"/>
+    <Parameter Name="imprimeDotacao" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="emBranco" DataType="System.Int64" Expression="0"/>
+    <Total Name="Total" Expression="[SqlDetalhes.vl_total]" Evaluator="BndDotacaoMaterial"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho" Top="0">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="98.67">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child1" ZOrder="-1" Top="121.73" Width="718.2" Height="28.5" Border.Lines="Bottom">
+          <TextObject Name="Text160" Top="3.55" Width="204.88" Height="24.95" Border.Lines="All" Fill.Color="41, 82, 118" CanGrow="true" Text="SR [Format(&quot;{0:00000}&quot;, [sqlSolicitacaoRegistro.NR_SOLICITACAO_RP])]/[sqlSolicitacaoRegistro.CP_ANO]&#13;&#10;" VertAlign="Center" Font="Tahoma, 10pt, style=Bold" TextFill.Color="White"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="BndGrupoSolicitacao" ZOrder="0" Top="154.4" Width="718.2" Height="100.17" FirstRowStartsNewPage="true" RepeatOnEveryPage="true" Condition="[SqlSolicitacaoRegistro.id_solicitacao_rp]">
+      <ContainerObject Name="Container4" Width="718.2" Height="81.27">
+        <TextObject Name="Text173" Top="39.86" Width="130.03" Height="20.41" Border.Lines="All" CanGrow="true" Text="Aprovador:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text174" Left="130.03" Top="39.86" Width="588.17" Height="20.41" Border.Lines="All" Fill.Color="Control" CanGrow="true" Text="[Trim([sqlSolicitacaoRegistro.APROVADOR_NOME])] - [Trim([SqlSolicitacaoRegistro.APROVADOR_LOGIN])]&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text388" Top="60.27" Width="130.03" Height="20.03" Border.Lines="All" Text="Unidade de Compra:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text389" Left="130.03" Top="60.27" Width="588.17" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" CanGrow="true" Text="[Trim([sqlSolicitacaoRegistro.DS_UNIDADE_COMPRA])] - ([Trim([SqlSolicitacaoRegistro.SIGLA_UNIDADE_COMPRA])])&#13;&#10;" Format="Date" Format.Format="dd/MM/yyyy" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text406" Top="20.2" Width="130.03" Height="20.03" Border.Lines="Left, Right, Top" CanGrow="true" Text="Solicitante:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text408" Top="80.29" Width="130.03" Height="20.03" Border.Lines="All" Text="Tipo de Entrega:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text409" Left="130.03" Top="80.32" Width="125.12" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" CanGrow="true" Text="[SqlSolicitacaoRegistro.ds_tp_entrega]&#13;&#10;" Format="Date" Format.Format="dd/MM/yyyy" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text410" Left="255.15" Top="80.32" Width="94.5" Height="20.03" Border.Lines="All" CanGrow="true" BeforePrintEvent="Text390_BeforePrint" Text="Prazo de Entrega:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text411" Left="349.19" Top="80.32" Width="368.93" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" CanGrow="true" BeforePrintEvent="Text391_BeforePrint" Text="[IIf([sqlSolicitacaoRegistro.PRAZO_ENTREGA] &gt; 0, [sqlSolicitacaoRegistro.PRAZO_ENTREGA] + &quot; &quot; + [sqlSolicitacaoRegistro.DS_TP_MEDIDA_PRAZO], &quot;&quot;)]&#13;&#10;" Format="Date" Format.Format="d" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text178" Left="130.03" Top="21.03" Width="588.17" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" CanGrow="true" Text="[Trim([sqlSolicitacaoRegistro.SOLICITANTE_NOME])] - [Trim([SqlSolicitacaoRegistro.SOLICITANTE_LOGIN])]&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      </ContainerObject>
+      <TextObject Name="Text169" Top="-0.06" Width="130.03" Height="20.03" Border.Lines="Left, Right, Top" Text="Solicitado em:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text170" Left="130.03" Top="-0.06" Width="84.29" Height="20.03" Border.Lines="Left, Right, Top" Fill.Color="ButtonFace" CanGrow="true" Text="[SqlSolicitacaoRegistro.DT_SOLICITACAO_RP]&#13;&#10;" Format="Date" Format.Format="dd/MM/yyyy" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text171" Left="214.33" Top="-0.06" Width="41.58" Height="20.03" Border.Lines="Left, Right, Top" CanGrow="true" Text="Tipo:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text172" Left="255.15" Top="-0.06" Width="207.9" Height="20.03" Border.Lines="Left, Right, Top" Fill.Color="ButtonFace" CanGrow="true" Text="[SqlSolicitacaoRegistro.DS_TP_SOLICITACAO_RP]&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text386" Left="463.05" Top="-0.06" Width="53.3" Height="20.03" Border.Lines="Left, Right, Top" CanGrow="true" Text="Situação:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text387" Left="516.35" Top="-0.06" Width="201.85" Height="20.03" Border.Lines="Left, Right, Top" Fill.Color="ButtonFace" CanGrow="true" Text="[SqlSolicitacaoRegistro.DS_ST_SOLICITACAO_RP] [IIf(([SqlSolicitacaoRegistro.ID_ST_SOLICITACAO_RP] == 2) &amp;&amp; ([ImprimeDotacao] == 1), &quot;- à liberar para processo&quot;, &quot;&quot;)]&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <DataBand Name="BndSolicitacao" Top="258.74" Width="718.2" Height="49.38" CanGrow="true" DataSource="Table3" PrintIfDetailEmpty="true" PrintIfDatasourceEmpty="true">
+        <TextObject Name="Text394" Top="9.26" Width="205.63" Height="20.03" Border.Lines="All" Fill.Color="Control" Text="Justificativa" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text395" Top="29.35" Width="718.2" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" Text="[SqlSolicitacaoRegistro.OBS]&#13;&#10;" Padding="4, 4, 4, 4" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <GroupHeaderBand Name="BndGrupoUnidadeAdm" Top="312.28" Width="718.2" Height="34.31" RepeatOnEveryPage="true" Condition="[SqlDetalhes.id_unidade_adm]">
+          <TextObject Name="Text412" Top="13.9" Width="148.93" Height="20.41" Border.Lines="All" CanGrow="true" Text="UNIDADE ADMINISTRATIVA:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text413" Left="148.93" Top="13.9" Width="569.27" Height="20.41" Border.Lines="All" Fill.Color="Control" CanGrow="true" Text="[Trim([SqlDetalhes.DS_UNIDADE_ADM])] ( [SqlDetalhes.CD_UNIDADE_ADM] )&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <GroupHeaderBand Name="BndGrupoItemMaterial" Top="350.76" Width="718.2" Height="39.31" BeforePrintEvent="BndGrupoItemMaterial_BeforePrint" RepeatOnEveryPage="true" Condition="[SqlDetalhes.tp_item]">
+            <TextObject Name="Text414" Top="9.45" Width="35.15" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" CanBreak="false" Text="ITEM" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text415" Left="35.15" Top="9.45" Width="413.15" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" CanBreak="false" Text="CLASSIFICAÇÃO  E DESCRIÇÃO    &lt;U&gt;&lt;B&gt;DO MATERIAL&lt;/B&gt;&lt;/u&gt;&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextRenderType="HtmlTags"/>
+            <TextObject Name="Text416" Left="448.31" Top="9.45" Width="74.84" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" BeforePrintEvent="Text178_BeforePrint" CanBreak="false" Text="QUANTIDADE&#13;&#10;" AutoWidth="true" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text418" Left="523.15" Top="9.45" Width="35.15" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" BeforePrintEvent="Text78_BeforePrint" CanBreak="false" Text="UN" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text420" Left="558.31" Top="23.66" Width="80.14" Height="15.65" Border.Lines="Left, Right, Bottom" Fill.Color="ButtonFace" CanBreak="false" Text="UNITÁRIO&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text421" Left="638.44" Top="23.64" Width="79.76" Height="15.65" Border.Lines="Left, Right, Bottom" Fill.Color="ButtonFace" CanBreak="false" Text="TOTAL" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text417" Left="558.31" Top="9.45" Width="159.89" Height="15.12" Border.Lines="All" Fill.Color="ButtonFace" CanBreak="false" Text="VALORE ESTIMADO" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <ChildBand Name="BndGrupoItemServico" Top="394.24" Width="718.2" Height="39.46" BeforePrintEvent="BndGrupoItemServico_BeforePrint" PrintIfDatabandEmpty="true">
+              <TextObject Name="Text422" Top="9.45" Width="35.15" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" CanBreak="false" Text="ITEM" VertAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="Text423" Left="35.15" Top="9.45" Width="448.31" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" CanBreak="false" Text="CLASSIFICAÇÃO E DESCRIÇÃO &lt;U&gt;&lt;B&gt;DO SERVIÇO&lt;/B&gt;&lt;/u&gt;&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextRenderType="HtmlTags"/>
+              <TextObject Name="Text425" Left="482.71" Top="9.45" Width="75.6" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" BeforePrintEvent="Text178_BeforePrint" CanBreak="false" Text="QUANTIDADE&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="Text426" Left="558.31" Top="23.66" Width="80.14" Height="15.65" Border.Lines="Left, Right, Bottom" Fill.Color="ButtonFace" CanBreak="false" Text="UNITÁRIO&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="Text427" Left="638.44" Top="23.66" Width="79.76" Height="15.65" Border.Lines="Left, Right, Bottom" Fill.Color="ButtonFace" CanBreak="false" Text="TOTAL" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="Text424" Left="558.31" Top="9.45" Width="159.89" Height="15.12" Border.Lines="All" Fill.Color="ButtonFace" CanBreak="false" Text="VALORE ESTIMADO" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+              <ChildBand Name="BndGrupoItemCatalogo" Top="437.86" Width="718.2" Height="39.31" BeforePrintEvent="BndGrupoItemCatalogo_BeforePrint" PrintIfDatabandEmpty="true">
+                <TextObject Name="Text428" Top="9.45" Width="35.15" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" CanBreak="false" Text="ITEM" VertAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text429" Left="35.15" Top="9.45" Width="447.93" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" CanBreak="false" Text="&#13;&#10;CÓDIGO E DESCRIÇÃO &lt;b&gt;&lt;u&gt;DO CATÁLOGO&lt;/u&gt;&lt;/b&gt;&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph"/>
+                <TextObject Name="Text431" Left="482.71" Top="23.66" Width="75.6" Height="15.65" Border.Lines="Left, Right, Bottom" Fill.Color="ButtonFace" CanBreak="false" Text="INICIAL" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text432" Left="558.31" Top="23.66" Width="80.14" Height="15.65" Border.Lines="Left, Right, Bottom" Fill.Color="ButtonFace" CanBreak="false" Text="FINAL" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text433" Left="482.71" Top="9.45" Width="155.36" Height="15.12" Border.Lines="All" Fill.Color="ButtonFace" CanBreak="false" Text="VALIDADE" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text434" Left="638.06" Top="9.45" Width="80.14" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" BeforePrintEvent="Text178_BeforePrint" CanBreak="false" Text="TOTAL ESTIMADO" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+              </ChildBand>
+            </ChildBand>
+            <GroupHeaderBand Name="BndItemMaterial" Top="481.34" Width="718.2" Height="20.03" CanGrow="true" BeforePrintEvent="BndItemMaterial_OnBeforePrint" Condition="[SqlDetalhes.id_solic_rp_item]">
+              <TextObject Name="Text435" Width="35.15" Height="20.03" Border.Lines="All" Fill.Color="42, 82, 118" CanBreak="false" Text="[SqlDetalhes.ORDEM]&#13;&#10;" Format="Custom" Format.Format="0000" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+              <TextObject Name="Text436" Left="35.15" Width="413.15" Height="20.03" Border.Lines="Left, Right, Top" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;u&gt;[SqlDetalhes.TP_MATERIAL].[SqlDetalhes.CD_GRUPO_MATERIAL].[SqlDetalhes.CD_SUBGRUPO_MATERIAL].[SqlDetalhes.CD_MATERIAL]&lt;/u&gt;&#13;&#10;&lt;b&gt;[Trim([SqlDetalhes.DS_MATERIAL])]&lt;/b&gt;" Padding="4, 4, 4, 4" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph">
+                <Formats>
+                  <CustomFormat/>
+                  <CustomFormat Format="000"/>
+                  <CustomFormat Format="000"/>
+                  <CustomFormat Format="00000000"/>
+                  <GeneralFormat/>
+                </Formats>
+              </TextObject>
+              <TextObject Name="Text437" Left="448.31" Width="74.84" Height="20.03" Border.Lines="Left, Right, Top" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[Sqldetalhes.QTD]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="Text438" Left="523.15" Width="35.15" Height="20.03" Border.Lines="Left, Right, Top" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[Sqldetalhes.UN_MATERIAL]&#13;&#10;" HorzAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="MemMatVlUnitario" Left="558.31" Width="80.14" Height="20.03" Border.Lines="Left, Right, Top" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[Sqldetalhes.VL_UNITARIO]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="MemMatVlTotal" Left="638.06" Width="80.14" Height="20.03" Border.Lines="Right, Top" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[Sqldetalhes.VL_TOTAL]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" Font="Tahoma, 8pt"/>
+              <ChildBand Name="BndItemMaterialDsCompleta" Top="505.54" Width="718.2" Height="10.58" CanGrow="true" BeforePrintEvent="BndItemMaterialDsCompleta_BeforePrint" PrintIfDatabandEmpty="true">
+                <TextObject Name="Text441" Left="35.15" Width="413.15" Height="10.58" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;i&gt;&lt;u&gt;DESCRIÇÃO COMPLETA:&lt;/u&gt;&lt;/i&gt; [SqlDetalhes.DS_COMPLETA]" Padding="4, 4, 4, 4" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph">
+                  <Formats>
+                    <CustomFormat/>
+                    <CustomFormat Format="000"/>
+                    <CustomFormat Format="000"/>
+                    <CustomFormat Format="00000000"/>
+                    <GeneralFormat/>
+                  </Formats>
+                </TextObject>
+                <TextObject Name="Text442" Left="448.31" Width="74.84" Height="10.58" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text443" Left="523.15" Width="35.15" Height="10.58" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text444" Left="558.31" Width="80.14" Height="10.58" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text445" Left="638.06" Width="80.14" Height="10.58" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                <ChildBand Name="BndItemMaterialEspecificao" Top="520.28" Width="718.2" Height="10.58" CanGrow="true" BeforePrintEvent="BndItemMaterialEspecificao_BeforePrint" PrintIfDatabandEmpty="true">
+                  <TextObject Name="Text446" Left="35.15" Width="413.15" Height="10.58" Border.Lines="Left, Right, Bottom" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;i&gt;&lt;u&gt;ESPECIFICAÇÃO:&lt;/u&gt;&lt;/i&gt; [Trim([SqlDetalhes.ESPECIFICACAO])]" Padding="4, 4, 4, 4" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph">
+                    <Formats>
+                      <CustomFormat/>
+                      <CustomFormat Format="000"/>
+                      <CustomFormat Format="000"/>
+                      <CustomFormat Format="00000000"/>
+                      <GeneralFormat/>
+                    </Formats>
+                  </TextObject>
+                  <TextObject Name="Text447" Left="448.31" Width="74.84" Height="10.58" Border.Lines="Left, Right, Bottom" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                  <TextObject Name="Text448" Left="523.15" Width="35.15" Height="10.58" Border.Lines="Left, Right, Bottom" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                  <TextObject Name="Text449" Left="558.31" Width="80.14" Height="10.58" Border.Lines="Left, Right, Bottom" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                  <TextObject Name="Text450" Left="638.06" Width="80.14" Height="10.58" Border.Lines="Right, Bottom" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                  <ChildBand Name="BndItemServico" Top="535.03" Width="718.2" Height="20.03" CanGrow="true" BeforePrintEvent="BndItemServico_BeforePrint" PrintIfDatabandEmpty="true">
+                    <TextObject Name="Text451" Width="35.15" Height="20.03" Border.Lines="All" Fill.Color="42, 82, 118" CanBreak="false" Text="[SqlDetalhes.ORDEM]&#13;&#10;" Format="Custom" Format.Format="0000" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+                    <TextObject Name="Text452" Left="35.15" Width="447.93" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;u&gt;[SqlDetalhes.CD_GRUPO_SERVICO].[SqlDetalhes.CD_SUBGRUPO_SERVICO]&lt;/u&gt;&#13;&#10;&lt;b&gt;[SqlDetalhes.DS_GRUPO_SERVICO] - [SqlDetalhes.DS_SUBGRUPO_SERVICO]&lt;/b&gt;&#13;&#10;" Padding="4, 4, 4, 4" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph">
+                      <Formats>
+                        <CustomFormat Format="000"/>
+                        <CustomFormat Format="000"/>
+                        <GeneralFormat/>
+                        <GeneralFormat/>
+                      </Formats>
+                    </TextObject>
+                    <TextObject Name="Text453" Left="483.08" Width="75.22" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[IIf([SqlDetalhes.QUANTITATIVO] == 1, [SqlDetalhes.QTD] , &quot;---&quot;)]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" Font="Tahoma, 8pt"/>
+                    <TextObject Name="Text455" Left="558.31" Width="80.14" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[IIf([SqlDetalhes.QUANTITATIVO] == 1 , [SqlDetalhes.VL_UNITARIO , &quot;---&quot;)]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" Font="Tahoma, 8pt"/>
+                    <TextObject Name="MemServVlUnitario" Left="638.06" Width="80.14" Height="20.03" Border.Lines="Right, Top, Bottom" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[Sqldetalhes.VL_TOTAL]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 8pt"/>
+                    <ChildBand Name="BndItemServicoEspecificacao" Top="559.23" Width="718.2" Height="20.03" CanGrow="true" BeforePrintEvent="BndItemServicoEspecificacao_BeforePrint" PrintIfDatabandEmpty="true">
+                      <TextObject Name="Text457" Left="35.15" Width="447.93" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;i&gt;&lt;u&gt;ESPECIFICAÇÃO:&lt;/u&gt;&lt;/i&gt; [Trim([SqlDetalhes.ESPECIFICACAO])]&#13;&#10;" Padding="4, 4, 4, 4" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph">
+                        <Formats>
+                          <CustomFormat/>
+                          <CustomFormat Format="000"/>
+                          <CustomFormat Format="000"/>
+                          <CustomFormat Format="00000000"/>
+                          <GeneralFormat/>
+                        </Formats>
+                      </TextObject>
+                      <TextObject Name="Text458" Left="483.08" Width="75.22" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                      <TextObject Name="Text460" Left="558.31" Width="80.14" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                      <TextObject Name="Text461" Left="638.06" Width="80.14" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                      <ChildBand Name="BndItemServicoUnMedida" Top="583.42" Width="718.2" Height="20.03" CanGrow="true" BeforePrintEvent="BndItemServicoUnMedida_BeforePrint" PrintIfDatabandEmpty="true">
+                        <TextObject Name="Text473" Left="35.15" Width="447.93" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;i&gt;&lt;u&gt;UNIDADED DE MEDIDA:&lt;/u&gt;&lt;/i&gt; [SqlDetalhes.UN_SERVICO]" Padding="4, 4, 4, 4" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph">
+                          <Formats>
+                            <CustomFormat/>
+                            <CustomFormat Format="000"/>
+                            <CustomFormat Format="000"/>
+                            <CustomFormat Format="00000000"/>
+                            <GeneralFormat/>
+                          </Formats>
+                        </TextObject>
+                        <TextObject Name="Text474" Left="483.08" Width="75.22" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                        <TextObject Name="Text475" Left="558.31" Width="80.14" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                        <TextObject Name="Text476" Left="638.06" Width="80.14" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                        <ChildBand Name="BndItemCatalogo" Top="607.62" Width="718.2" Height="20.03" CanGrow="true" BeforePrintEvent="BndItemCatalogo_BeforePrint" PrintIfDatabandEmpty="true">
+                          <TextObject Name="Text477" Width="35.15" Height="20.03" Border.Lines="All" Fill.Color="42, 82, 118" CanBreak="false" Text="[SqlDetalhes.ORDEM]&#13;&#10;" Format="Custom" Format.Format="0000" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+                          <TextObject Name="Text478" Left="35.15" Width="447.93" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;u&gt;[SqlDetalhes.CD_CATALOGO]&lt;/u&gt;&#13;&#10;&lt;b&gt;[SqlDetalhes.DS_CATALOGO]&lt;/b&gt;" Padding="4, 4, 4, 4" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph">
+                            <Formats>
+                              <CustomFormat Format="00000"/>
+                              <CustomFormat Format="000"/>
+                            </Formats>
+                          </TextObject>
+                          <TextObject Name="MemCatVlTotal" Left="638.06" Width="80.14" Height="20.03" Border.Lines="Right, Top, Bottom" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[SqlDetalhes.VL_TOTAL]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 8pt"/>
+                          <ChildBand Name="BndDotMaterial" Top="631.82" Width="718.2" Height="20.03" CanGrow="true" PrintIfDatabandEmpty="true">
+                            <TextObject Name="Text482" Left="36.15" Width="406.35" Height="20.03" Border.Lines="Bottom" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="DOTAÇÕES:" VertAlign="Bottom" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph">
+                              <Formats>
+                                <CustomFormat/>
+                                <CustomFormat Format="000"/>
+                                <CustomFormat Format="000"/>
+                                <CustomFormat Format="00000000"/>
+                                <GeneralFormat/>
+                              </Formats>
+                            </TextObject>
+                            <TextObject Name="Text483" Left="448.31" Width="74.84" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                            <TextObject Name="Text484" Left="523.15" Width="35.15" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                            <TextObject Name="Text485" Left="558.31" Width="80.14" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                            <TextObject Name="Text486" Left="638.06" Width="80.14" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                            <TextObject Name="Text487" Width="35.15" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                            <ChildBand Name="BndSemDotMaterial" Top="656.01" Width="718.2" Height="20.03" CanGrow="true" PrintIfDatabandEmpty="true">
+                              <TextObject Name="Text504" Left="114.75" Width="264.6" Height="20.03" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;b&gt;Sem dotação definida material.&lt;/b&gt;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="42, 82, 118" TextRenderType="HtmlParagraph">
+                                <Formats>
+                                  <CustomFormat/>
+                                  <CustomFormat Format="000"/>
+                                  <CustomFormat Format="000"/>
+                                  <CustomFormat Format="00000000"/>
+                                  <GeneralFormat/>
+                                </Formats>
+                              </TextObject>
+                              <TextObject Name="Text505" Left="448.31" Width="74.84" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                              <TextObject Name="Text506" Left="523.15" Width="35.15" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                              <TextObject Name="Text507" Left="558.31" Width="80.14" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                              <TextObject Name="Text508" Left="638.06" Width="80.14" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                              <TextObject Name="Text509" Width="35.15" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                              <ChildBand Name="BndDotServico" Top="680.21" Width="718.2" Height="20.03" CanGrow="true" PrintIfDatabandEmpty="true">
+                                <TextObject Name="Text494" Left="35.15" Width="447.93" Height="20.03" Border.Lines="Left, Right, Bottom" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="DOTAÇÕES:" VertAlign="Bottom" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph">
+                                  <Formats>
+                                    <CustomFormat/>
+                                    <CustomFormat Format="000"/>
+                                    <CustomFormat Format="000"/>
+                                    <CustomFormat Format="00000000"/>
+                                    <GeneralFormat/>
+                                  </Formats>
+                                </TextObject>
+                                <TextObject Name="Text495" Left="483.08" Width="75.22" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                                <TextObject Name="Text496" Left="558.31" Width="80.14" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                                <TextObject Name="Text497" Left="638.06" Width="80.14" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                                <TextObject Name="Text498" Width="35.15" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                                <ChildBand Name="BndSemDotServico" Top="704.41" Width="718.2" Height="20.03" CanGrow="true" PrintIfDatabandEmpty="true">
+                                  <TextObject Name="Text499" Left="483.08" Width="75.22" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                                  <TextObject Name="Text500" Left="558.31" Width="80.14" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                                  <TextObject Name="Text501" Left="638.06" Width="80.14" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                                  <TextObject Name="Text502" Width="35.15" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                                  <TextObject Name="Text503" Left="114.4" Width="264.6" Height="20.03" Border.Lines="Bottom" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;b&gt;Sem dotação definida material.&lt;/b&gt;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="42, 82, 118" TextRenderType="HtmlParagraph">
+                                    <Formats>
+                                      <CustomFormat/>
+                                      <CustomFormat Format="000"/>
+                                      <CustomFormat Format="000"/>
+                                      <CustomFormat Format="00000000"/>
+                                      <GeneralFormat/>
+                                    </Formats>
+                                  </TextObject>
+                                </ChildBand>
+                              </ChildBand>
+                            </ChildBand>
+                          </ChildBand>
+                        </ChildBand>
+                      </ChildBand>
+                    </ChildBand>
+                  </ChildBand>
+                </ChildBand>
+              </ChildBand>
+              <DataBand Name="BndDotacaoMaterial" Top="728.6" Width="718.2" Height="20.03" CanGrow="true" BeforePrintEvent="BndDotacaoMaterial_BeforePrint" DataSource="Table4" PrintIfDetailEmpty="true">
+                <TextObject Name="Text488" Left="76.95" Width="340.2" Height="20.03" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;b&gt;[SqlDetalhes.NR_FICHA]&lt;/b&gt; - &lt;b&gt;[SqlDetalhes.DOTACAO]&lt;/b&gt;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="42, 82, 118" TextRenderType="HtmlParagraph">
+                  <Formats>
+                    <CustomFormat/>
+                    <CustomFormat Format="000"/>
+                    <CustomFormat Format="000"/>
+                    <CustomFormat Format="00000000"/>
+                    <GeneralFormat/>
+                  </Formats>
+                </TextObject>
+                <TextObject Name="Text489" Left="448.31" Width="74.84" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text490" Left="523.15" Width="35.15" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text491" Left="558.31" Width="80.14" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text492" Left="638.06" Width="80.14" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text493" Width="35.15" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                <ChildBand Name="BndDotacaoServico" Top="752.8" Width="718.2" Height="20.93" CanGrow="true" BeforePrintEvent="BndDotacaoServico_BeforePrint" PrintIfDatabandEmpty="true">
+                  <TextObject Name="Text513" Top="0.9" Width="35.15" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                  <TextObject Name="Text514" Left="75.6" Top="0.9" Width="340.2" Height="20.03" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="&lt;b&gt;[SqlDetalhes.NR_FICHA]&lt;/b&gt; - &lt;b&gt;[SqlDetalhes.DOTACAO]&lt;/b&gt;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="42, 82, 118" TextRenderType="HtmlParagraph">
+                    <Formats>
+                      <CustomFormat/>
+                      <CustomFormat Format="000"/>
+                      <CustomFormat Format="000"/>
+                      <CustomFormat Format="00000000"/>
+                      <GeneralFormat/>
+                    </Formats>
+                  </TextObject>
+                  <TextObject Name="Text510" Left="483.08" Top="0.9" Width="75.22" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                  <TextObject Name="Text511" Left="558.31" Top="0.9" Width="80.14" Height="20.03" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                  <TextObject Name="Text512" Left="638.06" Top="0.9" Width="80.14" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" HorzAlign="Center" Font="Tahoma, 8pt"/>
+                </ChildBand>
+              </DataBand>
+              <GroupFooterBand Name="teste" Top="777.9" Width="718.2"/>
+            </GroupHeaderBand>
+            <GroupFooterBand Name="BndGrupoItemSumario" Top="782.06" Width="718.2" Height="20.03" BeforePrintEvent="BndGrupoItemSumario_BeforePrint">
+              <TextObject Name="MemTotVlTotal" Left="558.31" Width="159.52" Height="20.03" Border.Lines="All" CanGrow="true" GrowToBottom="true" CanBreak="false" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text516" Left="34.8" Width="523.53" Height="20.03" Border.Lines="Right, Top" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="TOTAL:" HorzAlign="Right" VertAlign="Bottom" Font="Tahoma, 8pt"/>
+            </GroupFooterBand>
+          </GroupHeaderBand>
+          <GroupFooterBand Name="BndGrupoUnidadeAdmSumario" Top="806.26" Width="718.2" Height="20.03" BeforePrintEvent="BndGrupoUnidadeAdmSumario_BeforePrint">
+            <TextObject Name="MemTotUnidadeAdm" Left="558.31" Width="159.52" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" BeforePrintEvent="MemTotUnidadeAdm_BeforePrint" CanBreak="false" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text518" Left="34.78" Width="523.53" Height="20.03" Border.Lines="Right" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="TOTAL DA UNIDADE ADMINISTRATIVA:" HorzAlign="Right" VertAlign="Bottom" Font="Tahoma, 8pt"/>
+          </GroupFooterBand>
+        </GroupHeaderBand>
+      </DataBand>
+      <GroupFooterBand Name="BndGrupoSolicitacaoSumario" Top="830.46" Width="718.2" Height="170.1" BeforePrintEvent="BndGrupoSolicitacaoSumario_BeforePrint">
+        <TextObject Name="MemTotalGeral" Left="558.68" Top="37.8" Width="159.52" Height="20.03" Border.Lines="All" Fill.Color="53, 103, 149" BeforePrintEvent="MemTotalGeral_BeforePrint" CanBreak="false" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text520" Left="35.17" Top="37.8" Width="523.53" Height="20.03" Border.Lines="Right" CanGrow="true" CanBreak="false" Text="TOTAL GERAL:" HorzAlign="Right" VertAlign="Bottom" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="MemAssSolicitante" Top="113.4" Width="220" Height="29.86" Border.Lines="Top" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="SOLICITANTE&#13;&#10;[Trim([sqlSolicitacaoRegistro.SOLICITANTE_NOME])]" Padding="2, 4, 2, 0" HorzAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="MemAssAprovador" Left="249.15" Top="113.4" Width="220" Height="29.86" Border.Lines="Top" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="APROVADOR&#13;&#10;[Trim([sqlSolicitacaoRegistro.APROVADOR_NOME])]&#13;&#10;" Padding="2, 4, 2, 0" HorzAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text523" Left="498.2" Top="113.4" Width="220" Height="29.86" Border.Lines="Top" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[IIf([IdUnidadeAdm] == -123, &quot;COMPRADOR&quot;, &quot;RESPONSÁVEL PELA INFORMAÇÃO&quot;)]&#13;&#10;" Padding="2, 4, 2, 0" HorzAlign="Center" Font="Tahoma, 8pt"/>
+      </GroupFooterBand>
+    </GroupHeaderBand>
+    <inherited Name="BndRodape" Top="1004.72">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

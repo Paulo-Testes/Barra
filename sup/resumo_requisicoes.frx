@@ -1,0 +1,486 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="..\..\..\..\..\..\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/29/2025 16:26:39" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    } 
+    
+
+
+    private void BdMes1_BeforePrint(object sender, EventArgs e)
+    {
+      // Faz cast para o tipo correto, por exemplo: ChildBand
+      ChildBand bdMes1 = sender as ChildBand;
+
+      if (bdMes1 != null)
+      {
+        // Converte os valores dos parâmetros string para int para comparação
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+        
+        bdMes1.Visible = (cpMesInicial &lt;= 1) &amp;&amp; (cpMesFinal &gt;= 1);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes2_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 2) &amp;&amp; (cpMesFinal &gt;= 2);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes3_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 3) &amp;&amp; (cpMesFinal &gt;= 3);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes4_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 4) &amp;&amp; (cpMesFinal &gt;= 4);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes5_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 5) &amp;&amp; (cpMesFinal &gt;= 5);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes6_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 6) &amp;&amp; (cpMesFinal &gt;= 6);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes7_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 7) &amp;&amp; (cpMesFinal &gt;= 7);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes8_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 8) &amp;&amp; (cpMesFinal &gt;= 8);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes9_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 9) &amp;&amp; (cpMesFinal &gt;= 9);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes10_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 10) &amp;&amp; (cpMesFinal &gt;= 10);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes11_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 11) &amp;&amp; (cpMesFinal &gt;= 11);
+      }
+    }
+
+    /*==================================================================================================*/
+
+    private void BdMes12_BeforePrint(object sender, EventArgs e)
+    {
+      var band = sender as ChildBand;
+      if (band != null)
+      {
+        long cpMesInicial = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesInicial&quot;));
+        long cpMesFinal = Convert.ToInt64(Report.GetParameterValue(&quot;cpMesFinal&quot;));
+
+        band.Visible = (cpMesInicial &lt;= 12) &amp;&amp; (cpMesFinal &gt;= 12);
+      }
+    }
+
+
+    /*==================================================================================================*/
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAf45SGh+1JQ06HfUCwVjdXLyOtFr5FbmNWNqr1W8I2tPRGoPzSsFGNAQf85ceZvCGogRGJncwLI0VhpBoFVj/qSQKkbhjw8vK4wcDZgU0qxaPEZDipQMydbZm36+fR5pY=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlPrincipal" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;  cast(a2.id_almoxarifado as varchar) as id_almoxarifado &#13;&#10;  , a2.ds_almoxarifado&#13;&#10;  , c2.id_material&#13;&#10;  , format('%s.%s.%s.%s'&#13;&#10;    , c2.tp_material::text&#13;&#10;    , lpad(e2.cd_grupo::text, 3, '0')&#13;&#10;    , lpad(d2.cd_grupo::text, 3, '0')&#13;&#10;    , lpad(c2.cd_material::text, 6, '0')&#13;&#10;    ) classificacao&#13;&#10;  , c2.ds_material&#13;&#10;  , b2.qtd_requisitada_1&#13;&#10;  , b2.qtd_aprovada_1&#13;&#10;  , b2.qtd_entregue_1&#13;&#10;  , b2.qtd_requisitada_2&#13;&#10;  , b2.qtd_aprovada_2&#13;&#10;  , b2.qtd_entregue_2&#13;&#10;  , b2.qtd_requisitada_3&#13;&#10;  , b2.qtd_aprovada_3&#13;&#10;  , b2.qtd_entregue_3&#13;&#10;  , b2.qtd_requisitada_4&#13;&#10;  , b2.qtd_aprovada_4&#13;&#10;  , b2.qtd_entregue_4&#13;&#10;  , b2.qtd_requisitada_5&#13;&#10;  , b2.qtd_aprovada_5&#13;&#10;  , b2.qtd_entregue_5&#13;&#10;  , b2.qtd_requisitada_6&#13;&#10;  , b2.qtd_aprovada_6&#13;&#10;  , b2.qtd_entregue_6&#13;&#10;  , b2.qtd_requisitada_7&#13;&#10;  , b2.qtd_aprovada_7&#13;&#10;  , b2.qtd_entregue_7&#13;&#10;  , b2.qtd_requisitada_8&#13;&#10;  , b2.qtd_aprovada_8&#13;&#10;  , b2.qtd_entregue_8&#13;&#10;  , b2.qtd_requisitada_9&#13;&#10;  , b2.qtd_aprovada_9&#13;&#10;  , b2.qtd_entregue_9&#13;&#10;  , b2.qtd_requisitada_10&#13;&#10;  , b2.qtd_aprovada_10&#13;&#10;  , b2.qtd_entregue_10&#13;&#10;  , b2.qtd_requisitada_11&#13;&#10;  , b2.qtd_aprovada_11&#13;&#10;  , b2.qtd_entregue_11&#13;&#10;  , b2.qtd_requisitada_12&#13;&#10;  , b2.qtd_aprovada_12&#13;&#10;  , b2.qtd_entregue_12&#13;&#10;from&#13;&#10;  public.sup_almoxarifado a2&#13;&#10;  left join (&#13;&#10;    select&#13;&#10;      a1.id_almoxarifado&#13;&#10;      , a1.id_material&#13;&#10;      , a1.cp_ano&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 1 then a1.qtd else 0 end), 4) qtd_requisitada_1&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 1 then a1.qtd else 0 end), 4) qtd_aprovada_1&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 1 then a1.qtd else 0 end), 4) qtd_entregue_1&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 2 then a1.qtd else 0 end), 4) qtd_requisitada_2&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 2 then a1.qtd else 0 end), 4) qtd_aprovada_2&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 2 then a1.qtd else 0 end), 4) qtd_entregue_2&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 3 then a1.qtd else 0 end), 4) qtd_requisitada_3&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 3 then a1.qtd else 0 end), 4) qtd_aprovada_3&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 3 then a1.qtd else 0 end), 4) qtd_entregue_3&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 4 then a1.qtd else 0 end), 4) qtd_requisitada_4&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 4 then a1.qtd else 0 end), 4) qtd_aprovada_4&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 4 then a1.qtd else 0 end), 4) qtd_entregue_4&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 5 then a1.qtd else 0 end), 4) qtd_requisitada_5&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 5 then a1.qtd else 0 end), 4) qtd_aprovada_5&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 5 then a1.qtd else 0 end), 4) qtd_entregue_5&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 6 then a1.qtd else 0 end), 4) qtd_requisitada_6&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 6 then a1.qtd else 0 end), 4) qtd_aprovada_6&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 6 then a1.qtd else 0 end), 4) qtd_entregue_6&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 7 then a1.qtd else 0 end), 4) qtd_requisitada_7&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 7 then a1.qtd else 0 end), 4) qtd_aprovada_7&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 7 then a1.qtd else 0 end), 4) qtd_entregue_7&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 8 then a1.qtd else 0 end), 4) qtd_requisitada_8&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 8 then a1.qtd else 0 end), 4) qtd_aprovada_8&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 8 then a1.qtd else 0 end), 4) qtd_entregue_8&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 9 then a1.qtd else 0 end), 4) qtd_requisitada_9&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 9 then a1.qtd else 0 end), 4) qtd_aprovada_9&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 9 then a1.qtd else 0 end), 4) qtd_entregue_9&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 10 then a1.qtd else 0 end), 4) qtd_requisitada_10&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 10 then a1.qtd else 0 end), 4) qtd_aprovada_10&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 10 then a1.qtd else 0 end), 4) qtd_entregue_10&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 11 then a1.qtd else 0 end), 4) qtd_requisitada_11&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 11 then a1.qtd else 0 end), 4) qtd_aprovada_11&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 11 then a1.qtd else 0 end), 4) qtd_entregue_11&#13;&#10;      , round(sum(case when a1.tipo = 0 and a1.cp_mes = 12 then a1.qtd else 0 end), 4) qtd_requisitada_12&#13;&#10;      , round(sum(case when a1.tipo = 1 and a1.cp_mes = 12 then a1.qtd else 0 end), 4) qtd_aprovada_12&#13;&#10;      , round(sum(case when a1.tipo = 2 and a1.cp_mes = 12 then a1.qtd else 0 end), 4) qtd_entregue_12&#13;&#10;    from&#13;&#10;      (&#13;&#10;        select&#13;&#10;          a.id_almoxarifado&#13;&#10;          , b.id_material&#13;&#10;          , date_part('year', a.dt_requisicao) cp_ano&#13;&#10;          , date_part('month', a.dt_requisicao) cp_mes&#13;&#10;          , 0 tipo&#13;&#10;          , sum(coalesce(b.qtd_requisitada, 0)) qtd&#13;&#10;        from&#13;&#10;          public.sup_requisicao a&#13;&#10;          left join public.sup_requisicao_it b on&#13;&#10;            b.id_requisicao = a.id_requisicao&#13;&#10;        where&#13;&#10;          b.id_requisicao_it is not null&#13;&#10;          and a.st_requisicao in (0, 2, 3, 5)&#13;&#10;        group by&#13;&#10;          a.id_almoxarifado&#13;&#10;          , b.id_material&#13;&#10;          , date_part('year', a.dt_requisicao)&#13;&#10;          , date_part('month', a.dt_requisicao)&#13;&#10;          , tipo&#13;&#10;        &#13;&#10;        union&#13;&#10;        &#13;&#10;        select&#13;&#10;          a.id_almoxarifado&#13;&#10;          , b.id_material&#13;&#10;          , date_part('year', a.dt_aprovacao) cp_ano&#13;&#10;          , date_part('month', a.dt_aprovacao) cp_mes&#13;&#10;          , 1 tipo&#13;&#10;          , sum(coalesce(b.qtd_aprovada, 0)) qtd&#13;&#10;        from&#13;&#10;          public.sup_requisicao a&#13;&#10;          left join public.sup_requisicao_it b on&#13;&#10;            b.id_requisicao = a.id_requisicao&#13;&#10;        where&#13;&#10;          b.id_requisicao_it is not null&#13;&#10;          and a.st_requisicao in (3, 5)&#13;&#10;          and a.dt_aprovacao is not null&#13;&#10;        group by&#13;&#10;          a.id_almoxarifado&#13;&#10;          , b.id_material&#13;&#10;          , date_part('year', a.dt_aprovacao)&#13;&#10;          , date_part('month', a.dt_aprovacao)&#13;&#10;          , tipo&#13;&#10;        &#13;&#10;        union&#13;&#10;        &#13;&#10;        select&#13;&#10;          a.id_almoxarifado&#13;&#10;          , b.id_material&#13;&#10;          , d.cp_ano&#13;&#10;          , d.cp_mes&#13;&#10;          , 2 tipo&#13;&#10;          , sum(coalesce(b.qtd_entregue, 0)) qtd&#13;&#10;        from&#13;&#10;          public.sup_requisicao a&#13;&#10;          left join public.sup_requisicao_it b on&#13;&#10;            b.id_requisicao = a.id_requisicao&#13;&#10;          left join public.sup_lancamento_saida c on&#13;&#10;            c.id_requisicao = a.id_requisicao&#13;&#10;          left join public.sup_lancamento d on&#13;&#10;            d.id_lancamento = c.id_lancamento&#13;&#10;        where&#13;&#10;          b.id_requisicao_it is not null&#13;&#10;          and a.st_requisicao = 5&#13;&#10;          and d.id_lancamento is not null&#13;&#10;        group by&#13;&#10;          a.id_almoxarifado&#13;&#10;          , b.id_material&#13;&#10;          , d.cp_ano&#13;&#10;          , d.cp_mes&#13;&#10;          , tipo&#13;&#10;      ) a1&#13;&#10;    group by&#13;&#10;      a1.id_almoxarifado&#13;&#10;      , a1.id_material&#13;&#10;      , a1.cp_ano              &#13;&#10;  ) b2 on&#13;&#10;    b2.id_almoxarifado = a2.id_almoxarifado&#13;&#10;  left join public.sup_material c2 on&#13;&#10;    c2.id_material = b2.id_material&#13;&#10;  left join public.sup_grupo d2 on&#13;&#10;    d2.id_grupo = c2.id_grupo&#13;&#10;  left join public.sup_grupo e2 on&#13;&#10;    e2.id_grupo = d2.id_grupo_pai&#13;&#10;  left join (&#13;&#10;    select&#13;&#10;      a.id_filtro&#13;&#10;    from&#13;&#10;      public.sis_relatorio_filtro a&#13;&#10;    where&#13;&#10;      a.id_relatorio_filtro = :id_relatorio_filtro&#13;&#10;  ) f2 on&#13;&#10;    f2.id_filtro = b2.id_material&#13;&#10;where&#13;&#10;  (:id_almoxarifado = '0' or (:id_almoxarifado &gt; '0' and a2.id_almoxarifado = :id_almoxarifado))&#13;&#10;  and b2.cp_ano = cast(:cp_ano as integer)&#13;&#10;  and (:id_relatorio_filtro = -1 or (:id_relatorio_filtro &lt;&gt; -1 and f2.id_filtro is not null))&#13;&#10;  and (&#13;&#10;    b2.qtd_requisitada_1 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_1 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_1 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_2 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_2 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_2 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_3 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_3 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_3 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_4 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_4 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_4 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_5 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_5 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_5 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_6 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_6 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_6 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_7 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_7 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_7 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_8 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_8 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_8 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_9 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_9 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_9 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_10 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_10 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_10 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_11 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_11 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_11 &lt;&gt; 0&#13;&#10;    or b2.qtd_requisitada_12 &lt;&gt; 0&#13;&#10;    or b2.qtd_aprovada_12 &lt;&gt; 0&#13;&#10;    or b2.qtd_entregue_12 &lt;&gt; 0&#13;&#10;  )&#13;&#10;order by&#13;&#10;    a2.id_almoxarifado&#13;&#10;  , b2.cp_ano&#13;&#10;  , c2.ds_material;&#13;&#10;&#13;&#10;">
+        <Column Name="id_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <Column Name="id_material" DataType="System.Int32"/>
+        <Column Name="classificacao" DataType="System.String"/>
+        <Column Name="ds_material" DataType="System.String"/>
+        <Column Name="qtd_requisitada_1" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_1" DataType="System.Double"/>
+        <Column Name="qtd_entregue_1" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_2" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_2" DataType="System.Double"/>
+        <Column Name="qtd_entregue_2" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_3" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_3" DataType="System.Double"/>
+        <Column Name="qtd_entregue_3" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_4" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_4" DataType="System.Double"/>
+        <Column Name="qtd_entregue_4" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_5" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_5" DataType="System.Double"/>
+        <Column Name="qtd_entregue_5" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_6" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_6" DataType="System.Double"/>
+        <Column Name="qtd_entregue_6" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_7" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_7" DataType="System.Double"/>
+        <Column Name="qtd_entregue_7" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_8" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_8" DataType="System.Double"/>
+        <Column Name="qtd_entregue_8" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_9" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_9" DataType="System.Double"/>
+        <Column Name="qtd_entregue_9" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_10" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_10" DataType="System.Double"/>
+        <Column Name="qtd_entregue_10" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_11" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_11" DataType="System.Double"/>
+        <Column Name="qtd_entregue_11" DataType="System.Double"/>
+        <Column Name="qtd_requisitada_12" DataType="System.Double"/>
+        <Column Name="qtd_aprovada_12" DataType="System.Double"/>
+        <Column Name="qtd_entregue_12" DataType="System.Double"/>
+        <CommandParameter Name="id_relatorio_filtro" DataType="9" Expression="[IdRelatorioFiltro]"/>
+        <CommandParameter Name="id_almoxarifado" DataType="22" Expression="[idAlmoxarifado]"/>
+        <CommandParameter Name="cp_ano" DataType="22" Expression="[cpAno]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Resumo de Requisições&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="2602"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idAlmoxarifado" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="cpAno" DataType="System.String" Expression="&quot;2025&quot;"/>
+    <Parameter Name="cpMesInicial" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="cpMesFinal" DataType="System.String" Expression="&quot;8&quot;"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho" Top="0">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="97.75">
+        <inherited Name="TxtFiltro"/>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="GroupHeader1" ZOrder="0" Top="119.9" Width="718.2" Height="32.8" StartNewPage="true" RepeatOnEveryPage="true" Condition="[SqlPrincipal.id_almoxarifado]">
+      <TextObject Name="Text1" Top="13.9" Width="718.2" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Almoxarifado: [SqlPrincipal.ds_almoxarifado]" VertAlign="Center" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+      <ChildBand Name="Child1" Top="155.96" Width="718.2" Height="28.35">
+        <TextObject Name="Text2" Width="151.2" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Classificação" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text3" Left="151.2" Width="567" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Descrição" VertAlign="Center" Font="Arial, 8pt, style=Bold" TextFill.Color="White"/>
+      </ChildBand>
+      <DataBand Name="MasterData1" Top="187.56" Width="718.2" Height="18.9" CanGrow="true" DataSource="Table">
+        <TextObject Name="Text4" Width="151.2" Height="18.9" Anchor="Top, Left, Right" CanGrow="true" Text="[SqlPrincipal.classificacao]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text5" Left="151.2" Width="567" Height="18.9" CanGrow="true" Text="[SqlPrincipal.ds_material]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <ChildBand Name="BdCabecalhoMeses" Top="209.71" Width="718.2" Height="30.24">
+          <TextObject Name="Text6" Left="245.7" Top="15.12" Width="94.5" Height="15.12" Border.Lines="All" Fill.Color="WhiteSmoke" Text="Requisitado" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text7" Left="340.2" Top="15.12" Width="94.5" Height="15.12" Border.Lines="All" Fill.Color="WhiteSmoke" Text="Aprovado" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text8" Left="434.7" Top="15.12" Width="94.5" Height="15.12" Border.Lines="All" Fill.Color="WhiteSmoke" Text="Entregue" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <ChildBand Name="BdMes1" Top="243.2" Width="718.2" Height="15.12" BeforePrintEvent="BdMes1_BeforePrint">
+            <TextObject Name="Text9" Left="151.2" Width="94.5" Height="15.12" Text="JANEIRO" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text10" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_1]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text11" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_1]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text12" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_1]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <ChildBand Name="BdMes2" Top="261.57" Width="718.2" Height="15.12" BeforePrintEvent="BdMes2_BeforePrint">
+              <TextObject Name="Text13" Left="151.2" Width="94.5" Height="15.12" Text="FEVEREIRO" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text14" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_2]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text15" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_2]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text16" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_2]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <ChildBand Name="BdMes3" Top="279.95" Width="718.2" Height="15.12" BeforePrintEvent="BdMes3_BeforePrint">
+                <TextObject Name="Text17" Left="151.2" Width="94.5" Height="15.12" Text="MARÇO" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text18" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_3]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text19" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_3]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text20" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_3]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <ChildBand Name="BdMes4" Top="298.32" Width="718.2" Height="15.12" BeforePrintEvent="BdMes4_BeforePrint">
+                  <TextObject Name="Text21" Left="151.2" Width="94.5" Height="15.12" Text="ABRIL" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text22" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_4]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text23" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_4]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text24" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_4]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <ChildBand Name="BdMes5" Top="316.69" Width="718.2" Height="15.12" BeforePrintEvent="BdMes5_BeforePrint">
+                    <TextObject Name="Text25" Left="151.2" Width="94.5" Height="15.12" Text="MAIO" Font="Tahoma, 8pt, style=Bold"/>
+                    <TextObject Name="Text26" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_5]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <TextObject Name="Text27" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_5]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <TextObject Name="Text28" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_5]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <ChildBand Name="BdMes6" Top="335.06" Width="718.2" Height="15.12" BeforePrintEvent="BdMes6_BeforePrint">
+                      <TextObject Name="Text29" Left="151.2" Width="94.5" Height="15.12" Text="JUNHO" Font="Tahoma, 8pt, style=Bold"/>
+                      <TextObject Name="Text30" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_6]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                      <TextObject Name="Text31" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_6]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                      <TextObject Name="Text32" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_6]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                      <ChildBand Name="BdMes7" Top="353.43" Width="718.2" Height="15.12" BeforePrintEvent="BdMes7_BeforePrint">
+                        <TextObject Name="Text33" Left="151.2" Width="94.5" Height="15.12" Text="JULHO" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text34" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_7]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text35" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_7]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text36" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_7]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <ChildBand Name="BdMes8" Top="371.81" Width="718.2" Height="15.12" BeforePrintEvent="BdMes8_BeforePrint">
+                          <TextObject Name="Text37" Left="151.2" Width="94.5" Height="15.12" Text="AGOSTO" Font="Tahoma, 8pt, style=Bold"/>
+                          <TextObject Name="Text38" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_8]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                          <TextObject Name="Text39" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_8]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                          <TextObject Name="Text40" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_8]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                          <ChildBand Name="BdMes9" Top="390.18" Width="718.2" Height="15.12" BeforePrintEvent="BdMes9_BeforePrint">
+                            <TextObject Name="Text41" Left="151.2" Width="94.5" Height="15.12" Text="SETEMBRO" Font="Tahoma, 8pt, style=Bold"/>
+                            <TextObject Name="Text42" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_9]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                            <TextObject Name="Text43" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_9]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                            <TextObject Name="Text44" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_9]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                            <ChildBand Name="BdMes10" Top="408.55" Width="718.2" Height="15.12" BeforePrintEvent="BdMes10_BeforePrint">
+                              <TextObject Name="Text45" Left="151.2" Width="94.5" Height="15.12" Text="OUTUBRO" Font="Tahoma, 8pt, style=Bold"/>
+                              <TextObject Name="Text46" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_10]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                              <TextObject Name="Text47" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_10]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                              <TextObject Name="Text48" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_10]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                              <ChildBand Name="BdMes11" Top="426.92" Width="718.2" Height="15.12" BeforePrintEvent="BdMes11_BeforePrint">
+                                <TextObject Name="Text49" Left="151.2" Width="94.5" Height="15.12" Text="NOVEMBRO" Font="Tahoma, 8pt, style=Bold"/>
+                                <TextObject Name="Text50" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_11]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                                <TextObject Name="Text51" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_11]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                                <TextObject Name="Text52" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_11]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                                <ChildBand Name="BdMes12" Top="445.29" Width="718.2" Height="15.12" BeforePrintEvent="BdMes12_BeforePrint">
+                                  <TextObject Name="Text53" Left="151.2" Width="94.5" Height="15.12" Text="DEZEMBRO" Font="Tahoma, 8pt, style=Bold"/>
+                                  <TextObject Name="Text54" Left="245.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_requisitada_12]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                                  <TextObject Name="Text55" Left="340.2" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_aprovada_12]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                                  <TextObject Name="Text56" Left="434.7" Width="94.5" Height="15.12" Border.Lines="All" Text="[SqlPrincipal.qtd_entregue_12]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                                  <ChildBand Name="BdFooterMeses" Top="463.67" Width="718.2" Height="28.35">
+                                    <LineObject Name="Line2" Top="11.45" Width="718.2"/>
+                                  </ChildBand>
+                                </ChildBand>
+                              </ChildBand>
+                            </ChildBand>
+                          </ChildBand>
+                        </ChildBand>
+                      </ChildBand>
+                    </ChildBand>
+                  </ChildBand>
+                </ChildBand>
+              </ChildBand>
+            </ChildBand>
+          </ChildBand>
+        </ChildBand>
+        <Sort>
+          <Sort Expression="[SqlPrincipal.ds_material]"/>
+          <Sort Expression="[SqlPrincipal.classificacao]"/>
+        </Sort>
+      </DataBand>
+      <GroupFooterBand Name="GroupFooter1" Top="495.27" Width="718.2" Height="18.9">
+        <TextObject Name="Text57" Width="718.2" Height="18.9" Border.Lines="Top" HorzAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      </GroupFooterBand>
+    </GroupHeaderBand>
+    <inherited Name="BndRodape" Top="517.42">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

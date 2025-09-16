@@ -1,0 +1,19 @@
+stages:
+  - clone_repo
+
+.only_branch: &only_branch
+  only:
+    refs:
+      - /^staging$/
+      - /^card-[0-9]+$/
+  tags:
+    - runner-embraslabs
+
+clone_repo:
+  <<: *only_branch
+  stage: clone_repo
+  script:
+    - echo "if [ -d /srv/services/gsr/files2docker/reports/$CI_COMMIT_BRANCH ]; then sudo rm -f /srv/services/gsr/files2docker/reports/$CI_COMMIT_BRANCH; fi"
+    - if [ -d /srv/services/gsr/files2docker/reports/$CI_COMMIT_BRANCH ]; then sudo rm -rf /srv/services/gsr/files2docker/reports/$CI_COMMIT_BRANCH; fi
+    - echo sudo cp -R $CI_PROJECT_DIR /srv/services/gsr/files2docker/reports/$CI_COMMIT_BRANCH
+    - sudo cp -R $CI_PROJECT_DIR /srv/services/gsr/files2docker/reports/$CI_COMMIT_BRANCH

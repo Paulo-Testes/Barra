@@ -1,0 +1,1096 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\designer-win-x64\Desktop\fastreport\designer-win-x64\Desktop\fastreport\designer-win-x64\Desktop\fastreport\designer-win-x64\Desktop\fastreport\designer-win-x64\Desktop\fastreport\designer-win-x64\Desktop\Pessoas\gsr-reports\base\PecPaisagem.frx" BaseReportAbsolutePath="..\..\..\..\..\..\designer-win-x64\Desktop\fastreport\designer-win-x64\Desktop\fastreport\designer-win-x64\Desktop\fastreport\designer-win-x64\Desktop\fastreport\designer-win-x64\Desktop\fastreport\designer-win-x64\Desktop\Pessoas\gsr-reports\base\PecPaisagem.frx" ScriptLanguage="CSharp" StartReportEvent="_StartReport" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="09/03/2025 12:39:06" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+      string periodo = (String)Report.GetParameterValue(&quot;periodo&quot;);
+        
+      
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtOrgao.Top = (!string.IsNullOrWhiteSpace(periodo)) ? (float) 56.7 : (float) 37.8;
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtOrgao.Top = (!string.IsNullOrWhiteSpace(periodo)) ? (float) 75.6 : (float) 56.7;
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtOrgao.Top = (!string.IsNullOrWhiteSpace(periodo)) ? (float) 75.6 : (float) 56.7;
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+    
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }    
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }   
+  
+//==================================================================================================================================//
+    private void MainPage_StartPage(object sender, EventArgs e)
+    {
+      bndAssinante.Height = 0;
+      repReceitaOrcamentaria.Top = 0;
+      repDespesaOrcamentaria.Top = 0;
+      repTransferenciaRecebida.Top = 0;
+      repTransferenciaConcedida.Top = 0;
+      repReceitaExtra.Top = 0;
+      repDespesaExtra.Top = 0;
+      repDisponibilidade.Top = 0;
+    }
+//==================================================================================================================================//
+
+    private void bndReceitaOrcamentaria_BeforePrint(object sender, EventArgs e)
+    {
+      bndReceitaOrcamentaria.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.tipo&quot;)) == 1;
+    }
+//==================================================================================================================================//
+
+    private void bndDespesaOrcamentaria_BeforePrint(object sender, EventArgs e)
+    {
+      bndDespesaOrcamentaria.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.tipo&quot;)) == 1;
+    }
+//==================================================================================================================================//
+
+    private void bndTransfRecebida_BeforePrint(object sender, EventArgs e)
+    {
+      bndTransfRecebida.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.tipo&quot;)) == 2;
+    }
+//==================================================================================================================================//
+
+    private void bndTransfConcedida_BeforePrint(object sender, EventArgs e)
+    {
+      bndTransfConcedida.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.tipo&quot;)) == 2; 
+    }
+//==================================================================================================================================//
+
+    private void bndReceitaExtra_BeforePrint(object sender, EventArgs e)
+    {
+     bndReceitaExtra.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.tipo&quot;)) == 3; 
+    }
+//==================================================================================================================================//
+
+    private void bndDespesaExtra_BeforePrint(object sender, EventArgs e)
+    {
+     bndDespesaExtra.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.tipo&quot;)) == 3; 
+    }
+//==================================================================================================================================//
+
+    private void bndDisponibilidade_BeforePrint(object sender, EventArgs e)
+    {
+     bndDisponibilidade.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.tipo&quot;)) == 4; 
+    }
+//==================================================================================================================================//
+
+    private void bndReceitaOrcamentariaN01_BeforePrint(object sender, EventArgs e)
+    {
+      bndReceitaOrcamentariaN01.Visible = ((Int32)Report.GetColumnValue(&quot;SqlReceita.nivel&quot;)) == 1;
+    }
+//==================================================================================================================================//
+
+    private void bndReceitaOrcamentariaN02_BeforePrint(object sender, EventArgs e)
+    {
+     bndReceitaOrcamentariaN02.Visible = ((Int32)Report.GetColumnValue(&quot;SqlReceita.nivel&quot;)) == 2; 
+    }
+//==================================================================================================================================//
+
+    private void bndReceitaOrcamentariaN03_BeforePrint(object sender, EventArgs e)
+    {
+     bndReceitaOrcamentariaN03.Visible = ((Int32)Report.GetColumnValue(&quot;SqlReceita.nivel&quot;)) == 3; 
+    }
+//==================================================================================================================================//
+
+    private void bndDespesaOrcamentariaN01_BeforePrint(object sender, EventArgs e)
+    {
+     bndDespesaOrcamentariaN01.Visible = ((Int32)Report.GetColumnValue(&quot;SqlDespesa.nivel&quot;)) == 1;
+    }
+//==================================================================================================================================//
+
+    private void bndDespesaOrcamentariaN02_BeforePrint(object sender, EventArgs e)
+    {
+     bndDespesaOrcamentariaN02.Visible = ((Int32)Report.GetColumnValue(&quot;SqlDespesa.nivel&quot;)) == 2; 
+    }
+//==================================================================================================================================//
+
+    private void bndTransfRecebidaN01_BeforePrint(object sender, EventArgs e)
+    {
+     bndTransfRecebidaN01.Visible = ((Int32)Report.GetColumnValue(&quot;SqlTransfRecebida.nivel&quot;)) == 1; 
+    }
+//==================================================================================================================================//
+
+    private void bndTransfRecebidaN02_BeforePrint(object sender, EventArgs e)
+    {
+      bndTransfRecebidaN02.Visible = ((Int32)Report.GetColumnValue(&quot;SqlTransfRecebida.nivel&quot;)) == 2;
+    }
+//==================================================================================================================================//
+
+    private void bndTransfConcedidaN01_BeforePrint(object sender, EventArgs e)
+    {
+      bndTransfConcedidaN01.Visible = ((Int32)Report.GetColumnValue(&quot;SqlTransfConcedida.nivel&quot;)) == 1;
+    }
+//==================================================================================================================================//
+
+    private void bndTransfConcedidaN02_BeforePrint(object sender, EventArgs e)
+    {
+     bndTransfConcedidaN02.Visible = ((Int32)Report.GetColumnValue(&quot;SqlTransfConcedida.nivel&quot;)) == 2; 
+    }
+//==================================================================================================================================//
+
+    private void bndReceitaExtraN01_BeforePrint(object sender, EventArgs e)
+    {
+      bndReceitaExtraN01.Visible = ((Int32)Report.GetColumnValue(&quot;SqlReceitaExtra.nivel&quot;)) == 1;
+    }
+//==================================================================================================================================//
+    private void bndReceitaExtraN02_BeforePrint(object sender, EventArgs e)
+    {
+     bndReceitaExtraN02.Visible = ((Int32)Report.GetColumnValue(&quot;SqlReceitaExtra.nivel&quot;)) == 2; 
+    }
+//==================================================================================================================================//
+
+    private void bndDespesaExtraN01_BeforePrint(object sender, EventArgs e)
+    {
+     bndDespesaExtraN01.Visible = ((Int32)Report.GetColumnValue(&quot;SqlDespesaExtra.nivel&quot;)) == 1; 
+    }
+//==================================================================================================================================//
+   private void bndDespesaExtraN02_BeforePrint(object sender, EventArgs e)
+    {
+     bndDespesaExtraN02.Visible = ((Int32)Report.GetColumnValue(&quot;SqlDespesaExtra.nivel&quot;)) == 2; 
+    }
+//==================================================================================================================================//
+
+    private void bndDespesaExtraN03_BeforePrint(object sender, EventArgs e)
+    {
+     bndDespesaExtraN03.Visible = ((Int32)Report.GetColumnValue(&quot;SqlDespesaExtra.nivel&quot;)) == 3; 
+    }
+//==================================================================================================================================//
+    private void bndDisponibilidadeN01_BeforePrint(object sender, EventArgs e)
+    {
+     bndDisponibilidadeN01.Visible = ((Int32)Report.GetColumnValue(&quot;SqlDisponibilidade.nivel&quot;)) == 1;
+    }
+//==================================================================================================================================//
+
+    private void bndDisponibilidadeN02_BeforePrint(object sender, EventArgs e)
+    {
+     bndDisponibilidadeN02.Visible = ((Int32)Report.GetColumnValue(&quot;SqlDisponibilidade.nivel&quot;)) == 2; 
+    }
+//==================================================================================================================================//
+    private void bndDisponibilidadeN03_BeforePrint(object sender, EventArgs e)
+    {
+     bndDisponibilidadeN03.Visible = ((Int32)Report.GetColumnValue(&quot;SqlDisponibilidade.nivel&quot;)) == 3; 
+    }
+//==================================================================================================================================//
+
+    private void Report_StartReport(object sender, EventArgs e)
+    {
+      // Recupera os parâmetros do relatório
+      string filtroEntidade = ((String)Report.GetParameterValue(&quot;!filtroEntidade&quot;));
+      string dbms = Report.GetParameterValue(&quot;dbms&quot;).ToString().ToLower();
+
+      // Pega os data sources do relatório
+      var SqlReceita = Report.GetDataSource(&quot;SqlReceita&quot;) as FastReport.Data.TableDataSource;
+      var SqlDespesa = Report.GetDataSource(&quot;SqlDespesa&quot;) as FastReport.Data.TableDataSource;
+      var SqlTransfRecebida = Report.GetDataSource(&quot;SqlTransfRecebida&quot;) as FastReport.Data.TableDataSource;
+      var SqlTransfConcedida = Report.GetDataSource(&quot;SqlTransfConcedida&quot;) as FastReport.Data.TableDataSource;
+      var SqlReceitaExtra = Report.GetDataSource(&quot;SqlReceitaExtra&quot;) as FastReport.Data.TableDataSource;
+      var SqlDespesaExtra = Report.GetDataSource(&quot;SqlDespesaExtra&quot;) as FastReport.Data.TableDataSource;
+      var SqlDisponibilidade = Report.GetDataSource(&quot;SqlDisponibilidade&quot;) as FastReport.Data.TableDataSource;
+
+      // Substitui os filtros
+      SqlReceita.SelectCommand = SqlReceita.SelectCommand.Replace(&quot;/*!ENTIDADE*/&quot;, filtroEntidade);
+      SqlDespesa.SelectCommand = SqlDespesa.SelectCommand.Replace(&quot;/*!ENTIDADE*/&quot;, filtroEntidade);
+      SqlTransfRecebida.SelectCommand = SqlTransfRecebida.SelectCommand.Replace(&quot;/*!ENTIDADE*/&quot;, filtroEntidade);
+      SqlTransfConcedida.SelectCommand = SqlTransfConcedida.SelectCommand.Replace(&quot;/*!ENTIDADE*/&quot;, filtroEntidade);
+      SqlReceitaExtra.SelectCommand = SqlReceitaExtra.SelectCommand.Replace(&quot;/*!ENTIDADE*/&quot;, filtroEntidade);
+      SqlDespesaExtra.SelectCommand = SqlDespesaExtra.SelectCommand.Replace(&quot;/*!ENTIDADE*/&quot;, filtroEntidade);
+      SqlDisponibilidade.SelectCommand = SqlDisponibilidade.SelectCommand.Replace(&quot;/*!ENTIDADE*/&quot;, filtroEntidade);
+
+      // Se PostgreSQL, aplica os LATERAL JOINs
+      if (dbms == &quot;postgresql&quot;)
+      {
+        SetLateralJoinPostgres(SqlReceita);
+        SetLateralJoinPostgres(SqlDespesa);
+        SetLateralJoinPostgres(SqlTransfRecebida);
+        SetLateralJoinPostgres(SqlTransfConcedida);
+        SetLateralJoinPostgres(SqlReceitaExtra);
+        SetLateralJoinPostgres(SqlDespesaExtra);
+      }
+    }
+
+    private void SetLateralJoinPostgres(FastReport.Data.TableDataSource query)
+    {
+      query.SelectCommand = query.SelectCommand
+        .Replace(&quot;/*LATERAL_JOIN*/&quot;, &quot;LATERAL&quot;)
+        .Replace(&quot;/*LATERAL_WHERE*/&quot;, &quot;AND A.ID_FICHA = PFICH.ID_FICHA&quot;);
+    }
+//==================================================================================================================================//
+  
+    private void parent_FooterAssinante_BeforePrint(object sender, EventArgs e)
+    {
+      TxtAssinante1.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel1&quot;));
+      TxtAssinante2.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel2&quot;));
+      TxtAssinante3.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel3&quot;));
+      TxtAssinante4.Visible = !string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlAssinante.nome_responsavel4&quot;));
+
+    }
+}
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAf45SGh+1JQ06HfUCwVjdXLyOtFr5FbmNWNqr1W8I2tPRGoPzSsFGNAQf85ceZvCGogRGJncwLI0VhpBoFVj/qSQKkbhjw8vK4wcDZgU0qxcHNWYIrfVE8SaSXKeQG6t4=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" PropName="Table" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" DataType="System.String"/>
+        <Column Name="site" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" PropName="Table2" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" PropName="Table1" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlAssinante" DataType="System.Int32" PropName="Table" Enabled="true" SelectCommand="SELECT TRIM(C1.NOME_RAZAO) AS NOME_RESPONSAVEL1&#13;&#10;     , C.CARGO AS CARGO_RESPONSAVEL1&#13;&#10;     , CAST(C.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL1&#13;&#10;     , CAST(C3.MATRICULA AS VARCHAR(20)) AS MATRICULA1&#13;&#10;&#13;&#10;     , TRIM(D1.NOME_RAZAO) AS NOME_RESPONSAVEL2&#13;&#10;     , D.CARGO AS CARGO_RESPONSAVEL2&#13;&#10;     , CAST(D.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL2&#13;&#10;     , CAST(D3.MATRICULA AS VARCHAR(20)) AS MATRICULA2&#13;&#10;&#13;&#10;     , TRIM(E1.NOME_RAZAO) AS NOME_RESPONSAVEL3&#13;&#10;     , E.CARGO AS CARGO_RESPONSAVEL3&#13;&#10;     , CAST(E.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL3&#13;&#10;     , CAST(E3.MATRICULA AS VARCHAR(20)) AS MATRICULA3&#13;&#10;&#13;&#10;     , TRIM(F1.NOME_RAZAO) AS NOME_RESPONSAVEL4&#13;&#10;     , F.CARGO AS CARGO_RESPONSAVEL4&#13;&#10;     , CAST(F.DOCUMENTO_IMPRESSAO AS VARCHAR(80)) AS DOCUMENTO_RESPONSAVEL4&#13;&#10;     , CAST(F3.MATRICULA AS VARCHAR(20)) AS MATRICULA4&#13;&#10;&#13;&#10;     , CAST(MAKE_DATE(CAST(:ANO AS INTEGER), CAST(:MES AS INTEGER), CAST(:DIA AS INTEGER)) AS TIMESTAMP) AS DT_RELATORIO&#13;&#10;&#13;&#10;  FROM SIS_RELATORIO R&#13;&#10;       LEFT JOIN PEC_RELATORIO           A  ON A.ID_RELATORIO           = R.ID_RELATORIO&#13;&#10;       LEFT JOIN PEC_RELATORIO_ASSINANTE B  ON B.ID_RELATORIO_GRUPO     = A.ID_RELATORIO_GRUPO&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL C  ON C.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_01&#13;&#10;       LEFT JOIN SIS_PESSOA              C1 ON C1.ID_PESSOA             = C.ID_PESSOA&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL D  ON D.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_02&#13;&#10;       LEFT JOIN SIS_PESSOA              D1 ON D1.ID_PESSOA             = D.ID_PESSOA&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL E  ON E.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_03&#13;&#10;       LEFT JOIN SIS_PESSOA              E1 ON E1.ID_PESSOA             = E.ID_PESSOA&#13;&#10;&#13;&#10;       LEFT JOIN PEC_UNIDADE_RESPONSAVEL F  ON F.ID_UNIDADE_RESPONSAVEL = B.ID_RESPONSAVEL_04&#13;&#10;       LEFT JOIN SIS_PESSOA              F1 ON F1.ID_PESSOA             = F.ID_PESSOA&#13;&#10;&#13;&#10;&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(C1.DOCUMENTO) C3 ON 1=1&#13;&#10;                                                         AND C3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND C3.DT_DEMISSAO IS NULL&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(D1.DOCUMENTO) D3 ON 1=1&#13;&#10;                                                         AND D3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND D3.DT_DEMISSAO IS NULL&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(E1.DOCUMENTO) E3 ON 1=1&#13;&#10;                                                         AND E3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND E3.DT_DEMISSAO IS NULL&#13;&#10;       LEFT JOIN API_FUNCIONARIO_POR_CPF(F1.DOCUMENTO) F3 ON 1=1&#13;&#10;                                                         AND F3.EM_FOLHA    = 'S'&#13;&#10;                                                         AND F3.DT_DEMISSAO IS NULL&#13;&#10;&#13;&#10; WHERE R.ID_MODULO    = :ID_MODULO&#13;&#10;   AND R.CD_RELATORIO = :CD_RELATORIO&#13;&#10;   AND R.GERADO       = 0&#13;&#10;   AND B.DT_INICIO   &lt;= MAKE_DATE(CAST(:ANO AS INTEGER), CAST(:MES AS INTEGER), CAST(:DIA AS INTEGER))&#13;&#10;   AND A.ID_ENTIDADE  = :ID_ENTIDADE&#13;&#10; ORDER BY&#13;&#10;       B.DT_INICIO DESC&#13;&#10; LIMIT 1">
+        <Column Name="nome_responsavel1" DataType="System.String"/>
+        <Column Name="cargo_responsavel1" DataType="System.String"/>
+        <Column Name="documento_responsavel1" DataType="System.String"/>
+        <Column Name="matricula1" DataType="System.String"/>
+        <Column Name="nome_responsavel2" DataType="System.String"/>
+        <Column Name="cargo_responsavel2" DataType="System.String"/>
+        <Column Name="documento_responsavel2" DataType="System.String"/>
+        <Column Name="matricula2" DataType="System.String"/>
+        <Column Name="nome_responsavel3" DataType="System.String"/>
+        <Column Name="cargo_responsavel3" DataType="System.String"/>
+        <Column Name="documento_responsavel3" DataType="System.String"/>
+        <Column Name="matricula3" DataType="System.String"/>
+        <Column Name="nome_responsavel4" DataType="System.String"/>
+        <Column Name="cargo_responsavel4" DataType="System.String"/>
+        <Column Name="documento_responsavel4" DataType="System.String"/>
+        <Column Name="matricula4" DataType="System.String"/>
+        <Column Name="dt_relatorio" DataType="System.DateTime"/>
+        <CommandParameter Name="ANO" DataType="9" DefaultValue="1900"/>
+        <CommandParameter Name="MES" DataType="9" DefaultValue="01"/>
+        <CommandParameter Name="DIA" DataType="9" DefaultValue="01"/>
+        <CommandParameter Name="ID_MODULO" DataType="9" Expression="[idModulo]"/>
+        <CommandParameter Name="CD_RELATORIO" DataType="9" Expression="[codigoRelatorio]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlPrincipal" DataType="System.Int32" Enabled="true" SelectCommand="SELECT ID_SEQUENCIA AS TIPO&#13;&#10;      ,MAKE_DATE(CAST(:ANO_INI AS INTEGER), 1, 1)   &#13;&#10;       + CAST((CAST((CAST(:MES_INI AS INTEGER) -1) AS varchar) || ' MONTH') AS interval) &#13;&#10;       + CAST((CAST((CAST(:DIA_INI AS INTEGER) -1) AS varchar) || ' DAY')   AS interval) AS dtini   &#13;&#10;      ,MAKE_DATE(CAST(:ANO_FIM AS INTEGER), 1, 1)   &#13;&#10;       + CAST((CAST((CAST(:MES_FIM AS INTEGER) -1) AS varchar) || ' MONTH') AS interval) &#13;&#10;       + CAST((CAST((CAST(:DIA_FIM AS INTEGER) -1) AS varchar) || ' DAY')   AS interval) AS dtfim&#13;&#10;      ,CAST(:RESUMIR AS INTEGER)    AS RESUMIR&#13;&#10;      ,CAST(:CP_ANO AS INTEGER)     AS CP_ANO&#13;&#10;      ,CAST(:ID_ESTADO AS INTEGER)  AS ID_ESTADO         &#13;&#10;  FROM SIS_SEQUENCIA&#13;&#10; WHERE ID_SEQUENCIA &lt;= 4&#13;&#10; ORDER BY ID_SEQUENCIA">
+        <Column Name="tipo" DataType="System.Int32"/>
+        <Column Name="dtini" DataType="System.DateTime"/>
+        <Column Name="dtfim" DataType="System.DateTime"/>
+        <Column Name="resumir" DataType="System.Int32"/>
+        <Column Name="cp_ano" DataType="System.Int32"/>
+        <Column Name="id_estado" DataType="System.Int32"/>
+        <CommandParameter Name="ID_ESTADO" DataType="9" Expression="[idEstado]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[cpAno]"/>
+        <CommandParameter Name="RESUMIR" DataType="9" Expression="[resumir]"/>
+        <CommandParameter Name="DIA_INI" DataType="22" Expression="ExtractDay([dtIni])"/>
+        <CommandParameter Name="MES_INI" DataType="22" Expression="ExtractMonth([dtIni])"/>
+        <CommandParameter Name="ANO_INI" DataType="22" Expression="ExtractYear([dtIni])"/>
+        <CommandParameter Name="DIA_FIM" DataType="22" Expression="ExtractDay([dtFin])"/>
+        <CommandParameter Name="MES_FIM" DataType="22" Expression="ExtractMonth([dtFin])"/>
+        <CommandParameter Name="ANO_FIM" DataType="22" Expression="ExtractYear([dtFin])"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlReceita" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CAST(CASE WHEN B0.ID_SEQUENCIA = 1 AND A0.NIVEL = 2 THEN '0'&#13;&#10;                 WHEN B0.ID_SEQUENCIA = 2 AND A0.NIVEL = 1 THEN A0.CD_PLANO_CONTA_REL&#13;&#10;                 WHEN B0.ID_SEQUENCIA = 3 AND A0.NIVEL = 2 THEN A0.CD_PLANO_CONTA_REL&#13;&#10;             END AS VARCHAR(250)) AS CHAVE&#13;&#10;&#13;&#10;     , B0.ID_SEQUENCIA AS NIVEL&#13;&#10;&#13;&#10;     , CAST(CASE WHEN B0.ID_SEQUENCIA &lt;&gt; 1 THEN A0.CD_PLANO_CONTA_REL END AS VARCHAR(250)) AS CD_PLANO_CONTA_REL&#13;&#10;     , CAST(CASE WHEN B0.ID_SEQUENCIA &lt;&gt; 1 THEN A0.DS_PLANO_CONTA&#13;&#10;            ELSE                           'RECEITAS ORÇAMENTÁRIAS' END AS VARCHAR(250)) AS DS_PLANO_CONTA&#13;&#10;&#13;&#10;     , CAST(CASE WHEN B0.ID_SEQUENCIA  = 3 THEN A0.CD_TP_DEDUCAO END AS VARCHAR(10)) AS CD_TP_DEDUCAO&#13;&#10;     , CAST(CASE WHEN B0.ID_SEQUENCIA  = 3 THEN A0.DS_TP_DEDUCAO END AS VARCHAR(50)) AS DS_TP_DEDUCAO&#13;&#10;&#13;&#10;     , ROUND(SUM(A0.VL_ANTERIOR  ), 2) AS VL_ANTERIOR&#13;&#10;     , ROUND(SUM(A0.VL_PERIODO   ), 2) AS VL_PERIODO&#13;&#10;     , ROUND(SUM(A0.VL_ACUMULADO ), 2) AS VL_ACUMULADO&#13;&#10;  FROM (&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , CAST(NULL AS VARCHAR(250))   AS CD_PLANO_CONTA_REL&#13;&#10;             , CAST(NULL AS VARCHAR(250))   AS DS_PLANO_CONTA&#13;&#10;             , CAST(2    AS INTEGER)        AS NIVEL&#13;&#10;             , CAST(NULL AS VARCHAR(10))    AS CD_TP_DEDUCAO&#13;&#10;             , CAST(NULL AS VARCHAR(50))    AS DS_TP_DEDUCAO&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ANTERIOR&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_PERIODO&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA = 1 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;         UNION&#13;&#10;        SELECT CAST(1 AS INTEGER) AS ID_SEQUENCIA&#13;&#10;             , B1.CD_PLANO_CONTA_REL&#13;&#10;             , B1.DS_PLANO_CONTA&#13;&#10;             , B1.NIVEL&#13;&#10;             , A1.CD_TP_DEDUCAO&#13;&#10;             , A1.DS_TP_DEDUCAO&#13;&#10;             , SUM(A1.VL_ANTERIOR  ) AS VL_ANTERIOR&#13;&#10;             , SUM(A1.VL_PERIODO   ) AS VL_PERIODO&#13;&#10;             , SUM(A1.VL_ACUMULADO ) AS VL_ACUMULADO&#13;&#10;          FROM (&#13;&#10;                SELECT B2.ID_ESTADO&#13;&#10;                     , B2.CP_ANO&#13;&#10;                     , B2.ID_PLANO_CONTA_CP&#13;&#10;                     , B2.ID_PLANO_CONTA_PAI&#13;&#10;                     , B2.NIVEL&#13;&#10;                     , A2.CD_TP_DEDUCAO&#13;&#10;                     , A2.DS_TP_DEDUCAO&#13;&#10;                     , SUM(A2.VL_ANTERIOR  ) AS VL_ANTERIOR&#13;&#10;                     , SUM(A2.VL_PERIODO   ) AS VL_PERIODO&#13;&#10;                     , SUM(A2.VL_ACUMULADO ) AS VL_ACUMULADO&#13;&#10;                  FROM (&#13;&#10;                        SELECT B3.ID_ESTADO&#13;&#10;                             , B3.CP_ANO&#13;&#10;                             , B3.ID_PLANO_CONTA_CP&#13;&#10;                             , B3.ID_PLANO_CONTA_PAI&#13;&#10;                             , B3.NIVEL&#13;&#10;                             , A3.CD_TP_DEDUCAO&#13;&#10;                             , A3.DS_TP_DEDUCAO&#13;&#10;                             , SUM(A3.VL_ANTERIOR  ) AS VL_ANTERIOR&#13;&#10;                             , SUM(A3.VL_PERIODO   ) AS VL_PERIODO&#13;&#10;                             , SUM(A3.VL_ACUMULADO ) AS VL_ACUMULADO&#13;&#10;                          FROM (&#13;&#10;                                SELECT B4.ID_ESTADO&#13;&#10;                                     , B4.CP_ANO&#13;&#10;                                     , B4.ID_PLANO_CONTA_CP&#13;&#10;                                     , B4.ID_PLANO_CONTA_PAI&#13;&#10;                                     , B4.NIVEL&#13;&#10;                                     , A4.CD_TP_DEDUCAO&#13;&#10;                                     , A4.DS_TP_DEDUCAO&#13;&#10;                                     , SUM(A4.VL_ANTERIOR  ) AS VL_ANTERIOR&#13;&#10;                                     , SUM(A4.VL_PERIODO   ) AS VL_PERIODO&#13;&#10;                                     , SUM(A4.VL_ACUMULADO ) AS VL_ACUMULADO&#13;&#10;                                  FROM (&#13;&#10;                                        SELECT B5.ID_ESTADO&#13;&#10;                                             , B5.CP_ANO&#13;&#10;                                             , B5.ID_PLANO_CONTA_CP&#13;&#10;                                             , B5.ID_PLANO_CONTA_PAI&#13;&#10;                                             , B5.NIVEL&#13;&#10;                                             , A5.CD_TP_DEDUCAO&#13;&#10;                                             , A5.DS_TP_DEDUCAO&#13;&#10;                                             , SUM(A5.VL_ANTERIOR  ) AS VL_ANTERIOR&#13;&#10;                                             , SUM(A5.VL_PERIODO   ) AS VL_PERIODO&#13;&#10;                                             , SUM(A5.VL_ACUMULADO ) AS VL_ACUMULADO&#13;&#10;                                          FROM (&#13;&#10;                                                SELECT B6.ID_ESTADO&#13;&#10;                                                     , B6.CP_ANO&#13;&#10;                                                     , B6.ID_PLANO_CONTA_CP&#13;&#10;                                                     , B6.ID_PLANO_CONTA_PAI&#13;&#10;                                                     , B6.NIVEL&#13;&#10;                                                     , A6.CD_TP_DEDUCAO&#13;&#10;                                                     , A6.DS_TP_DEDUCAO&#13;&#10;                                                     , SUM(A6.VL_ANTERIOR  ) AS VL_ANTERIOR&#13;&#10;                                                     , SUM(A6.VL_PERIODO   ) AS VL_PERIODO&#13;&#10;                                                     , SUM(A6.VL_ACUMULADO ) AS VL_ACUMULADO&#13;&#10;                                                  FROM (&#13;&#10;                                                        SELECT B7.ID_ESTADO&#13;&#10;                                                             , B7.CP_ANO&#13;&#10;                                                             , B7.ID_PLANO_CONTA_CP&#13;&#10;                                                             , B7.ID_PLANO_CONTA_PAI&#13;&#10;                                                             , B7.NIVEL&#13;&#10;                                                             , A7.CD_TP_DEDUCAO&#13;&#10;                                                             , A7.DS_TP_DEDUCAO&#13;&#10;                                                             , SUM(A7.VL_ANTERIOR  ) AS VL_ANTERIOR&#13;&#10;                                                             , SUM(A7.VL_PERIODO   ) AS VL_PERIODO&#13;&#10;                                                             , SUM(A7.VL_ACUMULADO ) AS VL_ACUMULADO&#13;&#10;                                                          FROM (&#13;&#10;                                                                SELECT B8.ID_ESTADO&#13;&#10;                                                                     , B8.CP_ANO&#13;&#10;                                                                     , B8.ID_PLANO_CONTA_CP&#13;&#10;                                                                     , B8.ID_PLANO_CONTA_PAI&#13;&#10;                                                                     , B8.NIVEL&#13;&#10;                                                                     , A8.CD_TP_DEDUCAO&#13;&#10;                                                                     , A8.DS_TP_DEDUCAO&#13;&#10;                                                                     , SUM(A8.VL_ANTERIOR  ) AS VL_ANTERIOR&#13;&#10;                                                                     , SUM(A8.VL_PERIODO   ) AS VL_PERIODO&#13;&#10;                                                                     , SUM(A8.VL_ACUMULADO ) AS VL_ACUMULADO&#13;&#10;                                                                  FROM (&#13;&#10;                                                                        SELECT B9.ID_ESTADO&#13;&#10;                                                                             , B9.CP_ANO&#13;&#10;                                                                             , B9.ID_PLANO_CONTA_CP&#13;&#10;                                                                             , B9.ID_PLANO_CONTA_PAI&#13;&#10;                                                                             , B9.NIVEL&#13;&#10;                                                                             , A9.CD_TP_DEDUCAO&#13;&#10;                                                                             , A9.DS_TP_DEDUCAO&#13;&#10;                                                                             , SUM(A9.VL_ANTERIOR  ) AS VL_ANTERIOR&#13;&#10;                                                                             , SUM(A9.VL_PERIODO   ) AS VL_PERIODO&#13;&#10;                                                                             , SUM(A9.VL_ACUMULADO ) AS VL_ACUMULADO&#13;&#10;                                                                          FROM (&#13;&#10;                                                                                SELECT A10.ID_ESTADO&#13;&#10;                                                                                     , A10.CP_ANO&#13;&#10;                                                                                     , A10.ID_PLANO_CONTA_CP&#13;&#10;                                                                                     , A10.ID_PLANO_CONTA_PAI&#13;&#10;                                                                                     , A10.NIVEL&#13;&#10;                                                                                     , A10.CD_TP_DEDUCAO&#13;&#10;                                                                                     , A10.DS_TP_DEDUCAO&#13;&#10;                                                                                     , A10.VL_ANTERIOR&#13;&#10;                                                                                     , A10.VL_PERIODO&#13;&#10;                                                                                     , A10.VL_ACUMULADO&#13;&#10;                                                                                  FROM (&#13;&#10;                                                                                        SELECT PPLCO.ID_ESTADO&#13;&#10;                                                                                             , PPLCO.CP_ANO&#13;&#10;                                                                                             , PPLCO.ID_PLANO_CONTA_CP&#13;&#10;                                                                                             , PPLCO.ID_PLANO_CONTA_PAI&#13;&#10;                                                                                             , PPLCO.NIVEL&#13;&#10;                                                                                             , TDEDU.CD_TP_DEDUCAO&#13;&#10;                                                                                             , TDEDU.DS_TP_DEDUCAO&#13;&#10;                                                                                             , COALESCE(CXMOV.VL_ANTERIOR , 0)   AS VL_ANTERIOR&#13;&#10;                                                                                             , COALESCE(CXMOV.VL_PERIODO  , 0)   AS VL_PERIODO&#13;&#10;                                                                                             , COALESCE(CXMOV.VL_ACUMULADO, 0)   AS VL_ACUMULADO&#13;&#10;                                                                                          FROM SIS_SEQUENCIA SEQUE&#13;&#10;                                                                                               LEFT JOIN PEC_FICHA          PFICH ON 1 = 1&#13;&#10;                                                                                               LEFT JOIN PEC_TP_DEDUCAO     TDEDU ON TDEDU.ID_TP_DEDUCAO    = PFICH.ID_TP_DEDUCAO&#13;&#10;                                                                                               LEFT JOIN PEC_PLANO_CONTA    PPLCO ON PPLCO.ID_PLANO_CONTA   = PFICH.ID_PLANO_CONTA&#13;&#10;        &#13;&#10;                                                                                               LEFT JOIN LATERAL   &#13;&#10;                                                                                                         ( SELECT A.ID_FICHA&#13;&#10;                                                                                                                , SUM(CASE WHEN A.DT_MOVIMENTO  &lt; :DT_MOVIMENTO_INICIAL&#13;&#10;                                                                                                                           THEN A.VL_MOVIMENTO&#13;&#10;                                                                                                                           ELSE 0 END)  AS VL_ANTERIOR&#13;&#10;                                                                                                                , SUM(CASE WHEN A.DT_MOVIMENTO &gt;= :DT_MOVIMENTO_INICIAL &#13;&#10;                                                                                                                           THEN A.VL_MOVIMENTO&#13;&#10;                                                                                                                           ELSE 0 END)  AS VL_PERIODO&#13;&#10;                                                                                                                , SUM(A.VL_MOVIMENTO)   AS VL_ACUMULADO&#13;&#10;                                                                                                             FROM PEC_CAIXA_MOVIMENTO A&#13;&#10;                                                                                                            WHERE A.CP_ANO                   = :CP_ANO                                                                                                                                                                                                                                                                        &#13;&#10;                                                                                                              AND A.DT_MOVIMENTO            &lt;= :DT_MOVIMENTO_FINAL &#13;&#10;                                                                                                              AND A.ID_ST_LANCAMENTO_CAIXA   = 1&#13;&#10;                                                                                                              AND A.ID_FICHA = PFICH.ID_FICHA                                                                                                                                                                                                                                  &#13;&#10;                                                                                                            GROUP BY&#13;&#10;                                                                                                                  A.ID_FICHA&#13;&#10;                                                                                                                          ) CXMOV ON CXMOV.ID_FICHA         = PFICH.ID_FICHA&#13;&#10;                                                                                         WHERE SEQUE.ID_SEQUENCIA  = 1 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;                                                                                           AND PFICH.CP_ANO         = :CP_ANO&#13;&#10;                                                                                           AND PFICH.ID_TP_NATUREZA = 1&#13;&#10;                                                                                           /*!ENTIDADE*/&#13;&#10;                                                                                        ) A10&#13;&#10;        &#13;&#10;                                                                               ) A9&#13;&#10;                                                                               LEFT  JOIN PEC_PLANO_CONTA B9 ON   B9.ID_ESTADO         = :ID_ESTADO&#13;&#10;                                                                                                            AND   B9.CP_ANO            = :CP_ANO&#13;&#10;                                                                                                            AND ( B9.ID_PLANO_CONTA_CP = A9.ID_PLANO_CONTA_CP OR&#13;&#10;                                                                                                                ( B9.ID_PLANO_CONTA_CP = A9.ID_PLANO_CONTA_PAI AND A9.NIVEL = 10 ) )&#13;&#10;                                                                         GROUP BY&#13;&#10;                                                                               B9.ID_ESTADO&#13;&#10;                                                                             , B9.CP_ANO&#13;&#10;                                                                             , B9.ID_PLANO_CONTA_CP&#13;&#10;                                                                             , B9.ID_PLANO_CONTA_PAI&#13;&#10;                                                                             , B9.NIVEL&#13;&#10;                                                                             , A9.CD_TP_DEDUCAO&#13;&#10;                                                                             , A9.DS_TP_DEDUCAO&#13;&#10;        &#13;&#10;                                                                       ) A8&#13;&#10;                                                                       LEFT  JOIN PEC_PLANO_CONTA B8 ON   B8.ID_ESTADO         = :ID_ESTADO&#13;&#10;                                                                                                    AND   B8.CP_ANO            = :CP_ANO&#13;&#10;                                                                                                    AND ( B8.ID_PLANO_CONTA_CP = A8.ID_PLANO_CONTA_CP OR&#13;&#10;                                                                                                        ( B8.ID_PLANO_CONTA_CP = A8.ID_PLANO_CONTA_PAI AND A8.NIVEL = 9 ) )&#13;&#10;                                                                 GROUP BY&#13;&#10;                                                                       B8.ID_ESTADO&#13;&#10;                                                                     , B8.CP_ANO&#13;&#10;                                                                     , B8.ID_PLANO_CONTA_CP&#13;&#10;                                                                     , B8.ID_PLANO_CONTA_PAI&#13;&#10;                                                                     , B8.NIVEL&#13;&#10;                                                                     , A8.CD_TP_DEDUCAO&#13;&#10;                                                                     , A8.DS_TP_DEDUCAO&#13;&#10;        &#13;&#10;                                                               ) A7&#13;&#10;                                                               LEFT  JOIN PEC_PLANO_CONTA B7 ON   B7.ID_ESTADO         = :ID_ESTADO&#13;&#10;                                                                                            AND   B7.CP_ANO            = :CP_ANO&#13;&#10;                                                                                            AND ( B7.ID_PLANO_CONTA_CP = A7.ID_PLANO_CONTA_CP OR&#13;&#10;                                                                                                ( B7.ID_PLANO_CONTA_CP = A7.ID_PLANO_CONTA_PAI AND A7.NIVEL = 8 ) )&#13;&#10;                                                         GROUP BY&#13;&#10;                                                               B7.ID_ESTADO&#13;&#10;                                                             , B7.CP_ANO&#13;&#10;                                                             , B7.ID_PLANO_CONTA_CP&#13;&#10;                                                             , B7.ID_PLANO_CONTA_PAI&#13;&#10;                                                             , B7.NIVEL&#13;&#10;                                                             , A7.CD_TP_DEDUCAO&#13;&#10;                                                             , A7.DS_TP_DEDUCAO&#13;&#10;        &#13;&#10;                                                       ) A6&#13;&#10;                                                       LEFT  JOIN PEC_PLANO_CONTA B6 ON   B6.ID_ESTADO         = :ID_ESTADO&#13;&#10;                                                                                    AND   B6.CP_ANO            = :CP_ANO&#13;&#10;                                                                                    AND ( B6.ID_PLANO_CONTA_CP = A6.ID_PLANO_CONTA_CP OR&#13;&#10;                                                                                        ( B6.ID_PLANO_CONTA_CP = A6.ID_PLANO_CONTA_PAI AND A6.NIVEL = 7 ) )&#13;&#10;        &#13;&#10;                                                 GROUP BY&#13;&#10;                                                       B6.ID_ESTADO&#13;&#10;                                                     , B6.CP_ANO&#13;&#10;                                                     , B6.ID_PLANO_CONTA_CP&#13;&#10;                                                     , B6.ID_PLANO_CONTA_PAI&#13;&#10;                                                     , B6.NIVEL&#13;&#10;                                                     , A6.CD_TP_DEDUCAO&#13;&#10;                                                     , A6.DS_TP_DEDUCAO&#13;&#10;        &#13;&#10;                                               ) A5&#13;&#10;                                               LEFT  JOIN PEC_PLANO_CONTA B5 ON   B5.ID_ESTADO         = :ID_ESTADO&#13;&#10;                                                                            AND   B5.CP_ANO            = :CP_ANO&#13;&#10;                                                                            AND ( B5.ID_PLANO_CONTA_CP = A5.ID_PLANO_CONTA_CP OR&#13;&#10;                                                                                ( B5.ID_PLANO_CONTA_CP = A5.ID_PLANO_CONTA_PAI AND A5.NIVEL = 6 ) )&#13;&#10;                                         GROUP BY&#13;&#10;                                               B5.ID_ESTADO&#13;&#10;                                             , B5.CP_ANO&#13;&#10;                                             , B5.ID_PLANO_CONTA_CP&#13;&#10;                                             , B5.ID_PLANO_CONTA_PAI&#13;&#10;                                             , B5.NIVEL&#13;&#10;                                             , A5.CD_TP_DEDUCAO&#13;&#10;                                             , A5.DS_TP_DEDUCAO&#13;&#10;        &#13;&#10;                                       ) A4&#13;&#10;                                       LEFT  JOIN PEC_PLANO_CONTA B4 ON   B4.ID_ESTADO         = :ID_ESTADO&#13;&#10;                                                                    AND   B4.CP_ANO            = :CP_ANO&#13;&#10;                                                                    AND ( B4.ID_PLANO_CONTA_CP = A4.ID_PLANO_CONTA_CP OR&#13;&#10;                                                                        ( B4.ID_PLANO_CONTA_CP = A4.ID_PLANO_CONTA_PAI AND A4.NIVEL = 5 ) )&#13;&#10;                                 GROUP BY&#13;&#10;                                       B4.ID_ESTADO&#13;&#10;                                     , B4.CP_ANO&#13;&#10;                                     , B4.ID_PLANO_CONTA_CP&#13;&#10;                                     , B4.ID_PLANO_CONTA_PAI&#13;&#10;                                     , B4.NIVEL&#13;&#10;                                     , A4.CD_TP_DEDUCAO&#13;&#10;                                     , A4.DS_TP_DEDUCAO&#13;&#10;        &#13;&#10;                               ) A3&#13;&#10;                               LEFT  JOIN PEC_PLANO_CONTA B3 ON   B3.ID_ESTADO         = :ID_ESTADO&#13;&#10;                                                            AND   B3.CP_ANO            = :CP_ANO&#13;&#10;                                                            AND ( B3.ID_PLANO_CONTA_CP = A3.ID_PLANO_CONTA_CP OR&#13;&#10;                                                                ( B3.ID_PLANO_CONTA_CP = A3.ID_PLANO_CONTA_PAI AND A3.NIVEL = 4 ) )&#13;&#10;                         GROUP BY&#13;&#10;                               B3.ID_ESTADO&#13;&#10;                             , B3.CP_ANO&#13;&#10;                             , B3.ID_PLANO_CONTA_CP&#13;&#10;                             , B3.ID_PLANO_CONTA_PAI&#13;&#10;                             , B3.NIVEL&#13;&#10;                             , A3.CD_TP_DEDUCAO&#13;&#10;                             , A3.DS_TP_DEDUCAO&#13;&#10;        &#13;&#10;                       ) A2&#13;&#10;                       LEFT  JOIN PEC_PLANO_CONTA B2 ON   B2.ID_ESTADO         = :ID_ESTADO&#13;&#10;                                                    AND   B2.CP_ANO            = :CP_ANO&#13;&#10;                                                    AND ( B2.ID_PLANO_CONTA_CP = A2.ID_PLANO_CONTA_CP OR&#13;&#10;                                                        ( B2.ID_PLANO_CONTA_CP = A2.ID_PLANO_CONTA_PAI AND A2.NIVEL = 3 ) )&#13;&#10;                 GROUP BY&#13;&#10;                       B2.ID_ESTADO&#13;&#10;                     , B2.CP_ANO&#13;&#10;                     , B2.ID_PLANO_CONTA_CP&#13;&#10;                     , B2.ID_PLANO_CONTA_PAI&#13;&#10;                     , B2.NIVEL&#13;&#10;                     , A2.CD_TP_DEDUCAO&#13;&#10;                     , A2.DS_TP_DEDUCAO&#13;&#10;        &#13;&#10;               ) A1&#13;&#10;               LEFT  JOIN PEC_PLANO_CONTA B1 ON   B1.ID_ESTADO         = :ID_ESTADO&#13;&#10;                                            AND   B1.CP_ANO            = :CP_ANO&#13;&#10;                                            AND ( B1.ID_PLANO_CONTA_CP = A1.ID_PLANO_CONTA_CP OR&#13;&#10;                                                ( B1.ID_PLANO_CONTA_CP = A1.ID_PLANO_CONTA_PAI AND A1.NIVEL = 2 ) )&#13;&#10;         GROUP BY&#13;&#10;               B1.CD_PLANO_CONTA_REL&#13;&#10;             , B1.DS_PLANO_CONTA&#13;&#10;             , B1.NIVEL&#13;&#10;             , A1.CD_TP_DEDUCAO&#13;&#10;             , A1.DS_TP_DEDUCAO&#13;&#10;&#13;&#10;       ) A0&#13;&#10;       LEFT JOIN SIS_SEQUENCIA B0 ON B0.ID_SEQUENCIA &lt;= 3&#13;&#10; WHERE A0.NIVEL &lt;= 2&#13;&#10;   AND CAST(CASE WHEN B0.ID_SEQUENCIA = 1 AND A0.NIVEL = 2 THEN '0'&#13;&#10;                 WHEN B0.ID_SEQUENCIA = 2 AND A0.NIVEL = 1 THEN A0.CD_PLANO_CONTA_REL&#13;&#10;                 WHEN B0.ID_SEQUENCIA = 3 AND A0.NIVEL = 2 THEN A0.CD_PLANO_CONTA_REL&#13;&#10;             END AS VARCHAR(250)) IS NOT NULL&#13;&#10;&#13;&#10; GROUP BY 1,2,3,4,5,6&#13;&#10; &#13;&#10;HAVING ( B0.ID_SEQUENCIA  = 3 AND ( ROUND(SUM(A0.VL_ANTERIOR  ), 2) &lt;&gt; 0 OR&#13;&#10;                                    ROUND(SUM(A0.VL_PERIODO   ), 2) &lt;&gt; 0 OR&#13;&#10;                                    ROUND(SUM(A0.VL_ACUMULADO ), 2) &lt;&gt; 0   )) OR&#13;&#10;       ( B0.ID_SEQUENCIA &lt;&gt; 3 )&#13;&#10;&#13;&#10; ORDER BY 1&#13;&#10;     , CD_PLANO_CONTA_REL&#13;&#10;     , CD_TP_DEDUCAO NULLS FIRST">
+        <Column Name="chave" DataType="System.String"/>
+        <Column Name="nivel" DataType="System.Int32"/>
+        <Column Name="cd_plano_conta_rel" DataType="System.String"/>
+        <Column Name="ds_plano_conta" DataType="System.String"/>
+        <Column Name="cd_tp_deducao" DataType="System.String"/>
+        <Column Name="ds_tp_deducao" DataType="System.String"/>
+        <Column Name="vl_anterior" DataType="System.Double"/>
+        <Column Name="vl_periodo" DataType="System.Double"/>
+        <Column Name="vl_acumulado" DataType="System.Double"/>
+        <CommandParameter Name="TIPO" DataType="9" Expression="[SqlPrincipal.tipo]"/>
+        <CommandParameter Name="DT_MOVIMENTO_INICIAL" DataType="7" Expression="[SqlPrincipal.dtini]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[SqlPrincipal.cp_ano]"/>
+        <CommandParameter Name="DT_MOVIMENTO_FINAL" DataType="7" Expression="[SqlPrincipal.dtfim]"/>
+        <CommandParameter Name="ID_ESTADO" DataType="9" Expression="[SqlPrincipal.id_estado]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlDespesa" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '00'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_FUNCAO&#13;&#10;             END AS VARCHAR(250)) AS CHAVE&#13;&#10;     , B1.ID_SEQUENCIA AS NIVEL&#13;&#10;&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_FUNCAO END AS VARCHAR(2)) AS CD_FUNCAO&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA = 2 THEN A1.DS_FUNCAO&#13;&#10;                 ELSE 'DESPESAS ORÇAMENTÁRIAS' END AS VARCHAR(250)) AS DS_FUNCAO&#13;&#10;&#13;&#10;     , ROUND(SUM(A1.VL_ANTERIOR  ), 2) AS VL_ANTERIOR&#13;&#10;     , ROUND(SUM(A1.VL_PERIODO   ), 2) AS VL_PERIODO&#13;&#10;     , ROUND(SUM(A1.VL_ACUMULADO ), 2) AS VL_ACUMULADO&#13;&#10;  FROM (&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , CAST(NULL AS VARCHAR(2))     AS CD_FUNCAO&#13;&#10;             , CAST(NULL AS VARCHAR(250))   AS DS_FUNCAO&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ANTERIOR&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_PERIODO&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA = 1 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;         UNION ALL&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , FUNCI.CD_FUNCAO&#13;&#10;             , FUNCA.DS_FUNCAO&#13;&#10;             , COALESCE(CXMOV.VL_ANTERIOR , 0)   AS VL_ANTERIOR&#13;&#10;             , COALESCE(CXMOV.VL_PERIODO  , 0)   AS VL_PERIODO&#13;&#10;             , COALESCE(CXMOV.VL_ACUMULADO, 0)   AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;               LEFT JOIN PEC_FICHA      PFICH ON 1 = 1&#13;&#10;               LEFT JOIN PEC_FUNCIONAL  FUNCI ON FUNCI.ID_FUNCIONAL = PFICH.ID_FUNCIONAL&#13;&#10;               LEFT JOIN SIS_FUNCAO     FUNCA ON FUNCA.CD_FUNCAO    = FUNCI.CD_FUNCAO&#13;&#10;               LEFT JOIN /*LATERAL_JOIN*/   &#13;&#10;                         ( SELECT A.ID_FICHA&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO  &lt; :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO *-1&#13;&#10;                                           ELSE 0 END)              AS VL_ANTERIOR&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO &gt;= :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO *-1&#13;&#10;                                           ELSE 0 END)              AS VL_PERIODO&#13;&#10;                                , SUM(A.VL_MOVIMENTO *-1)           AS VL_ACUMULADO&#13;&#10;                             FROM PEC_CAIXA_MOVIMENTO A&#13;&#10;                            WHERE A.CP_ANO                   = :CP_ANO&#13;&#10;                              AND A.DT_MOVIMENTO            &lt;= :DT_MOVIMENTO_FINAL&#13;&#10;                              AND A.ID_ST_LANCAMENTO_CAIXA   = 1&#13;&#10;                              /*LATERAL_WHERE*/                                  &#13;&#10;                            GROUP BY&#13;&#10;                                  A.ID_FICHA&#13;&#10;                                          ) CXMOV ON CXMOV.ID_FICHA         = PFICH.ID_FICHA&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA   = 1 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;           AND PFICH.CP_ANO         = :CP_ANO&#13;&#10;           AND PFICH.ID_TP_NATUREZA = 2&#13;&#10;           /*!ENTIDADE*/&#13;&#10;       ) A1&#13;&#10;       LEFT JOIN SIS_SEQUENCIA B1 ON B1.ID_SEQUENCIA &lt;= 2&#13;&#10;&#13;&#10; WHERE CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '00'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_FUNCAO&#13;&#10;             END AS VARCHAR(250)) IS NOT NULL&#13;&#10;&#13;&#10; GROUP BY 1,2,3,4&#13;&#10;&#13;&#10;HAVING ROUND(SUM(A1.VL_ANTERIOR) , 2) &lt;&gt; 0 OR&#13;&#10;       ROUND(SUM(A1.VL_PERIODO)  , 2) &lt;&gt; 0 OR&#13;&#10;       ROUND(SUM(A1.VL_ACUMULADO), 2) &lt;&gt; 0 OR&#13;&#10;       B1.ID_SEQUENCIA = 1&#13;&#10;&#13;&#10; ORDER BY 1&#13;&#10;">
+        <Column Name="chave" DataType="System.String"/>
+        <Column Name="nivel" DataType="System.Int32"/>
+        <Column Name="cd_funcao" DataType="System.String"/>
+        <Column Name="ds_funcao" DataType="System.String"/>
+        <Column Name="vl_anterior" DataType="System.Double"/>
+        <Column Name="vl_periodo" DataType="System.Double"/>
+        <Column Name="vl_acumulado" DataType="System.Double"/>
+        <CommandParameter Name="TIPO" DataType="9" Expression="[SqlPrincipal.tipo]"/>
+        <CommandParameter Name="DT_MOVIMENTO_INICIAL" DataType="7" Expression="[SqlPrincipal.dtini]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[SqlPrincipal.cp_ano]"/>
+        <CommandParameter Name="DT_MOVIMENTO_FINAL" DataType="7" Expression="[SqlPrincipal.dtfim]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="SqlTransfRecebida" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '00'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_PLANO_CONTA || A1.SIGLA                          &#13;&#10;             END AS VARCHAR(250)) AS CHAVE&#13;&#10;     , B1.ID_SEQUENCIA AS NIVEL&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_PLANO_CONTA END AS VARCHAR(30)) AS CODIGO&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA = 2 THEN A1.DS_PLANO_CONTA || CASE WHEN 1 = :RESUMIR THEN ' (' || A1.SIGLA || ')' ELSE '' END&#13;&#10;                 ELSE 'TRANSFERÊNCIAS RECEBIDAS' END AS VARCHAR(280)) AS DESCRICAO&#13;&#10;     , ROUND(SUM(A1.VL_ANTERIOR  ), 2) AS VL_ANTERIOR&#13;&#10;     , ROUND(SUM(A1.VL_PERIODO   ), 2) AS VL_PERIODO&#13;&#10;     , ROUND(SUM(A1.VL_ACUMULADO ), 2) AS VL_ACUMULADO&#13;&#10;&#13;&#10;  FROM (&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , CAST(NULL AS VARCHAR(30))    AS CD_PLANO_CONTA&#13;&#10;             , CAST(NULL AS VARCHAR(250))   AS DS_PLANO_CONTA&#13;&#10;             , CAST('' AS VARCHAR(10))      AS SIGLA&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ANTERIOR&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_PERIODO&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA = 2 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;         UNION ALL&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN PCPAI.CD_PLANO_CONTA ELSE PCONT.CD_PLANO_CONTA END AS VARCHAR(30) ) AS CD_PLANO_CONTA &#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN PCPAI.DS_PLANO_CONTA ELSE PCONT.DS_PLANO_CONTA END AS VARCHAR(250)) AS DS_PLANO_CONTA &#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN UNITR.SIGLA          ELSE ''                   END AS VARCHAR(10) ) AS SIGLA &#13;&#10;             , COALESCE(CXMOV.VL_ANTERIOR , 0)   AS VL_ANTERIOR&#13;&#10;             , COALESCE(CXMOV.VL_PERIODO  , 0)   AS VL_PERIODO&#13;&#10;             , COALESCE(CXMOV.VL_ACUMULADO, 0)   AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;               LEFT JOIN PEC_FICHA               PFICH ON 1 = 1&#13;&#10;               LEFT JOIN PEC_PLANO_CONTA         PCONT ON PCONT.ID_PLANO_CONTA          = PFICH.ID_PLANO_CONTA  &#13;&#10;               LEFT JOIN PEC_TP_NATUREZA_DETALHE TNATD ON TNATD.ID_TP_NATUREZA          = PCONT.ID_TP_NATUREZA&#13;&#10;                                                      AND TNATD.ID_TP_NATUREZA_DETALHE  = PCONT.ID_TP_NATUREZA_DETALHE&#13;&#10;               LEFT JOIN PEC_PLANO_CONTA         PCPAI ON PCPAI.CP_ANO                  = :CP_ANO&#13;&#10;                                                      AND PCPAI.ID_ESTADO               = PCONT.ID_ESTADO&#13;&#10;                                                      AND PCPAI.ID_PLANO_CONTA_CP       = PCONT.ID_PLANO_CONTA_PAI&#13;&#10;               LEFT JOIN PEC_UNIDADE             UNITR ON UNITR.ID_UNIDADE              = PFICH.ID_UNIDADE_TRANSFERENCIA&#13;&#10;               LEFT JOIN /*LATERAL_JOIN*/   &#13;&#10;                         ( SELECT A.ID_FICHA&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO  &lt; :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO&#13;&#10;                                           ELSE 0 END)              AS VL_ANTERIOR&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO &gt;= :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO&#13;&#10;                                           ELSE 0 END)              AS VL_PERIODO&#13;&#10;                                , SUM(A.VL_MOVIMENTO)               AS VL_ACUMULADO&#13;&#10;                             FROM PEC_CAIXA_MOVIMENTO A&#13;&#10;                            WHERE A.CP_ANO                   = :CP_ANO&#13;&#10;                              AND A.DT_MOVIMENTO            &lt;= :DT_MOVIMENTO_FINAL&#13;&#10;                              AND A.ID_ST_LANCAMENTO_CAIXA   = 1&#13;&#10;                              /*LATERAL_WHERE*/                                  &#13;&#10;                            GROUP BY&#13;&#10;                                  A.ID_FICHA&#13;&#10;                                          ) CXMOV ON CXMOV.ID_FICHA         = PFICH.ID_FICHA&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA    = 2 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;           AND PFICH.CP_ANO          = :CP_ANO&#13;&#10;           AND PFICH.ID_TP_NATUREZA  = 3&#13;&#10;           AND TNATD.INFORMA_UNIDADE = 1&#13;&#10;           AND TNATD.LANCA_RECEITA   = 1&#13;&#10;           /*!ENTIDADE*/&#13;&#10;       ) A1&#13;&#10;       LEFT JOIN SIS_SEQUENCIA B1 ON B1.ID_SEQUENCIA &lt;= 2&#13;&#10;&#13;&#10; WHERE CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '00'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_PLANO_CONTA&#13;&#10;             END AS VARCHAR(250)) IS NOT NULL&#13;&#10;&#13;&#10; GROUP BY 1,2,3,4&#13;&#10;&#13;&#10;HAVING ROUND(SUM(A1.VL_ANTERIOR) , 2) &lt;&gt; 0 OR&#13;&#10;       ROUND(SUM(A1.VL_PERIODO)  , 2) &lt;&gt; 0 OR&#13;&#10;       ROUND(SUM(A1.VL_ACUMULADO), 2) &lt;&gt; 0 OR&#13;&#10;       B1.ID_SEQUENCIA = 1&#13;&#10;&#13;&#10; ORDER BY 1&#13;&#10;">
+        <Column Name="chave" DataType="System.String"/>
+        <Column Name="nivel" DataType="System.Int32"/>
+        <Column Name="codigo" DataType="System.String"/>
+        <Column Name="descricao" DataType="System.String"/>
+        <Column Name="vl_anterior" DataType="System.Double"/>
+        <Column Name="vl_periodo" DataType="System.Double"/>
+        <Column Name="vl_acumulado" DataType="System.Double"/>
+        <CommandParameter Name="RESUMIR" DataType="9" Expression="[SqlPrincipal.resumir]"/>
+        <CommandParameter Name="TIPO" DataType="9" Expression="[SqlPrincipal.tipo]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[SqlPrincipal.cp_ano]"/>
+        <CommandParameter Name="DT_MOVIMENTO_INICIAL" DataType="7" Expression="[SqlPrincipal.dtini]"/>
+        <CommandParameter Name="DT_MOVIMENTO_FINAL" DataType="7" Expression="[SqlPrincipal.dtfim]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table5" Alias="SqlTransfConcedida" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '00'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_PLANO_CONTA || A1.SIGLA&#13;&#10;             END AS VARCHAR(250)) AS CHAVE&#13;&#10;     , B1.ID_SEQUENCIA AS NIVEL&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_PLANO_CONTA END AS VARCHAR(30)) AS CODIGO&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA = 2 THEN A1.DS_PLANO_CONTA || CASE WHEN 1 = :RESUMIR THEN ' (' || A1.SIGLA || ')' ELSE '' END&#13;&#10;                 ELSE 'TRANSFERÊNCIAS CONCEDIDAS' END AS VARCHAR(250)) AS DESCRICAO&#13;&#10;     , ROUND(SUM(A1.VL_ANTERIOR  ), 2) AS VL_ANTERIOR&#13;&#10;     , ROUND(SUM(A1.VL_PERIODO   ), 2) AS VL_PERIODO&#13;&#10;     , ROUND(SUM(A1.VL_ACUMULADO ), 2) AS VL_ACUMULADO&#13;&#10;&#13;&#10;  FROM (&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , CAST(NULL AS VARCHAR(30))    AS CD_PLANO_CONTA&#13;&#10;             , CAST(NULL AS VARCHAR(250))   AS DS_PLANO_CONTA&#13;&#10;             , CAST('' AS VARCHAR(10))      AS SIGLA&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ANTERIOR&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_PERIODO&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA = 2 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;         UNION ALL&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN PCPAI.CD_PLANO_CONTA ELSE PCONT.CD_PLANO_CONTA END AS VARCHAR(30) ) AS CD_PLANO_CONTA &#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN PCPAI.DS_PLANO_CONTA ELSE PCONT.DS_PLANO_CONTA END AS VARCHAR(250)) AS DS_PLANO_CONTA &#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN UNITR.SIGLA          ELSE ''                   END AS VARCHAR(10) ) AS SIGLA &#13;&#10;             , COALESCE(CXMOV.VL_ANTERIOR , 0)   AS VL_ANTERIOR&#13;&#10;             , COALESCE(CXMOV.VL_PERIODO  , 0)   AS VL_PERIODO&#13;&#10;             , COALESCE(CXMOV.VL_ACUMULADO, 0)   AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;               LEFT JOIN PEC_FICHA               PFICH ON 1 = 1&#13;&#10;               LEFT JOIN PEC_PLANO_CONTA         PCONT ON PCONT.ID_PLANO_CONTA          = PFICH.ID_PLANO_CONTA&#13;&#10;               LEFT JOIN PEC_TP_NATUREZA_DETALHE TNATD ON TNATD.ID_TP_NATUREZA          = PCONT.ID_TP_NATUREZA&#13;&#10;                                                      AND TNATD.ID_TP_NATUREZA_DETALHE  = PCONT.ID_TP_NATUREZA_DETALHE&#13;&#10;               LEFT JOIN PEC_PLANO_CONTA         PCPAI ON PCPAI.CP_ANO                  = :CP_ANO&#13;&#10;                                                      AND PCPAI.ID_ESTADO               = PCONT.ID_ESTADO&#13;&#10;                                                      AND PCPAI.ID_PLANO_CONTA_CP       = PCONT.ID_PLANO_CONTA_PAI&#13;&#10;               LEFT JOIN PEC_UNIDADE             UNITR ON UNITR.ID_UNIDADE              = PFICH.ID_UNIDADE_TRANSFERENCIA&#13;&#10;               LEFT JOIN /*LATERAL_JOIN*/   &#13;&#10;                         ( SELECT A.ID_FICHA&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO  &lt; :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO *-1&#13;&#10;                                           ELSE 0 END)              AS VL_ANTERIOR&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO &gt;= :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO *-1&#13;&#10;                                           ELSE 0 END)              AS VL_PERIODO&#13;&#10;                                , SUM(A.VL_MOVIMENTO *-1)           AS VL_ACUMULADO&#13;&#10;                             FROM PEC_CAIXA_MOVIMENTO A&#13;&#10;                            WHERE A.CP_ANO                   = :CP_ANO&#13;&#10;                              AND A.DT_MOVIMENTO            &lt;= :DT_MOVIMENTO_FINAL&#13;&#10;                              AND A.ID_ST_LANCAMENTO_CAIXA   = 1&#13;&#10;                              /*LATERAL_WHERE*/                                                                        &#13;&#10;                            GROUP BY&#13;&#10;                                  A.ID_FICHA&#13;&#10;                                          ) CXMOV ON CXMOV.ID_FICHA         = PFICH.ID_FICHA&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA    = 2 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;           AND PFICH.CP_ANO          = :CP_ANO&#13;&#10;           AND PFICH.ID_TP_NATUREZA  = 3&#13;&#10;           AND TNATD.INFORMA_UNIDADE = 1&#13;&#10;           AND TNATD.LANCA_DESPESA   = 1&#13;&#10;           /*!ENTIDADE*/&#13;&#10;       ) A1&#13;&#10;       LEFT JOIN SIS_SEQUENCIA B1 ON B1.ID_SEQUENCIA &lt;= 2&#13;&#10;&#13;&#10; WHERE CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '00'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_PLANO_CONTA&#13;&#10;             END AS VARCHAR(250)) IS NOT NULL&#13;&#10;&#13;&#10; GROUP BY 1,2,3,4&#13;&#10;&#13;&#10;HAVING ROUND(SUM(A1.VL_ANTERIOR) , 2) &lt;&gt; 0 OR&#13;&#10;       ROUND(SUM(A1.VL_PERIODO)  , 2) &lt;&gt; 0 OR&#13;&#10;       ROUND(SUM(A1.VL_ACUMULADO), 2) &lt;&gt; 0 OR&#13;&#10;       B1.ID_SEQUENCIA = 1&#13;&#10;&#13;&#10; ORDER BY 1">
+        <Column Name="chave" DataType="System.String"/>
+        <Column Name="nivel" DataType="System.Int32"/>
+        <Column Name="codigo" DataType="System.String"/>
+        <Column Name="descricao" DataType="System.String"/>
+        <Column Name="vl_anterior" DataType="System.Double"/>
+        <Column Name="vl_periodo" DataType="System.Double"/>
+        <Column Name="vl_acumulado" DataType="System.Double"/>
+        <CommandParameter Name="RESUMIR" DataType="9" Expression="[SqlPrincipal.resumir]"/>
+        <CommandParameter Name="TIPO" DataType="9" Expression="[SqlPrincipal.tipo]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[SqlPrincipal.cp_ano]"/>
+        <CommandParameter Name="DT_MOVIMENTO_INICIAL" DataType="7" Expression="[SqlPrincipal.dtini]"/>
+        <CommandParameter Name="DT_MOVIMENTO_FINAL" DataType="7" Expression="[SqlPrincipal.dtfim]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table6" Alias="SqlReceitaExtra" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '00'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_PLANO_CONTA&#13;&#10;             END AS VARCHAR(250)) AS CHAVE&#13;&#10;     , B1.ID_SEQUENCIA AS NIVEL&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_PLANO_CONTA END AS VARCHAR(30)) AS CODIGO&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA = 2 THEN A1.DS_PLANO_CONTA&#13;&#10;                 ELSE 'RECEITAS EXTRA-ORÇAMENTÁRIAS' END AS VARCHAR(250)) AS DESCRICAO&#13;&#10;     , ROUND(SUM(A1.VL_ANTERIOR  ), 2) AS VL_ANTERIOR&#13;&#10;     , ROUND(SUM(A1.VL_PERIODO   ), 2) AS VL_PERIODO&#13;&#10;     , ROUND(SUM(A1.VL_ACUMULADO ), 2) AS VL_ACUMULADO&#13;&#10;&#13;&#10;  FROM (&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , CAST(NULL AS VARCHAR(30))    AS CD_PLANO_CONTA&#13;&#10;             , CAST(NULL AS VARCHAR(250))   AS DS_PLANO_CONTA&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ANTERIOR&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_PERIODO&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA = 3 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;         UNION ALL&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN PCAVO.CD_PLANO_CONTA ELSE PCPAI.CD_PLANO_CONTA END AS VARCHAR(30) ) AS CD_PLANO_CONTA &#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN PCAVO.DS_PLANO_CONTA ELSE PCPAI.DS_PLANO_CONTA END AS VARCHAR(250)) AS DS_PLANO_CONTA &#13;&#10;             , COALESCE(CXMOV.VL_ANTERIOR , 0)   AS VL_ANTERIOR&#13;&#10;             , COALESCE(CXMOV.VL_PERIODO  , 0)   AS VL_PERIODO&#13;&#10;             , COALESCE(CXMOV.VL_ACUMULADO, 0)   AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;               LEFT JOIN PEC_FICHA               PFICH ON 1 = 1&#13;&#10;               LEFT JOIN PEC_PLANO_CONTA         PCONT ON PCONT.ID_PLANO_CONTA          = PFICH.ID_PLANO_CONTA        &#13;&#10;               LEFT JOIN PEC_TP_NATUREZA_DETALHE TNATD ON TNATD.ID_TP_NATUREZA          = PCONT.ID_TP_NATUREZA&#13;&#10;                                                      AND TNATD.ID_TP_NATUREZA_DETALHE  = PCONT.ID_TP_NATUREZA_DETALHE  &#13;&#10;               LEFT JOIN PEC_PLANO_CONTA         PCPAI ON PCPAI.ID_ESTADO               = PCONT.ID_ESTADO&#13;&#10;                                                      AND PCPAI.CP_ANO                  = PCONT.CP_ANO&#13;&#10;                                                      AND PCPAI.ID_PLANO_CONTA_CP       = PCONT.ID_PLANO_CONTA_PAI&#13;&#10;               LEFT JOIN PEC_PLANO_CONTA         PCAVO ON PCAVO.ID_ESTADO               = PCPAI.ID_ESTADO&#13;&#10;                                                      AND PCAVO.CP_ANO                  = PCPAI.CP_ANO&#13;&#10;                                                      AND PCAVO.ID_PLANO_CONTA_CP       = PCPAI.ID_PLANO_CONTA_PAI       &#13;&#10;               LEFT JOIN /*LATERAL_JOIN*/   &#13;&#10;                         ( SELECT A.ID_FICHA&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO  &lt; :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO&#13;&#10;                                           ELSE 0 END)              AS VL_ANTERIOR&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO &gt;= :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO&#13;&#10;                                           ELSE 0 END)              AS VL_PERIODO&#13;&#10;                                , SUM(A.VL_MOVIMENTO)               AS VL_ACUMULADO&#13;&#10;                             FROM PEC_CAIXA_MOVIMENTO A&#13;&#10;                            WHERE A.CP_ANO                   = :CP_ANO&#13;&#10;                              AND A.DT_MOVIMENTO            &lt;= :DT_MOVIMENTO_FINAL&#13;&#10;                              AND A.ID_ST_LANCAMENTO_CAIXA   = 1&#13;&#10;                              AND A.ID_TP_CAIXA_MOVIMENTO    = 1&#13;&#10;                              /*LATERAL_WHERE*/                                  &#13;&#10;                            GROUP BY&#13;&#10;                                  A.ID_FICHA&#13;&#10;                                          ) CXMOV ON CXMOV.ID_FICHA         = PFICH.ID_FICHA&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA    = 3 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;           AND PFICH.CP_ANO          = :CP_ANO&#13;&#10;           AND PFICH.ID_TP_NATUREZA  = 3&#13;&#10;           AND TNATD.INFORMA_UNIDADE = 0&#13;&#10;           /*!ENTIDADE*/                    &#13;&#10;       ) A1&#13;&#10;       LEFT JOIN SIS_SEQUENCIA B1 ON B1.ID_SEQUENCIA &lt;= 2&#13;&#10;&#13;&#10; WHERE CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '00'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2 THEN A1.CD_PLANO_CONTA&#13;&#10;             END AS VARCHAR(250)) IS NOT NULL&#13;&#10;&#13;&#10; GROUP BY 1,2,3,4&#13;&#10;&#13;&#10;HAVING ROUND(SUM(A1.VL_ANTERIOR) , 2) &lt;&gt; 0 OR&#13;&#10;       ROUND(SUM(A1.VL_PERIODO)  , 2) &lt;&gt; 0 OR&#13;&#10;       ROUND(SUM(A1.VL_ACUMULADO), 2) &lt;&gt; 0 OR&#13;&#10;       B1.ID_SEQUENCIA = 1&#13;&#10;&#13;&#10; ORDER BY 1">
+        <Column Name="chave" DataType="System.String"/>
+        <Column Name="nivel" DataType="System.Int32"/>
+        <Column Name="codigo" DataType="System.String"/>
+        <Column Name="descricao" DataType="System.String"/>
+        <Column Name="vl_anterior" DataType="System.Double"/>
+        <Column Name="vl_periodo" DataType="System.Double"/>
+        <Column Name="vl_acumulado" DataType="System.Double"/>
+        <CommandParameter Name="TIPO" DataType="9" Expression="[SqlPrincipal.tipo]"/>
+        <CommandParameter Name="RESUMIR" DataType="9" Expression="[SqlPrincipal.resumir]"/>
+        <CommandParameter Name="DT_MOVIMENTO_INICIAL" DataType="7" Expression="[SqlPrincipal.dtini]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[SqlPrincipal.cp_ano]"/>
+        <CommandParameter Name="DT_MOVIMENTO_FINAL" DataType="7" Expression="[SqlPrincipal.dtfim]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table7" Alias="SqlDespesaExtra" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '00'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2 THEN '00' || CAST(A1.TP_EXTRA AS VARCHAR(1))&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 3 THEN '00' || CAST(A1.TP_EXTRA AS VARCHAR(1)) || CAST(A1.ANO_FICHA AS VARCHAR(4)) || A1.CD_PLANO_CONTA&#13;&#10;             END AS VARCHAR(250))  AS CHAVE&#13;&#10;     , B1.ID_SEQUENCIA AS NIVEL&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA = 3&#13;&#10;                  AND A1.TP_EXTRA     = 1 THEN A1.CD_PLANO_CONTA&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 3&#13;&#10;                  AND A1.TP_EXTRA     = 2 THEN CAST(A1.ANO_FICHA AS VARCHAR(4))&#13;&#10;            END AS VARCHAR(30)) AS CODIGO&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN 'DESPESAS EXTRA-ORÇAMENTÁRIAS E RESTOS A PAGAR'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2&#13;&#10;                  AND A1.TP_EXTRA     = 1 THEN 'DESPESAS EXTRA-ORÇAMENTÁRIAS'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2&#13;&#10;                  AND A1.TP_EXTRA     = 2 THEN 'PAGAMENTO DE RESTOS A PAGAR'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 3&#13;&#10;                  AND A1.TP_EXTRA     = 1 THEN A1.DS_PLANO_CONTA&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 3&#13;&#10;                  AND A1.TP_EXTRA     = 2 &#13;&#10;                  AND 1               = :RESUMIR THEN 'Não exibe'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 3&#13;&#10;                  AND A1.TP_EXTRA     = 2 &#13;&#10;                  AND 0               = :RESUMIR THEN 'Restos a Pagar de ' || CAST(A1.ANO_FICHA AS VARCHAR(4))&#13;&#10;            END AS VARCHAR(250)) AS DESCRICAO&#13;&#10;     , ROUND(SUM(A1.VL_ANTERIOR  ), 2) AS VL_ANTERIOR&#13;&#10;     , ROUND(SUM(A1.VL_PERIODO   ), 2) AS VL_PERIODO&#13;&#10;     , ROUND(SUM(A1.VL_ACUMULADO ), 2) AS VL_ACUMULADO&#13;&#10;&#13;&#10;  FROM (&#13;&#10;        SELECT CAST(1 AS INTEGER)           AS TP_EXTRA&#13;&#10;             , SEQUE.ID_SEQUENCIA&#13;&#10;             , CAST(:CP_ANO AS INTEGER)     AS ANO_FICHA&#13;&#10;             , CAST(NULL AS VARCHAR(30))    AS CD_PLANO_CONTA&#13;&#10;             , CAST(NULL AS VARCHAR(250))   AS DS_PLANO_CONTA&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ANTERIOR&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_PERIODO&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)  AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA = 3 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;         UNION ALL&#13;&#10;        SELECT CAST(1 AS INTEGER)                AS TP_EXTRA&#13;&#10;             , SEQUE.ID_SEQUENCIA&#13;&#10;             , PFICH.CP_ANO                      AS ANO_FICHA&#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN PCAVO.CD_PLANO_CONTA ELSE PCPAI.CD_PLANO_CONTA END AS VARCHAR(30) ) AS CD_PLANO_CONTA &#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN PCAVO.DS_PLANO_CONTA ELSE PCPAI.DS_PLANO_CONTA END AS VARCHAR(250)) AS DS_PLANO_CONTA &#13;&#10;             , COALESCE(CXMOV.VL_ANTERIOR , 0)   AS VL_ANTERIOR&#13;&#10;             , COALESCE(CXMOV.VL_PERIODO  , 0)   AS VL_PERIODO&#13;&#10;             , COALESCE(CXMOV.VL_ACUMULADO, 0)   AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;               LEFT JOIN PEC_FICHA               PFICH ON 1 = 1&#13;&#10;               LEFT JOIN PEC_PLANO_CONTA         PCONT ON PCONT.ID_PLANO_CONTA          = PFICH.ID_PLANO_CONTA&#13;&#10;               LEFT JOIN PEC_TP_NATUREZA_DETALHE TNATD ON TNATD.ID_TP_NATUREZA          = PCONT.ID_TP_NATUREZA&#13;&#10;                                                      AND TNATD.ID_TP_NATUREZA_DETALHE  = PCONT.ID_TP_NATUREZA_DETALHE&#13;&#10;               LEFT JOIN PEC_PLANO_CONTA         PCPAI ON PCPAI.ID_ESTADO               = PCONT.ID_ESTADO&#13;&#10;                                                      AND PCPAI.CP_ANO                  = PCONT.CP_ANO&#13;&#10;                                                      AND PCPAI.ID_PLANO_CONTA_CP       = PCONT.ID_PLANO_CONTA_PAI&#13;&#10;               LEFT JOIN PEC_PLANO_CONTA         PCAVO ON PCAVO.ID_ESTADO               = PCPAI.ID_ESTADO&#13;&#10;                                                      AND PCAVO.CP_ANO                  = PCPAI.CP_ANO&#13;&#10;                                                      AND PCAVO.ID_PLANO_CONTA_CP       = PCPAI.ID_PLANO_CONTA_PAI&#13;&#10;               LEFT JOIN /*LATERAL_JOIN*/   &#13;&#10;                         ( SELECT A.ID_FICHA&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO  &lt; :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO *-1&#13;&#10;                                           ELSE 0 END)              AS VL_ANTERIOR&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO &gt;= :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO *-1&#13;&#10;                                           ELSE 0 END)              AS VL_PERIODO&#13;&#10;                                , SUM(A.VL_MOVIMENTO *-1)           AS VL_ACUMULADO&#13;&#10;                             FROM PEC_CAIXA_MOVIMENTO A&#13;&#10;                            WHERE A.CP_ANO                   = :CP_ANO&#13;&#10;                              AND A.DT_MOVIMENTO            &lt;= :DT_MOVIMENTO_FINAL&#13;&#10;                              AND A.ID_ST_LANCAMENTO_CAIXA   = 1&#13;&#10;                              AND A.ID_TP_CAIXA_MOVIMENTO    = 2&#13;&#10;                              /*LATERAL_WHERE*/                                  &#13;&#10;                            GROUP BY&#13;&#10;                                  A.ID_FICHA&#13;&#10;                                          ) CXMOV ON CXMOV.ID_FICHA         = PFICH.ID_FICHA&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA    = 3 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;           AND PFICH.CP_ANO          = :CP_ANO&#13;&#10;           AND PFICH.ID_TP_NATUREZA  = 3&#13;&#10;           AND TNATD.INFORMA_UNIDADE = 0&#13;&#10;           /*!ENTIDADE*/                  &#13;&#10;&#13;&#10;         UNION ALL&#13;&#10;        /* RESTOS A PAGAR */&#13;&#10;        SELECT CAST(2 AS INTEGER)           AS TP_EXTRA&#13;&#10;             , CAST(:TIPO AS INTEGER)       AS ID_SEQUENCIA&#13;&#10;             , CAST(CASE WHEN 1 = :RESUMIR THEN 9999 ELSE PFICH.CP_ANO END AS INTEGER) AS ANO_FICHA&#13;&#10;             , CAST('' AS VARCHAR(30))      AS CD_PLANO_CONTA&#13;&#10;             , CAST(NULL AS VARCHAR(250))   AS DS_PLANO_CONTA&#13;&#10;             , COALESCE(CXMOV.VL_ANTERIOR , 0)   AS VL_ANTERIOR&#13;&#10;             , COALESCE(CXMOV.VL_PERIODO  , 0)   AS VL_PERIODO&#13;&#10;             , COALESCE(CXMOV.VL_ACUMULADO, 0)   AS VL_ACUMULADO&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;               LEFT JOIN PEC_FICHA               PFICH ON 1 = 1&#13;&#10;               LEFT JOIN (&#13;&#10;                           SELECT A.ID_FICHA&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO  &lt; :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO *-1&#13;&#10;                                           ELSE 0 END)              AS VL_ANTERIOR&#13;&#10;                                , SUM(CASE WHEN A.DT_MOVIMENTO &gt;= :DT_MOVIMENTO_INICIAL&#13;&#10;                                           THEN A.VL_MOVIMENTO *-1&#13;&#10;                                           ELSE 0 END)              AS VL_PERIODO&#13;&#10;                                , SUM(A.VL_MOVIMENTO *-1)           AS VL_ACUMULADO&#13;&#10;                             FROM PEC_CAIXA_MOVIMENTO A&#13;&#10;                            WHERE A.CP_ANO                   = :CP_ANO&#13;&#10;                              AND A.DT_MOVIMENTO            &lt;= :DT_MOVIMENTO_FINAL&#13;&#10;                              AND A.ID_ST_LANCAMENTO_CAIXA   = 1&#13;&#10;                            GROUP BY&#13;&#10;                                  A.ID_FICHA&#13;&#10;                                          ) CXMOV ON CXMOV.ID_FICHA         = PFICH.ID_FICHA&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA    = 3 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;           AND PFICH.CP_ANO          &lt; :CP_ANO&#13;&#10;           AND PFICH.ID_TP_NATUREZA  = 2&#13;&#10;           /*!ENTIDADE*/                  &#13;&#10;       ) A1&#13;&#10;       LEFT JOIN SIS_SEQUENCIA B1 ON B1.ID_SEQUENCIA &lt;= 3&#13;&#10; &#13;&#10; WHERE (B1.ID_SEQUENCIA = 3 AND A1.TP_EXTRA = 2 AND 0 = :RESUMIR) OR      &#13;&#10;       (B1.ID_SEQUENCIA = 3 AND A1.TP_EXTRA = 1                 ) OR      &#13;&#10;       (B1.ID_SEQUENCIA &lt; 3                                     ) &#13;&#10;               &#13;&#10; GROUP BY 1,2,3,4&#13;&#10;&#13;&#10;HAVING ROUND(SUM(A1.VL_ANTERIOR) , 2) &lt;&gt; 0 OR&#13;&#10;       ROUND(SUM(A1.VL_PERIODO)  , 2) &lt;&gt; 0 OR&#13;&#10;       ROUND(SUM(A1.VL_ACUMULADO), 2) &lt;&gt; 0 OR&#13;&#10;       B1.ID_SEQUENCIA = 1&#13;&#10;&#13;&#10; ORDER BY 1">
+        <Column Name="chave" DataType="System.String"/>
+        <Column Name="nivel" DataType="System.Int32"/>
+        <Column Name="codigo" DataType="System.String"/>
+        <Column Name="descricao" DataType="System.String"/>
+        <Column Name="vl_anterior" DataType="System.Double"/>
+        <Column Name="vl_periodo" DataType="System.Double"/>
+        <Column Name="vl_acumulado" DataType="System.Double"/>
+        <CommandParameter Name="RESUMIR" DataType="9" Expression="[SqlPrincipal.resumir]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[SqlPrincipal.cp_ano]"/>
+        <CommandParameter Name="TIPO" DataType="9" Expression="[SqlPrincipal.tipo]"/>
+        <CommandParameter Name="DT_MOVIMENTO_INICIAL" DataType="7" Expression="[SqlPrincipal.dtini]"/>
+        <CommandParameter Name="DT_MOVIMENTO_FINAL" DataType="7" Expression="[SqlPrincipal.dtfim]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table8" Alias="SqlDisponibilidade" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '9'&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 2 THEN '9' || A1.ID_TP_NATUREZA_DETALHE&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 3 THEN '9' || A1.ID_TP_NATUREZA_DETALHE || A1.CONTA_APLICACAO&#13;&#10;                 WHEN B1.ID_SEQUENCIA = 4 THEN '9' || A1.ID_TP_NATUREZA_DETALHE || A1.CONTA_APLICACAO || COALESCE(A1.ID_TP_CONTA_BANCARIA,0)&#13;&#10;            END AS VARCHAR(250) ) AS CHAVE&#13;&#10;     , CAST(CASE WHEN B1.ID_SEQUENCIA    = 1 THEN 'DISPONIBILIDADES'&#13;&#10;                 WHEN B1.ID_SEQUENCIA    = 2 THEN A1.DS_TP_NATUREZA_DETALHE&#13;&#10;                 WHEN B1.ID_SEQUENCIA    = 3&#13;&#10;                  AND A1.CONTA_APLICACAO = 0 THEN 'Recurso Disponível'&#13;&#10;                 WHEN B1.ID_SEQUENCIA    = 3&#13;&#10;                  AND A1.CONTA_APLICACAO = 1 THEN 'Recurso Aplicado'&#13;&#10;                 WHEN B1.ID_SEQUENCIA    = 4 THEN A1.DS_TP_CONTA_BANCARIA&#13;&#10;            END AS VARCHAR(250) ) AS DESCRICAO&#13;&#10;     , B1.ID_SEQUENCIA AS NIVEL&#13;&#10;     , ROUND(SUM(A1.VL_SALDO_INICIAL ), 2) AS VL_INICIAL&#13;&#10;     , ROUND(SUM(A1.VL_SALDO_FINAL   ), 2) AS VL_SALDO_FINAL&#13;&#10;     , ROUND(SUM(A1.VL_SALDO_ANT_PER ), 2) AS VL_SALDO_ANT_PER&#13;&#10;  FROM (&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , CAST(NULL AS INTEGER)            AS ID_FICHA              &#13;&#10;             , CAST(NULL AS INTEGER)            AS ID_TP_NATUREZA_DETALHE&#13;&#10;             , CAST(NULL AS VARCHAR(100))       AS DS_TP_NATUREZA_DETALHE&#13;&#10;             , CAST(NULL AS INTEGER)            AS ID_TP_CONTA_BANCARIA&#13;&#10;             , CAST(NULL AS VARCHAR(50))        AS DS_TP_CONTA_BANCARIA&#13;&#10;             , CAST(NULL AS INTEGER)            AS CONTA_APLICACAO&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)      AS VL_SALDO_INICIAL&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)      AS VL_SALDO_FINAL&#13;&#10;             , CAST(0 AS DOUBLE PRECISION)      AS VL_SALDO_ANT_PER&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA = 4 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;         UNION&#13;&#10;        SELECT SEQUE.ID_SEQUENCIA&#13;&#10;             , PFICH.ID_FICHA                                                                                                                                                                                                                                             &#13;&#10;             , PTPND.ID_TP_NATUREZA_DETALHE&#13;&#10;             , PTPND.DS_TP_NATUREZA_DETALHE&#13;&#10;             , PTPCC.ID_TP_CONTA_BANCARIA&#13;&#10;             , PTPCC.DS_TP_CONTA_BANCARIA&#13;&#10;             , PFICH.CONTA_APLICACAO&#13;&#10;             , PFICH.VL_SALDO                                                                                   AS VL_SALDO_INICIAL&#13;&#10;             , PFICH.VL_SALDO&#13;&#10;             + SUM(CASE WHEN PCXMV.DT_MOVIMENTO &lt;= :DT_MOVIMENTO_FINAL  THEN PCXMV.VL_MOVIMENTO *-1 ELSE 0 END) AS VL_SALDO_FINAL&#13;&#10;             , PFICH.VL_SALDO&#13;&#10;             + SUM(CASE WHEN PCXMV.DT_MOVIMENTO &lt; :DT_MOVIMENTO_INICIAL THEN PCXMV.VL_MOVIMENTO *-1 ELSE 0 END) AS VL_SALDO_ANT_PER&#13;&#10;          FROM SIS_SEQUENCIA SEQUE&#13;&#10;               LEFT JOIN PEC_FICHA                          PFICH ON 1 = 1&#13;&#10;               LEFT JOIN PEC_PLANO_CONTA                    PCONT ON PCONT.ID_PLANO_CONTA               = PFICH.ID_PLANO_CONTA&#13;&#10;               LEFT JOIN PEC_TP_NATUREZA_DETALHE            PTPND ON PTPND.ID_TP_NATUREZA               = PCONT.ID_TP_NATUREZA&#13;&#10;                                                                 AND PTPND.ID_TP_NATUREZA_DETALHE       = PCONT.ID_TP_NATUREZA_DETALHE&#13;&#10;               LEFT JOIN PEC_CONTA_BANCARIA                 PCOBA ON PCOBA.ID_CONTA_BANCARIA            = PFICH.ID_CONTA_BANCARIA&#13;&#10;               LEFT JOIN PEC_TP_CONTA_BANCARIA              PTPCC ON PTPCC.ID_TP_CONTA_BANCARIA         = PCOBA.ID_TP_CONTA_BANCARIA&#13;&#10;               LEFT JOIN PEC_CAIXA_MOVIMENTO                PCXMV ON PCXMV.ID_FICHA                     = PFICH.ID_FICHA&#13;&#10;                                                                 AND PCXMV.ID_ST_LANCAMENTO_CAIXA       = 1&#13;&#10;                                                                 AND PCXMV.DT_MOVIMENTO                &lt;= :DT_MOVIMENTO_FINAL&#13;&#10;         WHERE SEQUE.ID_SEQUENCIA = 4 AND SEQUE.ID_SEQUENCIA = :TIPO&#13;&#10;           AND PFICH.CP_ANO                 = :CP_ANO&#13;&#10;           AND PFICH.ID_TP_NATUREZA         = 4             &#13;&#10;           /*!ENTIDADE*/                  &#13;&#10;         GROUP BY&#13;&#10;               SEQUE.ID_SEQUENCIA&#13;&#10;             , PFICH.ID_FICHA                                                                                                                                                                                                                                             &#13;&#10;             , PTPND.ID_TP_NATUREZA_DETALHE&#13;&#10;             , PTPND.DS_TP_NATUREZA_DETALHE&#13;&#10;             , PTPCC.ID_TP_CONTA_BANCARIA&#13;&#10;             , PTPCC.DS_TP_CONTA_BANCARIA&#13;&#10;             , PFICH.CONTA_APLICACAO&#13;&#10;             , PFICH.VL_SALDO&#13;&#10;            ) A1&#13;&#10;            LEFT JOIN SIS_SEQUENCIA B1 ON B1.ID_SEQUENCIA &lt;= 4&#13;&#10;  WHERE ( ( B1.ID_SEQUENCIA &lt; 3 )  OR ( ( B1.ID_SEQUENCIA &gt;= 3  ) AND ( A1.ID_TP_CONTA_BANCARIA IS NOT NULL ) ) )&#13;&#10;    AND CAST(CASE WHEN B1.ID_SEQUENCIA = 1 THEN '9'&#13;&#10;                  WHEN B1.ID_SEQUENCIA = 2 THEN '9' || A1.ID_TP_NATUREZA_DETALHE&#13;&#10;                  WHEN B1.ID_SEQUENCIA = 3 THEN '9' || A1.ID_TP_NATUREZA_DETALHE || A1.CONTA_APLICACAO&#13;&#10;                  WHEN B1.ID_SEQUENCIA = 4 THEN '9' || A1.ID_TP_NATUREZA_DETALHE || A1.CONTA_APLICACAO || COALESCE(A1.ID_TP_CONTA_BANCARIA,0)&#13;&#10;              END AS VARCHAR(250) ) IS NOT NULL&#13;&#10; GROUP BY&#13;&#10;       1, 2, 3&#13;&#10;&#13;&#10; ORDER BY 1&#13;&#10;">
+        <Column Name="chave" DataType="System.String"/>
+        <Column Name="descricao" DataType="System.String"/>
+        <Column Name="nivel" DataType="System.Int32"/>
+        <Column Name="vl_inicial" DataType="System.Double"/>
+        <Column Name="vl_saldo_final" DataType="System.Double"/>
+        <Column Name="vl_saldo_ant_per" DataType="System.Double"/>
+        <CommandParameter Name="TIPO" DataType="9" Expression="[SqlPrincipal.tipo]"/>
+        <CommandParameter Name="DT_MOVIMENTO_FINAL" DataType="7" Expression="[SqlPrincipal.dtfim]"/>
+        <CommandParameter Name="DT_MOVIMENTO_INICIAL" DataType="7" Expression="[SqlPrincipal.dtini]"/>
+        <CommandParameter Name="CP_ANO" DataType="9" Expression="[SqlPrincipal.cp_ano]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="dataAssinante" DataType="System.String" Expression="&quot;01/01/1900&quot;"/>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Balancete Sintético&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="40"/>
+    <Parameter Name="idLogin" DataType="System.Int64" AsString=""/>
+    <Parameter Name="idUsuario" DataType="System.Int64" AsString=""/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="formato" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="codigoRelatorio" DataType="System.Int64" Expression="126"/>
+    <Parameter Name="competencia" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="orgao" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="idEstado" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="cpAno" DataType="System.Int64" AsString=""/>
+    <Parameter Name="dtIni" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="dtFin" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="resumir" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="dbms" DataType="System.Int64" AsString=""/>
+    <Parameter Name="!filtroEntidade" DataType="System.String" Expression="&quot;&quot;"/>
+  </Dictionary>
+  <inherited Name="MainPage" StartPageEvent="MainPage_StartPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="Text1"/>
+      <inherited Name="TxtOrgao"/>
+      <inherited Name="BndFiltro">
+        <inherited Name="TxtFiltro"/>
+      </inherited>
+    </inherited>
+    <inherited Name="HeaderAssinante" Top="253.51">
+      <DataHeaderBand Name="grpPrincipal" ZOrder="-1" Top="192.3" Width="1047.06" Height="41.21">
+        <TextObject Name="Text13" Top="9.45" Width="521.26" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="RECEITAS" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text14" Top="25.33" Width="60.48" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="CÓDIGO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text15" Left="60.86" Top="25.33" Width="220" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="DESCRIÇÃO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text16" Left="280.85" Top="25.33" Width="80.14" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="ANTERIOR" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text17" Left="360.99" Top="25.33" Width="80.14" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="PERÍODO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text18" Left="441.13" Top="25.33" Width="80.14" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="ACUMULADO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text20" Left="526.93" Top="25.33" Width="60.1" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="CÓDIGO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text21" Left="587.03" Top="25.33" Width="220" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="DESCRIÇÃO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text22" Left="807.03" Top="25.33" Width="80.14" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="ANTERIOR" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text23" Left="887.17" Top="25.33" Width="80.14" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="PERÍODO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text24" Left="966.92" Top="25.33" Width="80.14" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="ACUMULADO" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text19" Left="526.93" Top="9.45" Width="520.13" Height="15.88" Border.Lines="All" Border.Color="White" Fill.Color="41, 82, 118" Text="DESPESAS" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+      </DataHeaderBand>
+      <inherited Name="bndAssinante" Top="273.51" Height="75.6" CanGrow="true" DataSource="Table1">
+        <SubreportObject Name="repReceitaOrcamentaria" ZOrder="0" Width="520.13" Height="15.12" ReportPage="pagReceitaOrcamentaria"/>
+        <SubreportObject Name="repTransferenciaRecebida" ZOrder="1" Top="20.03" Width="520.13" Height="15.12" ReportPage="pagTransferenciaRecebida"/>
+        <SubreportObject Name="repDespesaOrcamentaria" ZOrder="2" Left="526.93" Width="520.13" Height="15.12" ReportPage="pagDespesaOrcamentaria"/>
+        <SubreportObject Name="repTransferenciaConcedida" ZOrder="3" Left="526.93" Top="20.03" Width="520.13" Height="15.12" ReportPage="pagTransferenciaConcedida"/>
+        <SubreportObject Name="repReceitaExtra" ZOrder="4" Top="40.07" Width="520.13" Height="15.12" ReportPage="pagReceitaExtra"/>
+        <SubreportObject Name="repDespesaExtra" ZOrder="5" Left="526.93" Top="40.07" Width="520.13" Height="15.12" ReportPage="pagDespesaExtra"/>
+        <SubreportObject Name="repDisponibilidade" ZOrder="6" Top="60.1" Width="1047.06" Height="15.12" ReportPage="pagDisponibilidade"/>
+      </inherited>
+      <inherited Name="FooterAssinante" Top="369.11" Height="80.51">
+        <inherited Name="TxtAssinante1" Top="40.45"/>
+        <inherited Name="TxtAssinante2" Top="40.45"/>
+        <inherited Name="TxtAssinante3" Top="40.45"/>
+        <inherited Name="TxtAssinante4" Top="40.45"/>
+        <inherited Name="Text5" Top="53.68"/>
+        <inherited Name="Text6" Top="66.53"/>
+        <inherited Name="Text7" Top="53.68"/>
+        <inherited Name="Text8" Top="66.53"/>
+        <inherited Name="Text9" Top="53.68"/>
+        <inherited Name="Text10" Top="66.53"/>
+        <inherited Name="Text11" Top="53.68"/>
+        <inherited Name="Text12" Top="66.53"/>
+      </inherited>
+    </inherited>
+    <inherited Name="BndRodape" Top="469.62">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+  <ReportPage Name="pagReceitaOrcamentaria" ZOrder="1" PaperWidth="158" Watermark.Font="Arial, 60pt">
+    <DataBand Name="bndReceitaOrcamentaria" Top="2.56" Width="521.64" BeforePrintEvent="bndReceitaOrcamentaria_BeforePrint" DataSource="Table2">
+      <ChildBand Name="bndReceitaOrcamentariaN01" Top="5.12" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndReceitaOrcamentariaN01_BeforePrint">
+        <TextObject Name="SqlReceitaDS_PLANO_CONTA" Width="280.1" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.ds_plano_conta]" VertAlign="Center" Font="Tahoma, 5pt, style=Bold"/>
+        <TextObject Name="Text107" Left="280.1" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.vl_anterior]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="Text108" Left="360.23" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.vl_periodo]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="SqlReceitaVL_ACUMULADO" Left="440.37" Width="80.51" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.vl_acumulado]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+        </TextObject>
+        <ChildBand Name="bndReceitaOrcamentariaN02" Top="17.51" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndReceitaOrcamentariaN02_BeforePrint">
+          <TextObject Name="Text110" Width="60.1" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.cd_plano_conta_rel]" Font="Tahoma, 5pt, style=Bold"/>
+          <TextObject Name="Text111" Left="60.1" Width="220" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.ds_plano_conta]" Font="Tahoma, 5pt, style=Bold"/>
+          <TextObject Name="Text112" Left="279.95" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.vl_anterior]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text113" Left="360.08" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.vl_periodo]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text114" Left="439.84" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.vl_acumulado]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <ChildBand Name="bndReceitaOrcamentariaN03" Top="29.9" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndReceitaOrcamentariaN03_BeforePrint">
+            <TextObject Name="Text115" Width="60.1" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.cd_plano_conta_rel]" Font="Tahoma, 5pt"/>
+            <TextObject Name="Text116" Left="60.1" Width="199.96" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="          [SqlReceita.ds_plano_conta]" Font="Tahoma, 5pt"/>
+            <TextObject Name="Text117" Left="260.06" Width="20.03" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.cd_tp_deducao]" Font="Tahoma, 5pt, style=Bold" TextFill.Color="Red"/>
+            <TextObject Name="Text118" Left="280.1" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.vl_anterior]" HorzAlign="Right" Font="Tahoma, 5pt">
+              <Formats>
+                <NumberFormat/>
+                <GeneralFormat/>
+              </Formats>
+              <Highlight>
+                <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+            <TextObject Name="Text119" Left="360.23" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.vl_periodo]" HorzAlign="Right" Font="Tahoma, 5pt">
+              <Formats>
+                <NumberFormat/>
+                <GeneralFormat/>
+              </Formats>
+              <Highlight>
+                <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+            <TextObject Name="Text120" Left="439.99" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlReceita.vl_acumulado]" HorzAlign="Right" Font="Tahoma, 5pt">
+              <Formats>
+                <NumberFormat/>
+                <GeneralFormat/>
+              </Formats>
+              <Highlight>
+                <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+          </ChildBand>
+        </ChildBand>
+      </ChildBand>
+      <DataHeaderBand Name="cabReceitaOrcamentaria" Width="521.64"/>
+      <DataFooterBand Name="ftrReceitaOrcamentaria" Top="42.29" Width="521.64" Height="9.45"/>
+    </DataBand>
+  </ReportPage>
+  <ReportPage Name="pagDespesaOrcamentaria" ZOrder="2" PaperWidth="158" Watermark.Font="Arial, 60pt">
+    <DataBand Name="bndDespesaOrcamentaria" Top="2.56" Width="521.64" BeforePrintEvent="bndDespesaOrcamentaria_BeforePrint" DataSource="Table3">
+      <ChildBand Name="bndDespesaOrcamentariaN01" Top="5.12" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndDespesaOrcamentariaN01_BeforePrint">
+        <TextObject Name="Text121" Left="0.38" Width="280.1" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlDespesa.ds_funcao]" Font="Tahoma, 5pt, style=Bold"/>
+        <TextObject Name="Text122" Left="280.1" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlDespesa.vl_anterior]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="Text123" Left="360.23" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlDespesa.vl_periodo]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="SqlDespesaVL_ACUMULADO" Left="439.61" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlDespesa.vl_acumulado]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <ChildBand Name="bndDespesaOrcamentariaN02" Top="17.51" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndDespesaOrcamentariaN02_BeforePrint">
+          <TextObject Name="Text125" Width="60.1" Height="9.83" Border.Color="White" Text="[SqlDespesa.cd_funcao]" Font="Tahoma, 5pt"/>
+          <TextObject Name="Text126" Left="60.1" Width="220" Height="9.83" Border.Color="White" Text="[SqlDespesa.ds_funcao]" Font="Tahoma, 5pt"/>
+          <TextObject Name="Text127" Left="279.95" Width="80.14" Height="9.83" Border.Color="White" Text="[SqlDespesa.vl_anterior]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text128" Left="360.08" Width="80.14" Height="9.83" Border.Color="White" Text="[SqlDespesa.vl_periodo]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text129" Left="439.84" Width="80.14" Height="9.83" Border.Color="White" Text="[SqlDespesa.vl_acumulado]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+        </ChildBand>
+      </ChildBand>
+      <DataHeaderBand Name="cabDespesaOrcamentaria" Width="521.64"/>
+      <DataFooterBand Name="ftrDespesaOrcamentaria" Top="29.9" Width="521.64" Height="9.45"/>
+    </DataBand>
+  </ReportPage>
+  <ReportPage Name="pagTransferenciaRecebida" ZOrder="3" PaperWidth="158" Watermark.Font="Arial, 60pt">
+    <DataBand Name="bndTransfRecebida" Top="2.56" Width="521.64" BeforePrintEvent="bndTransfRecebida_BeforePrint" DataSource="Table4">
+      <ChildBand Name="bndTransfRecebidaN01" Top="5.12" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndTransfRecebidaN01_BeforePrint">
+        <TextObject Name="Text130" Width="280.1" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlTransfRecebida.descricao]" VertAlign="Center" Font="Tahoma, 5pt, style=Bold"/>
+        <TextObject Name="Text131" Left="280.1" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlTransfRecebida.vl_anterior]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="Text132" Left="360.23" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlTransfRecebida.vl_periodo]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="SqlTransfRecebidaVL_ACUMULADO" Left="439.99" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlTransfRecebida.vl_acumulado]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <ChildBand Name="bndTransfRecebidaN02" Top="17.51" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndTransfRecebidaN02_BeforePrint">
+          <TextObject Name="Text134" Width="60.1" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlTransfRecebida.codigo]" Font="Tahoma, 5pt"/>
+          <TextObject Name="Text135" Left="60.1" Width="220" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlTransfRecebida.descricao]" Font="Tahoma, 5pt"/>
+          <TextObject Name="Text136" Left="279.95" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlTransfRecebida.vl_anterior]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text137" Left="360.08" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlTransfRecebida.vl_periodo]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text138" Left="439.84" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" GrowToBottom="true" Text="[SqlTransfRecebida.vl_acumulado]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+        </ChildBand>
+      </ChildBand>
+      <DataHeaderBand Name="cabTransfRecebida" Width="521.64"/>
+      <DataFooterBand Name="ftrbTransfRecebida" Top="29.9" Width="521.64" Height="9.45"/>
+    </DataBand>
+  </ReportPage>
+  <ReportPage Name="pagTransferenciaConcedida" ZOrder="4" PaperWidth="158" Watermark.Font="Arial, 60pt">
+    <DataBand Name="bndTransfConcedida" Top="2.56" Width="521.64" BeforePrintEvent="bndTransfConcedida_BeforePrint" DataSource="Table5">
+      <ChildBand Name="bndTransfConcedidaN01" Top="5.12" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndTransfConcedidaN01_BeforePrint">
+        <TextObject Name="Text139" Width="280.1" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlTransfConcedida.descricao]" Font="Tahoma, 5pt, style=Bold"/>
+        <TextObject Name="Text140" Left="280.1" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlTransfConcedida.vl_anterior]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="Text141" Left="360.23" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlTransfConcedida.vl_periodo]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="SqlTransfConcedidaVL_ACUMULADO" Left="439.99" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlTransfConcedida.vl_acumulado]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <ChildBand Name="bndTransfConcedidaN02" Top="17.51" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndTransfConcedidaN02_BeforePrint">
+          <TextObject Name="Text143" Width="60.1" Height="9.83" Border.Color="White" CanGrow="true" Text="[SqlTransfConcedida.codigo]" Font="Tahoma, 5pt"/>
+          <TextObject Name="Text144" Left="60.1" Width="220" Height="9.83" Border.Color="White" CanGrow="true" Text="[SqlTransfConcedida.descricao]" Font="Tahoma, 5pt"/>
+          <TextObject Name="Text145" Left="279.95" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" Text="[SqlTransfConcedida.vl_anterior]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text146" Left="360.08" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" Text="[SqlTransfConcedida.vl_periodo]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text147" Left="439.84" Width="80.14" Height="9.83" Border.Color="White" CanGrow="true" Text="[SqlTransfConcedida.vl_acumulado]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+        </ChildBand>
+      </ChildBand>
+      <DataHeaderBand Name="cabTransfConcedida" Width="521.64"/>
+      <DataFooterBand Name="ftrTransfConcedida" Top="29.9" Width="521.64" Height="9.45"/>
+    </DataBand>
+  </ReportPage>
+  <ReportPage Name="pagReceitaExtra" ZOrder="5" PaperWidth="158" Watermark.Font="Arial, 60pt">
+    <DataBand Name="bndReceitaExtra" Top="2.56" Width="521.64" BeforePrintEvent="bndReceitaExtra_BeforePrint" DataSource="Table6">
+      <ChildBand Name="bndReceitaExtraN01" Top="5.12" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndReceitaExtraN01_BeforePrint">
+        <TextObject Name="Text148" Width="280.1" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlReceitaExtra.descricao]" VertAlign="Center" Font="Tahoma, 5pt, style=Bold"/>
+        <TextObject Name="Text149" Left="280.1" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlReceitaExtra.vl_anterior]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="Text150" Left="360.23" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlReceitaExtra.vl_periodo]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="SqlReceitaExtraVL_ACUMULADO" Left="439.99" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" CanGrow="true" GrowToBottom="true" Text="[SqlReceitaExtra.vl_acumulado]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <ChildBand Name="bndReceitaExtraN02" Top="17.51" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndReceitaExtraN02_BeforePrint" PrintIfDatabandEmpty="true">
+          <TextObject Name="Text152" Width="60.1" Height="9.83" Border.Color="White" GrowToBottom="true" Text="[SqlReceitaExtra.codigo]" Font="Tahoma, 5pt"/>
+          <TextObject Name="Text153" Left="60.1" Width="220" Height="9.83" Border.Color="White" GrowToBottom="true" Text="[SqlReceitaExtra.descricao]" Font="Tahoma, 5pt"/>
+          <TextObject Name="Text154" Left="279.95" Width="80.14" Height="9.83" Border.Color="White" GrowToBottom="true" Text="[SqlReceitaExtra.vl_anterior]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text155" Left="360.08" Width="80.14" Height="9.83" Border.Color="White" GrowToBottom="true" Text="[SqlReceitaExtra.vl_periodo]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text156" Left="439.84" Width="80.14" Height="9.83" Border.Color="White" GrowToBottom="true" Text="[SqlReceitaExtra.vl_acumulado]" HorzAlign="Right" Font="Tahoma, 5pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+        </ChildBand>
+      </ChildBand>
+      <DataHeaderBand Name="cabReceitaExtra" Width="521.64"/>
+      <DataFooterBand Name="ftrReceitaExtra" Top="29.9" Width="521.64" Height="9.45"/>
+    </DataBand>
+  </ReportPage>
+  <ReportPage Name="pagDespesaExtra" ZOrder="6" PaperWidth="158" Watermark.Font="Arial, 60pt">
+    <DataBand Name="bndDespesaExtra" Top="2.56" Width="521.64" BeforePrintEvent="bndDespesaExtra_BeforePrint" DataSource="Table7">
+      <ChildBand Name="bndDespesaExtraN01" Top="5.12" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndDespesaExtraN01_BeforePrint">
+        <TextObject Name="Text157" Width="280.1" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlDespesaExtra.descricao]" VertAlign="Center" Font="Tahoma, 5pt, style=Bold"/>
+        <TextObject Name="Text158" Left="280.1" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlDespesaExtra.vl_anterior]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="Text159" Left="360.23" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlDespesaExtra.vl_periodo]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="SqlDespesaExtraVL_ACUMULADO" Left="439.99" Width="80.14" Height="9.83" Border.Color="White" Fill.Color="ButtonFace" Text="[SqlDespesaExtra.vl_acumulado]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 5pt, style=Bold">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <ChildBand Name="bndDespesaExtraN02" Top="17.51" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndDespesaExtraN02_BeforePrint">
+          <TextObject Name="Text161" Width="280.1" Height="9.83" Border.Color="White" Text="               [SqlDespesaExtra.descricao]" Font="Tahoma, 5pt, style=Bold"/>
+          <TextObject Name="Text162" Left="279.95" Width="80.14" Height="9.83" Border.Color="White" Text="[SqlDespesaExtra.vl_anterior]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text163" Left="360.08" Width="80.14" Height="9.83" Border.Color="White" Text="[SqlDespesaExtra.vl_periodo]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text164" Left="439.84" Width="80.14" Height="9.83" Border.Color="White" Text="[SqlDespesaExtra.vl_acumulado]" HorzAlign="Right" Font="Tahoma, 5pt, style=Bold">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <ChildBand Name="bndDespesaExtraN03" Top="29.9" Width="521.64" Height="9.83" CanGrow="true" BeforePrintEvent="bndDespesaExtraN03_BeforePrint">
+            <TextObject Name="Text165" Width="60.1" Height="9.83" Border.Color="White" Text="[SqlDespesaExtra.codigo]" Font="Tahoma, 5pt"/>
+            <TextObject Name="Text166" Left="60.1" Width="220" Height="9.83" Border.Color="White" CanGrow="true" Text="            [SqlDespesaExtra.descricao]" WordWrap="false" Font="Tahoma, 5pt"/>
+            <TextObject Name="Text167" Left="280.1" Width="80.14" Height="9.83" Border.Color="White" Text="[SqlDespesaExtra.vl_anterior]" HorzAlign="Right" Font="Tahoma, 5pt">
+              <Formats>
+                <NumberFormat/>
+                <GeneralFormat/>
+              </Formats>
+              <Highlight>
+                <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+            <TextObject Name="Text168" Left="360.23" Width="80.14" Height="9.83" Border.Color="White" Text="[SqlDespesaExtra.vl_periodo]" HorzAlign="Right" Font="Tahoma, 5pt">
+              <Formats>
+                <NumberFormat/>
+                <GeneralFormat/>
+              </Formats>
+              <Highlight>
+                <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+            <TextObject Name="Text169" Left="439.99" Width="80.14" Height="9.83" Border.Color="White" Text="[SqlDespesaExtra.vl_acumulado]" HorzAlign="Right" Font="Tahoma, 5pt">
+              <Formats>
+                <NumberFormat/>
+                <GeneralFormat/>
+              </Formats>
+              <Highlight>
+                <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+          </ChildBand>
+        </ChildBand>
+      </ChildBand>
+      <DataHeaderBand Name="cabDespesaExtra" Width="521.64"/>
+      <DataFooterBand Name="ftrDespesaExtra" Top="42.29" Width="521.64" Height="9.45"/>
+    </DataBand>
+  </ReportPage>
+  <ReportPage Name="pagDisponibilidade" ZOrder="7" PaperWidth="297" Watermark.Font="Arial, 60pt">
+    <DataBand Name="bndDisponibilidade" Top="2.56" Width="1047.06" BeforePrintEvent="bndDisponibilidade_BeforePrint" DataSource="Table8">
+      <ChildBand Name="bndDisponibilidadeN01" Top="5.12" Width="1047.06" Height="12.85" CanGrow="true" BeforePrintEvent="bndDisponibilidadeN01_BeforePrint">
+        <TextObject Name="SqlDisponibilidadeVL_SALDO_FINAL" Left="946.51" Width="100.17" Height="12.85" Border.Lines="All" Border.Color="ButtonFace" Fill.Color="ButtonFace" Text="[SqlDisponibilidade.vl_saldo_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt, style=Bold">
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="SqlDisponibilidadeDESCRICAO_REC" Width="419.96" Height="12.85" Border.Lines="All" Border.Color="ButtonFace" Fill.Color="ButtonFace" Text="[SqlDisponibilidade.descricao]" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+        <TextObject Name="SqlDisponibilidadeVL_INICIAL" Left="419.96" Width="100.17" Height="12.85" Border.Lines="All" Border.Color="ButtonFace" Fill.Color="ButtonFace" Text="[SqlDisponibilidade.vl_inicial]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt, style=Bold">
+          <Highlight>
+            <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="SqlDisponibilidadeDescricao_DES" Left="526.93" Width="419.96" Height="12.85" Border.Lines="All" Border.Color="ButtonFace" Fill.Color="ButtonFace" Text="[SqlDisponibilidade.descricao]" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+        <ChildBand Name="bndDisponibilidadeN02" Top="20.53" Width="1047.06" Height="10.96" CanGrow="true" BeforePrintEvent="bndDisponibilidadeN02_BeforePrint">
+          <TextObject Name="Text174" Width="419.96" Height="10.96" Border.Color="ButtonFace" Text="                 [SqlDisponibilidade.descricao]" Font="Tahoma, 6pt, style=Bold"/>
+          <TextObject Name="Text175" Left="419.96" Width="100.17" Height="10.96" Border.Color="ButtonFace" Text="[SqlDisponibilidade.vl_inicial]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold">
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <TextObject Name="Text176" Left="520.13" Width="419.96" Height="10.96" Border.Color="ButtonFace" Text="                 [SqlDisponibilidade.descricao]" Font="Tahoma, 6pt, style=Bold"/>
+          <TextObject Name="Text177" Left="946.51" Width="100.17" Height="10.96" Border.Color="ButtonFace" Text="[SqlDisponibilidade.vl_saldo_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold">
+            <Highlight>
+              <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <ChildBand Name="bndDisponibilidadeN03" Top="34.05" Width="1047.06" Height="10.96" CanGrow="true" BeforePrintEvent="bndDisponibilidadeN03_BeforePrint">
+            <TextObject Name="Text178" Width="419.96" Height="10.96" Border.Color="ButtonFace" Text="                      [SqlDisponibilidade.descricao]" Font="Tahoma, 6pt"/>
+            <TextObject Name="Text179" Left="419.96" Width="100.17" Height="10.96" Border.Color="ButtonFace" Text="[SqlDisponibilidade.vl_inicial]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt">
+              <Highlight>
+                <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+            <TextObject Name="Text180" Left="520.13" Width="419.96" Height="10.96" Border.Color="ButtonFace" Text="                      [SqlDisponibilidade.descricao]" Font="Tahoma, 6pt"/>
+            <TextObject Name="Text181" Left="946.51" Width="100.17" Height="10.96" Border.Color="ButtonFace" Text="[SqlDisponibilidade.vl_saldo_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt">
+              <Highlight>
+                <Condition Expression="Value &lt; 0" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+          </ChildBand>
+        </ChildBand>
+      </ChildBand>
+      <DataHeaderBand Name="cabDisponibilidade" Width="1047.06"/>
+      <DataFooterBand Name="ftrDisponibilidade" Top="47.57" Width="1047.06" Height="38.02">
+        <TextObject Name="Text182" Top="4" Width="419.96" Height="15.12" Border.Lines="All" Border.Color="41, 82, 118" Fill.Color="41, 82, 118" Text="TOTAL GERAL" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text183" Left="419.96" Top="4" Width="100.17" Height="15.12" Border.Lines="All" Border.Color="41, 82, 118" Fill.Color="41, 82, 118" Text="[Convert.ToDouble(SqlDisponibilidadeVL_INICIAL.Value) + Convert.ToDouble(SqlReceitaVL_ACUMULADO.Value) + Convert.ToDouble(SqlTransfRecebidaVL_ACUMULADO.Value) + Convert.ToDouble(SqlReceitaExtraVL_ACUMULADO.Value)]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+            <GeneralFormat/>
+            <GeneralFormat/>
+          </Formats>
+        </TextObject>
+        <TextObject Name="Text184" Left="526.93" Top="4" Width="419.96" Height="15.12" Border.Lines="All" Border.Color="41, 82, 118" Fill.Color="41, 82, 118" Text="TOTAL GERAL" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text185" Left="946.89" Top="4" Width="100.17" Height="15.12" Border.Lines="All" Border.Color="41, 82, 118" Fill.Color="41, 82, 118" Text="[Convert.ToDouble(SqlDisponibilidadeVL_SALDO_FINAL.Value) + Convert.ToDouble(SqlDespesaVL_ACUMULADO.Value) + Convert.ToDouble(SqlTransfConcedidaVL_ACUMULADO.Value) + Convert.ToDouble(SqlDespesaExtraVL_ACUMULADO.Value)]&#13;&#10;" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextFill.Color="White">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+            <GeneralFormat/>
+            <GeneralFormat/>
+          </Formats>
+        </TextObject>
+      </DataFooterBand>
+    </DataBand>
+  </ReportPage>
+</inherited>

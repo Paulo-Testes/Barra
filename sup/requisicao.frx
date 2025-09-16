@@ -1,0 +1,312 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\base\retrato.frx" BaseReportAbsolutePath="..\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="04/23/2025 11:55:03" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }
+
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }    
+
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }
+
+    private void BndRequisicaoNormal_BeforePrint(object sender, EventArgs e)
+    {
+      BndRequisicaoNormal.Visible = (Int32)Report.GetColumnValue(&quot;SqlRequisicao.id_tp_requisicao&quot;) == 1;
+    }
+
+    private void BndRequisicaoTransferencia_BeforePrint(object sender, EventArgs e)
+    {
+      BndRequisicaoTransferencia.Visible = (Int32)Report.GetColumnValue(&quot;SqlRequisicao.id_tp_requisicao&quot;) == 2;
+    }
+
+    private void BndItemDescricaoCompleta_BeforePrint(object sender, EventArgs e)
+    {
+      BndItemDescricaoCompleta.Visible = ((Int16)Report.GetColumnValue(&quot;SqlItem.imprime_ds_completa&quot;) == 1) &amp;&amp;
+        ((Int64)Report.GetParameterValue(&quot;ImpDsCompleta&quot;) == 1);
+    }
+
+    private void BndItemObs_BeforePrint(object sender, EventArgs e)
+    {
+      BndItemObs.Visible = ((String)Report.GetColumnValue(&quot;SqlItem.observacao&quot;) != &quot;&quot;);
+    }
+
+    private void BndJustificativa_BeforePrint(object sender, EventArgs e)
+    {
+      BndJustificativa.Visible = ((String)Report.GetColumnValue(&quot;SqlRequisicao.obs&quot;) != &quot;&quot;);
+    }  
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqOQBko24cFrJaBTAUANqqRiM9P+0pQkFvblTVPoFIZN1gq4fBTzob/gOIbp26roHmkEs3xU7vv2QyVHqhuTqJVEa4e05sxW/YDbEnZpCwm2g=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlRequisicao" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;  req.id_requisicao&#13;&#10;  , req.nr_requisicao&#13;&#10;  , req.cp_ano ano_requisicao&#13;&#10;  , req.dt_requisicao&#13;&#10;  , req.id_tp_requisicao&#13;&#10;  , trq.ds_tp_requisicao&#13;&#10;  , urq.ds_usuario nome_requisitante&#13;&#10;  , urq.nome_usuario nome_completo_requisitante&#13;&#10;  , case when par.definir_dt_aprovacao_req = 1&#13;&#10;      then req.dt_aprovacao&#13;&#10;      else apr.dt_historico&#13;&#10;   end dt_aprovacao&#13;&#10;  , uap.ds_usuario nome_aprovador&#13;&#10;  , uap.nome_usuario nome_completo_aprovador&#13;&#10;  , alx.cd_almoxarifado&#13;&#10;  , alx.ds_almoxarifado&#13;&#10;  , ald.cd_almoxarifado cd_almoxarifado_destino&#13;&#10;  , ald.ds_almoxarifado ds_almoxarifado_destino&#13;&#10;  , ues.cd_unidade_estoque&#13;&#10;  , ues.ds_unidade_estoque&#13;&#10;  , uad.cd_unidade_adm&#13;&#10;  , uad.ds_unidade_adm&#13;&#10;  , ued.cd_unidade_estoque cd_unidade_estoque_destino&#13;&#10;  , ued.ds_unidade_estoque ds_unidade_estoque_destino&#13;&#10;  , cec.cd_centro_consumo&#13;&#10;  , cec.ds_centro_consumo&#13;&#10;  , req.obs&#13;&#10;  , usu_recus.ds_usuario nome_recusa                      &#13;&#10;  , usu_recus.nome_usuario nome_completo_recusa                                        &#13;&#10;  , req.st_requisicao&#13;&#10;  , recus.dt_historico dt_recusa      &#13;&#10;from&#13;&#10;  sup_requisicao req&#13;&#10;  left join sup_tp_requisicao trq on&#13;&#10;    trq.id_tp_requisicao = req.id_tp_requisicao&#13;&#10;  left join sis_usuario urq on&#13;&#10;    urq.id_usuario = req.id_usuario_requi&#13;&#10;  left join sis_usuario uap on&#13;&#10;    uap.id_usuario = req.id_usuario_aprov&#13;&#10;  left join sup_almoxarifado alx on&#13;&#10;    alx.id_almoxarifado = req.id_almoxarifado&#13;&#10;  left join sup_almoxarifado ald on&#13;&#10;    ald.id_almoxarifado = req.id_almoxarifado_destino&#13;&#10;  left join sup_unidade_estoque ues on&#13;&#10;    ues.id_unidade_estoque = req.id_unidade_estoque&#13;&#10;  left join sup_centro_consumo cec on&#13;&#10;    cec.id_centro_consumo = req.id_centro_consumo&#13;&#10;  left join sup_unidade_adm uad on&#13;&#10;    uad.id_unidade_adm = cec.id_unidade_adm&#13;&#10;  left join sup_unidade_estoque ued on&#13;&#10;    ued.id_unidade_estoque = req.id_unidade_estoque_destino&#13;&#10;  left join sup_parametro par on&#13;&#10;    par.id_entidade = req.id_entidade&#13;&#10;  left join lateral (&#13;&#10;    select&#13;&#10;      b.dt_historico&#13;&#10;    from sup_historico_req b&#13;&#10;    where&#13;&#10;      b.id_requisicao = req.id_requisicao&#13;&#10;      and b.st_requisicao = 3 -- aprovada&#13;&#10;    order by&#13;&#10;      b.dt_historico desc&#13;&#10;    limit 1&#13;&#10;  ) apr on true&#13;&#10;  left join lateral (&#13;&#10;    select&#13;&#10;      b.id_usuario&#13;&#10;      , b.dt_historico&#13;&#10;    from sup_historico_req b&#13;&#10;    where&#13;&#10;      b.id_requisicao = req.id_requisicao&#13;&#10;      and b.st_requisicao = 4 -- recusada&#13;&#10;    order by&#13;&#10;      b.dt_historico desc&#13;&#10;    limit 1&#13;&#10;  ) recus on true&#13;&#10;  left join public.sis_usuario usu_recus on&#13;&#10;    usu_recus.id_usuario = recus.id_usuario&#13;&#10;where&#13;&#10;  req.id_requisicao = :id_requisicao">
+        <Column Name="id_requisicao" DataType="System.Int32"/>
+        <Column Name="nr_requisicao" DataType="System.Int32"/>
+        <Column Name="ano_requisicao" DataType="System.Int16"/>
+        <Column Name="dt_requisicao" DataType="System.DateTime"/>
+        <Column Name="id_tp_requisicao" DataType="System.Int32"/>
+        <Column Name="ds_tp_requisicao" DataType="System.String"/>
+        <Column Name="nome_requisitante" DataType="System.String"/>
+        <Column Name="nome_completo_requisitante" DataType="System.String"/>
+        <Column Name="dt_aprovacao" DataType="System.DateTime"/>
+        <Column Name="nome_aprovador" DataType="System.String"/>
+        <Column Name="nome_completo_aprovador" DataType="System.String"/>
+        <Column Name="cd_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <Column Name="cd_almoxarifado_destino" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado_destino" DataType="System.String"/>
+        <Column Name="cd_unidade_estoque" DataType="System.Int32"/>
+        <Column Name="ds_unidade_estoque" DataType="System.String"/>
+        <Column Name="cd_unidade_adm" DataType="System.Int32"/>
+        <Column Name="ds_unidade_adm" DataType="System.String"/>
+        <Column Name="cd_unidade_estoque_destino" DataType="System.Int32"/>
+        <Column Name="ds_unidade_estoque_destino" DataType="System.String"/>
+        <Column Name="cd_centro_consumo" DataType="System.Int32"/>
+        <Column Name="ds_centro_consumo" DataType="System.String"/>
+        <Column Name="obs" DataType="System.String"/>
+        <Column Name="nome_recusa" DataType="System.String"/>
+        <Column Name="nome_completo_recusa" DataType="System.String"/>
+        <Column Name="st_requisicao" DataType="System.Int16"/>
+        <Column Name="dt_recusa" DataType="System.DateTime"/>
+        <CommandParameter Name="id_requisicao" DataType="9" Expression="[idRequisicao]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlItem" DataType="System.Int32" Enabled="true" SelectCommand="select a.ordem&#13;&#10;     , b.tp_material&#13;&#10;     , d.cd_grupo&#13;&#10;     , c.cd_grupo               as cd_subgrupo&#13;&#10;     , b.cd_material&#13;&#10;     , b.ds_material&#13;&#10;     , b.imprime_ds_completa&#13;&#10;     , b.ds_completa&#13;&#10;     , b.un_material&#13;&#10;     , a.qtd_requisitada                                              &#13;&#10;     , a.qtd_aprovada&#13;&#10;     , a.qtd_entregue&#13;&#10;     , a.observacao&#13;&#10;  from sup_requisicao_it a&#13;&#10;       left join sup_material b on b.id_material  = a.id_material&#13;&#10;       left join sup_grupo    c on c.id_grupo     = b.id_grupo&#13;&#10;       left join sup_grupo    d on d.id_grupo     = c.id_grupo_pai&#13;&#10; where a.id_requisicao = :id_requisicao &#13;&#10; order by 1, 2, 3, 4, 5">
+        <Column Name="ordem" DataType="System.Int16"/>
+        <Column Name="tp_material" DataType="System.Int16"/>
+        <Column Name="cd_grupo" DataType="System.Int32"/>
+        <Column Name="cd_subgrupo" DataType="System.Int32"/>
+        <Column Name="cd_material" DataType="System.Int32"/>
+        <Column Name="ds_material" DataType="System.String"/>
+        <Column Name="imprime_ds_completa" DataType="System.Int16"/>
+        <Column Name="ds_completa" DataType="System.String"/>
+        <Column Name="un_material" DataType="System.String"/>
+        <Column Name="qtd_requisitada" DataType="System.Double"/>
+        <Column Name="qtd_aprovada" DataType="System.Double"/>
+        <Column Name="qtd_entregue" DataType="System.Double"/>
+        <Column Name="observacao" DataType="System.String"/>
+        <CommandParameter Name="id_requisicao" DataType="9" Expression="[idRequisicao]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;REQUISIÇÃO DE MATERIAL PARA ALMOXARIFADO&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="37"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idRequisicao" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="impDsCompleta" DataType="System.Int64" Expression="1"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="BndCabecalhoRequisicao" ZOrder="-1" Top="121.4" Width="718.2" Height="30.24">
+          <TextObject Name="TxtRequisicao" Top="3.78" Width="291.06" Height="26.46" Border.Lines="All" Fill.Color="42, 82, 118" Text="REQ [Format(&quot;{0:00000}&quot;,[SqlRequisicao.nr_requisicao])]/[SqlRequisicao.ano_requisicao] - [SqlRequisicao.ds_tp_requisicao]" VertAlign="Center" WordWrap="false" Font="Tahoma, 12pt, style=Bold" TextFill.Color="White"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <DataBand Name="DataRequisicao" ZOrder="0" Top="155.64" Width="718.2" Height="37.8">
+      <TextObject Name="Text1" Width="132.3" Height="18.9" Border.Lines="All" Text="Requisitado em:" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text2" Left="132.3" Width="79.38" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="[Format(&quot;{0:dd/MM/yyyy}&quot;,[SqlRequisicao.dt_requisicao])]" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text3" Left="211.68" Width="79.38" Height="18.9" Border.Lines="All" Text="Requisitante:" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text4" Left="291.06" Width="427.14" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="[Trim([SqlRequisicao.nome_completo_requisitante])] - [Trim([SqlRequisicao.nome_requisitante])]" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text5" Top="18.9" Width="132.3" Height="18.9" Border.Lines="All" Text="[IIf([SqlRequisicao.st_requisicao] == 4,&quot;Recusado em:&quot;,&quot;Aprovado em:&quot;)]" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text6" Left="132.3" Top="18.9" Width="79.38" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="[Format(&quot;{0:dd/MM/yyyy}&quot;,[SqlRequisicao.dt_aprovacao])]" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text7" Left="211.68" Top="18.9" Width="79.38" Height="18.9" Border.Lines="All" Text="[IIf([SqlRequisicao.st_requisicao] == 4,&quot;Recusado por:&quot;,&quot;Aprovador:&quot;)]" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text8" Left="291.06" Top="18.9" Width="427.14" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="[IIf([SqlRequisicao.st_requisicao] == 4,Trim([SqlRequisicao.nome_completo_recusa]) + &quot; - &quot; + Trim([SqlRequisicao.nome_recusa]),Trim([SqlRequisicao.nome_completo_aprovador]) + &quot; - &quot; + Trim([SqlRequisicao.nome_aprovador]))]" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt, style=Bold"/>
+      <ChildBand Name="BndRequisicaoNormal" Top="197.44" Width="718.2" Height="75.6" BeforePrintEvent="BndRequisicaoNormal_BeforePrint">
+        <TextObject Name="Text9" Width="132.3" Height="18.9" Border.Lines="All" Text="Almoxarifado:" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text10" Top="18.9" Width="132.3" Height="18.9" Border.Lines="All" Text="Unidade de Estoque:" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text11" Top="37.8" Width="132.3" Height="18.9" Border.Lines="All" Text="Unidade Requisitante:" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text12" Top="56.7" Width="132.3" Height="18.9" Border.Lines="All" Text="Centro de Consumo:" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text13" Left="132.3" Width="585.9" Height="18.9" Border.Lines="All" Text="[Trim([SqlRequisicao.ds_almoxarifado])] - ([ToString([SqlRequisicao.cd_almoxarifado])])" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text14" Left="132.3" Top="18.9" Width="585.9" Height="18.9" Border.Lines="All" Text="[Trim([SqlRequisicao.ds_unidade_estoque])] - ([ToString([SqlRequisicao.cd_unidade_estoque])])" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text15" Left="132.3" Top="37.8" Width="585.9" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="[Trim([SqlRequisicao.ds_unidade_adm])] - ([ToString([SqlRequisicao.cd_unidade_adm])])" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text16" Left="132.3" Top="56.7" Width="585.9" Height="18.9" Border.Lines="All" Text="[Trim([SqlRequisicao.ds_centro_consumo])] - ([ToString([SqlRequisicao.cd_centro_consumo])])" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt, style=Bold"/>
+        <ChildBand Name="BndRequisicaoTransferencia" Top="277.04" Width="718.2" Height="85.05" BeforePrintEvent="BndRequisicaoTransferencia_BeforePrint">
+          <TextObject Name="Text17" Top="9.45" Width="351.54" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="ALMOXARIFADO E UNIDADE DE ESTOQUE - ORIGEM" HorzAlign="Center" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text18" Left="366.66" Top="9.45" Width="351.54" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="ALMOXARIFADO E UNIDADE DE ESTOQUE - DESTINO" HorzAlign="Center" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text19" Top="28.35" Width="351.54" Height="28.35" Border.Lines="All" Text="[Trim([SqlRequisicao.ds_almoxarifado])] - ([ToString([SqlRequisicao.cd_almoxarifado])])" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" TextFill.Color="Red"/>
+          <TextObject Name="Text20" Top="56.7" Width="351.54" Height="28.35" Border.Lines="All" Text="[Trim([SqlRequisicao.ds_unidade_estoque])] - ([ToString([SqlRequisicao.cd_unidade_estoque])])" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" TextFill.Color="Red"/>
+          <TextObject Name="Text21" Left="366.66" Top="28.35" Width="351.54" Height="28.35" Border.Lines="All" Text="[Trim([SqlRequisicao.ds_almoxarifado_destino])] - ([ToString([SqlRequisicao.cd_almoxarifado_destino])])" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" TextFill.Color="42, 82, 118"/>
+          <TextObject Name="Text22" Left="366.66" Top="56.7" Width="351.54" Height="28.35" Border.Lines="All" Text="[Trim([SqlRequisicao.ds_unidade_estoque_destino])] - ([ToString([SqlRequisicao.cd_unidade_estoque_destino])])" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" TextFill.Color="42, 82, 118"/>
+          <LineObject Name="Line1" Left="351.54" Top="47.25" Width="15.12" Diagonal="true" EndCap.Style="Arrow"/>
+          <ChildBand Name="BndJustificativa" Top="366.09" Width="718.2" Height="47.25" CanGrow="true" BeforePrintEvent="BndJustificativa_BeforePrint">
+            <TextObject Name="Text24" Top="9.45" Width="291.06" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="Justificativa" Padding="2, 2, 2, 2" VertAlign="Center" Font="Tahoma, 10pt, style=Bold"/>
+            <TextObject Name="Text23" Top="28.35" Width="718.2" Height="18.9" Border.Lines="All" CanGrow="true" Text="[SqlRequisicao.obs]" HorzAlign="Justify" VertAlign="Center" Font="Tahoma, 8pt"/>
+          </ChildBand>
+        </ChildBand>
+      </ChildBand>
+      <DataBand Name="BndItem" Top="468.59" Width="718.2" Height="18.9" CanGrow="true" KeepChild="true" DataSource="SqlItem" KeepTogether="true">
+        <TextObject Name="Text32" Width="34.02" Height="18.9" Border.Lines="All" Fill.Color="42, 82, 118" Text="[Format(&quot;{0:0000}&quot;,[SqlItem.ordem])]" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text33" Left="34.02" Width="412.02" Height="18.9" Border.Lines="Left, Right, Top" CanGrow="true" Text="&lt;u&gt;[SqlItem.tp_material].[Format(&quot;{0:000}&quot;,[SqlItem.cd_grupo])].[Format(&quot;{0:000}&quot;,[SqlItem.cd_subgrupo])].&lt;b&gt;[Format(&quot;{0:00000000}&quot;,[SqlItem.cd_material])]&lt;/b&gt;&lt;/u&gt;&#13;&#10;&lt;b&gt;[SqlItem.ds_material]&lt;/b&gt;" Padding="2, 2, 2, 2" HorzAlign="Justify" VertAlign="Center" Font="Tahoma, 8pt" FirstTabOffset="37.8" LineHeight="16" TextRenderType="HtmlTags"/>
+        <TextObject Name="Text34" Left="446.04" Width="34.02" Height="18.9" Anchor="Top, Bottom, Left" Border.Lines="Left, Right, Top" CanGrow="true" Text="[SqlItem.un_material]" Padding="2, 2, 2, 2" HorzAlign="Center" WordWrap="false" Font="Tahoma, 8pt" FirstTabOffset="37.8"/>
+        <TextObject Name="Text35" Left="480.06" Width="79.38" Height="18.9" Anchor="Top, Bottom, Left" Border.Lines="Left, Right, Top" CanGrow="true" Text="[SqlItem.qtd_requisitada]" Padding="2, 2, 2, 2" Format="Number" Format.UseLocale="true" Format.DecimalDigits="3" HorzAlign="Right" WordWrap="false" Font="Tahoma, 8pt" FirstTabOffset="37.8"/>
+        <TextObject Name="Text36" Left="559.44" Width="79.38" Height="18.9" Anchor="Top, Bottom, Left" Border.Lines="Left, Right, Top" CanGrow="true" Text="[SqlItem.qtd_aprovada]" Padding="2, 2, 2, 2" Format="Number" Format.UseLocale="true" Format.DecimalDigits="3" HorzAlign="Right" WordWrap="false" Font="Tahoma, 8pt" FirstTabOffset="37.8"/>
+        <TextObject Name="Text37" Left="638.82" Width="79.38" Height="18.9" Anchor="Top, Bottom, Left" Border.Lines="Left, Right, Top" CanGrow="true" Text="[SqlItem.qtd_entregue]" Padding="2, 2, 2, 2" Format="Number" Format.UseLocale="true" Format.DecimalDigits="3" HorzAlign="Right" WordWrap="false" Font="Tahoma, 8pt" FirstTabOffset="37.8"/>
+        <ChildBand Name="BndItemDescricaoCompleta" Top="491.49" Width="718.2" Height="18.9" CanGrow="true" BeforePrintEvent="BndItemDescricaoCompleta_BeforePrint" KeepChild="true">
+          <TextObject Name="Text41" Left="34.02" Width="412.02" Height="18.9" Border.Lines="Left, Right" CanGrow="true" Text="&lt;i&gt;&lt;u&gt;DESCRIÇÃO COMPLETA:&lt;/u&gt;&lt;/i&gt; [SqlItem.ds_completa]" Padding="2, 2, 2, 2" HorzAlign="Justify" Font="Tahoma, 8pt" TextRenderType="HtmlTags"/>
+          <LineObject Name="Line3" Left="480.06" Height="18.9" Anchor="Top, Bottom, Left"/>
+          <LineObject Name="Line4" Left="559.44" Height="18.9" Anchor="Top, Bottom, Left"/>
+          <LineObject Name="Line5" Left="638.82" Height="18.9" Anchor="Top, Bottom, Left"/>
+          <LineObject Name="Line6" Left="718.2" Height="18.9" Anchor="Top, Bottom, Left"/>
+          <ChildBand Name="BndItemObs" Top="514.39" Width="718.2" Height="18.9" CanGrow="true" BeforePrintEvent="BndItemObs_BeforePrint" KeepChild="true">
+            <TextObject Name="Text42" Left="34.02" Width="412.02" Height="18.9" Border.Lines="Left, Right" CanGrow="true" Text="&lt;i&gt;&lt;u&gt;OBS:&lt;/u&gt;&lt;/i&gt; [SqlItem.observacao]" Padding="2, 2, 2, 2" HorzAlign="Justify" Font="Tahoma, 8pt" TextRenderType="HtmlTags"/>
+            <LineObject Name="Line7" Left="480.06" Height="18.9" Anchor="Top, Bottom, Left"/>
+            <LineObject Name="Line8" Left="559.44" Height="18.9" Anchor="Top, Bottom, Left"/>
+            <LineObject Name="Line9" Left="638.82" Height="18.9" Anchor="Top, Bottom, Left"/>
+            <LineObject Name="Line10" Left="718.2" Height="18.9" Anchor="Top, Bottom, Left"/>
+          </ChildBand>
+        </ChildBand>
+        <DataHeaderBand Name="BndItemCabecalho" Top="417.34" Width="718.2" Height="47.25">
+          <TextObject Name="Text25" Top="9.45" Width="34.02" Height="37.8" Border.Lines="All" Fill.Color="Gainsboro" Text="ITEM" HorzAlign="Center" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text26" Left="34.02" Top="9.45" Width="412.02" Height="37.8" Border.Lines="All" Fill.Color="Gainsboro" Text="CLASSIFICAÇÃO E DESCRIÇÃO DO MATERIAL" HorzAlign="Center" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text27" Left="446.04" Top="9.45" Width="34.02" Height="37.8" Border.Lines="All" Fill.Color="Gainsboro" Text="UN" HorzAlign="Center" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text28" Left="480.06" Top="9.45" Width="238.14" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="QUANTIDADES" HorzAlign="Center" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text29" Left="480.06" Top="28.35" Width="79.38" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="REQUISITADA" HorzAlign="Center" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text30" Left="559.44" Top="28.35" Width="79.38" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="APROVADA" HorzAlign="Center" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text31" Left="638.82" Top="28.35" Width="79.38" Height="18.9" Border.Lines="All" Fill.Color="Gainsboro" Text="[IIf([SqlRequisicao.id_tp_requisicao] == 1,&quot;ENTREGUE&quot;,&quot;TRANSFERIDA&quot;)]" HorzAlign="Center" VertAlign="Center" WordWrap="false" Font="Tahoma, 8pt"/>
+        </DataHeaderBand>
+        <DataFooterBand Name="BndItemRodape" Top="537.29" Width="718.2" Height="85.05">
+          <TextObject Name="Text38" Top="56.7" Width="219.24" Height="28.35" Border.Lines="Top" Text="REQUISITANTE&#13;&#10;[SqlRequisicao.nome_completo_requisitante]" HorzAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text39" Left="249.48" Top="56.7" Width="219.24" Height="28.35" Border.Lines="Top" Text="APROVADOR&#13;&#10;[SqlRequisicao.nome_completo_aprovador]" HorzAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text40" Left="498.96" Top="56.7" Width="219.24" Height="28.35" Border.Lines="Top" Text="ALMOXARIFE" HorzAlign="Center" Font="Tahoma, 8pt"/>
+          <LineObject Name="Line2" Left="34.02" Width="684.18"/>
+        </DataFooterBand>
+      </DataBand>
+    </DataBand>
+    <inherited Name="BndRodape" Top="626.34">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

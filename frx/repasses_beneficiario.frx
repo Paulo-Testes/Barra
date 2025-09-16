@@ -1,0 +1,307 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="03/11/2024 15:27:46" ReportInfo.CreatorVersion="2024.1.0.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void Cabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      
+      string titulo1 = (string)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (string)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTitulo1.Top;
+      }
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtTituloRelatorio.Top = TxtTitulo2.Top;
+        TxtTitulo2.Top = TxtTitulo1.Top;
+      }
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTitulo2.Top;
+      }
+    }
+ 
+    
+    private void TxtCompetencia_BeforePrint(object sender, EventArgs e)
+    {
+     TxtCompetencia.Visible = !string.IsNullOrWhiteSpace(Convert.ToString(Report.GetParameterValue(&quot;competencia&quot;))); 
+    }
+    
+    private void Filtro_BeforePrint(object sender, EventArgs e)
+    {                                  
+      Filtro.Visible = !string.IsNullOrWhiteSpace(Convert.ToString(Report.GetParameterValue(&quot;filtro&quot;)));
+    }
+   
+    
+
+   
+
+    private void Rodape_BeforePrint(object sender, EventArgs e)
+    {
+      TxtRodape.Text = Convert.ToString(Report.GetColumnValue(&quot;SqlCliente.nome_reduzido&quot;));
+
+      int imprimirUsuario = Convert.ToInt32(Report.GetColumnValue(&quot;SqlModulo.imprimir_usuario&quot;));
+
+      // Replace &lt;Personalizado&gt; with the actual variable or property holding the value
+      long personalizadoValue = Convert.ToInt64(Report.GetParameterValue(&quot;personalizado&quot;));
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + Convert.ToString(Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;));
+      }
+
+      if (personalizadoValue == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizadoValue == 2)
+      {
+        TxtRodape.Text += &quot; | GSR - Construtor de Relatórios&quot;;
+      }
+
+      // Adicionar a data atual
+      TxtRodape.Text += &quot; | &quot; + ((DateTime)Report.GetVariableValue(&quot;Date&quot;));
+
+      string cnpj = Convert.ToString(Report.GetColumnValue(&quot;SqlCliente.cnpj&quot;));
+      string cnpjFormatado = FormatarCnpj(cnpj);
+
+      string cep = Convert.ToString(Report.GetColumnValue(&quot;SqlCliente.cep&quot;));
+      string cepFormatado = FormatarCep(cep);
+
+      // Armazenar o CEP formatado como um parâmetro
+      Report.SetParameterValue(&quot;cep_formatado&quot;, cepFormatado);
+
+      // Armazenar o CNPJ formatado como um parâmetro
+      Report.SetParameterValue(&quot;cnpj_formatado&quot;, cnpjFormatado);
+    }
+    
+    static string FormatarCnpj(string cnpj)
+    {
+      if (cnpj.Length != 14)
+      {
+        throw new ArgumentException(&quot;O CNPJ deve conter 14 dígitos.&quot;);
+      }
+
+      return cnpj.Substring(0, 2) + &quot;.&quot; + cnpj.Substring(2, 3) + &quot;.&quot; + cnpj.Substring(5, 3) + &quot;/&quot; + cnpj.Substring(8, 4) + &quot;-&quot; + cnpj.Substring(12);
+    }
+    static string FormatarCep(string cep)
+    {                                                                                                                                           
+      if (cep.Length != 8)
+      {
+        throw new ArgumentException(&quot;O CEP deve conter 8 dígitos.&quot;);
+      }
+
+      return cep.Substring(0, 5) + &quot;-&quot; + cep.Substring(5);
+    }
+                                                         
+  }
+}
+</ScriptText>
+  <Styles>
+    <Style Name="[Row#] % 2 == 0" Fill.Color="Silver" Font="Arial, 10pt" ApplyBorder="false" ApplyTextFill="false" ApplyFont="false"/>
+  </Styles>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqWYJsyEUH74HVh6HkoLwgulMVhxLR9gEt7ZQPPoY2cNAJAFKSOX9m1ZBML9brCf83hVidy5HCLqbNaO+7aS7ATitU8dbJHUQwlLnVoULy0F8X/8lXppUJDjPU3E0yfGqx">
+      <TableDataSource Name="Table" Alias="SqlCliente" DataType="System.Int32" Enabled="true" SelectCommand="SELECT TRIM(A.NOME)           AS NOME                       &#13;&#10;     , TRIM(A.NOME_REDUZIDO)  AS NOME_REDUZIDO       &#13;&#10;     , TRIM(A.ENDERECO)       AS ENDERECO       &#13;&#10;     , TRIM(A.BAIRRO)         AS BAIRRO       &#13;&#10;     , A.CODIGO_MUNICIPIO  &#13;&#10;     , TRIM(B.NOME_MUNICIPIO) AS NOME_MUNICIPIO&#13;&#10;     , TRIM(B.UF)             AS UF       &#13;&#10;     , TRIM(A.CEP)            AS CEP       &#13;&#10;     , TRIM(A.TELEFONE)       AS TELEFONE       &#13;&#10;     , TRIM(A.FAX)            AS FAX       &#13;&#10;     , TRIM(A.EMAIL)          AS EMAIL       &#13;&#10;     , TRIM(A.SITE)           AS SITE       &#13;&#10;     , TRIM(A.CGC)            AS CNPJ                                      &#13;&#10;     , TRIM(A.SLOGAN)         AS SLOGAN       &#13;&#10;     , A.LOGOTIPO&#13;&#10;  FROM AAC_CLIENTES A&#13;&#10;       LEFT JOIN AAC_MUNICIPIOS B ON B.CODIGO_MUNICIPIO = A.CODIGO_MUNICIPIO&#13;&#10;  limit 1">
+        <Column Name="nome" DataType="System.String"/>
+        <Column Name="nome_reduzido" DataType="System.String"/>
+        <Column Name="endereco" DataType="System.String"/>
+        <Column Name="bairro" DataType="System.String"/>
+        <Column Name="codigo_municipio" DataType="System.String"/>
+        <Column Name="nome_municipio" DataType="System.String"/>
+        <Column Name="uf" DataType="System.String"/>
+        <Column Name="cep" DataType="System.String"/>
+        <Column Name="telefone" DataType="System.String"/>
+        <Column Name="fax" DataType="System.String"/>
+        <Column Name="email" DataType="System.String"/>
+        <Column Name="site" DataType="System.String"/>
+        <Column Name="cnpj" DataType="System.String"/>
+        <Column Name="slogan" DataType="System.String"/>
+        <Column Name="logotipo" DataType="System.Byte[]" BindableControl="Picture"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlModulo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.ID_MODULO&#13;&#10;     , A.DS_MODULO&#13;&#10;     , A.SIGLA_MODULO&#13;&#10;     , A.TITULO_1&#13;&#10;     , A.TITULO_2&#13;&#10;     , A.SERIE&#13;&#10;     , A.VERSAO&#13;&#10;&#13;&#10;     , CAST(CASE WHEN B.IMAGEM IS NULL THEN 0 ELSE 1 END AS SMALLINT) AS USA_IMAGEM&#13;&#10;     , B.IMAGEM&#13;&#10;&#13;&#10;     , COALESCE(C.IMPRIMIR_DATA_HORA_RODAPE, 0) AS IMPRIMIR_DATA_HORA_RODAPE&#13;&#10;     , COALESCE(CASE WHEN C.IMPRIMIR_DATA = 2 THEN D.IMPRIMIR_DATA ELSE C.IMPRIMIR_DATA END, 1) AS IMPRIMIR_DATA&#13;&#10;     , COALESCE(CASE WHEN C.IMPRIMIR_HORA = 2 THEN D.IMPRIMIR_HORA ELSE C.IMPRIMIR_HORA END, 1) AS IMPRIMIR_HORA&#13;&#10;     , COALESCE(CASE WHEN C.IMPRIMIR_USUARIO = 2 THEN D.IMPRIMIR_USUARIO ELSE C.IMPRIMIR_USUARIO END, 1) AS IMPRIMIR_USUARIO&#13;&#10;&#13;&#10;  FROM SIS_MODULO A&#13;&#10;       LEFT JOIN SIS_ENTIDADE             B ON B.ID_ENTIDADE = :ID_ENTIDADE&#13;&#10;       LEFT JOIN SIS_MODULO_CONFIGURACAO  C ON C.ID_MODULO   = A.ID_MODULO&#13;&#10;       LEFT JOIN SIS_USUARIO_CONFIGURACAO D ON D.ID_MODULO   = A.ID_MODULO&#13;&#10;                                           AND D.ID_USUARIO  = :ID_USUARIO&#13;&#10; WHERE A.ID_MODULO = :ID_MODULO&#13;&#10;  limit 1">
+        <Column Name="id_modulo" DataType="System.Int32"/>
+        <Column Name="ds_modulo" DataType="System.String"/>
+        <Column Name="sigla_modulo" DataType="System.String"/>
+        <Column Name="titulo_1" DataType="System.String"/>
+        <Column Name="titulo_2" DataType="System.String"/>
+        <Column Name="serie" DataType="System.String"/>
+        <Column Name="versao" DataType="System.String"/>
+        <Column Name="usa_imagem" DataType="System.Int16"/>
+        <Column Name="imagem" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="imprimir_data_hora_rodape" DataType="System.Int32"/>
+        <Column Name="imprimir_data" DataType="System.Int32"/>
+        <Column Name="imprimir_hora" DataType="System.Int32"/>
+        <Column Name="imprimir_usuario" DataType="System.Int32"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[id_entidade]"/>
+        <CommandParameter Name="ID_USUARIO" DataType="9" Expression="[id_usuario]"/>
+        <CommandParameter Name="ID_MODULO" DataType="9" Expression="[id_modulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlUsuario" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.ID_USUARIO&#13;&#10;     , TRIM(A.DS_USUARIO) AS DS_USUARIO&#13;&#10;     , A.NOME_USUARIO&#13;&#10;     , A.EMAIL&#13;&#10;  FROM SIS_USUARIO A&#13;&#10; WHERE A.ID_USUARIO = :ID_USUARIO">
+        <Column Name="id_usuario" DataType="System.Int32"/>
+        <Column Name="ds_usuario" DataType="System.String"/>
+        <Column Name="nome_usuario" DataType="System.String"/>
+        <Column Name="email" DataType="System.String"/>
+        <CommandParameter Name="ID_USUARIO" DataType="9" Expression="[id_usuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlRepasses" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;	repasses_sub_query.id_contrato as id_convenio,&#13;&#10;	repasses_sub_query.nr_contrato,&#13;&#10;	repasses_sub_query.ano_contrato,&#13;&#10;	repasses_sub_query.id_st_contrato,&#13;&#10;	repasses_sub_query.ds_st_contrato as ds_st_convenio,&#13;&#10;	repasses_sub_query.ds_tp_classificacao as classificacao,&#13;&#10;	coalesce(repasses_sub_query.ds_area_atuacao, 'Não informada') as area_atuacao,&#13;&#10;	repasses_sub_query.nr_processo,&#13;&#10;	repasses_sub_query.ano_processo,&#13;&#10;	repasses_sub_query.dt_repasse,&#13;&#10;	repasses_sub_query.vl_total,&#13;&#10;	repasses_sub_query.nr_empenho,&#13;&#10;	repasses_sub_query.ano_empenho,&#13;&#10;	repasses_sub_query.nr_parcela,&#13;&#10;	repasses_sub_query.id_banco,&#13;&#10;	repasses_sub_query.cd_banco,&#13;&#10;	repasses_sub_query.ds_banco,&#13;&#10;	repasses_sub_query.cd_agencia,&#13;&#10;	repasses_sub_query.dv_agencia,&#13;&#10;	repasses_sub_query.cd_conta,&#13;&#10;	repasses_sub_query.dv_conta,&#13;&#10;	repasses_sub_query.nome_razao,&#13;&#10;	repasses_sub_query.documento_formatado,&#13;&#10;	repasses_sub_query.id_contrato_execucao as id_repasse,&#13;&#10;	coalesce(sum(query_vl_prestado_conta.valor), 0) as vl_prestado_conta&#13;&#10;from&#13;&#10;	(&#13;&#10;		select&#13;&#10;			gc.id_contrato,&#13;&#10;			gc.nr_contrato,&#13;&#10;			gc.ano_contrato,&#13;&#10;			gc.id_st_contrato,&#13;&#10;			gc.nr_proposta,&#13;&#10;            gc.ano_proposta,&#13;&#10;			gc.nr_processo,&#13;&#10;			COALESCE(NULLIF(CAST(gc.ano_proposta AS VARCHAR), ''), ' ') AS ano_processo,    &#13;&#10;			gc.ds_unidade,&#13;&#10;			stc.ds_st_contrato,&#13;&#10;			tpc.ds_tp_classificacao,&#13;&#10;			gaa.ds_area_atuacao,&#13;&#10;			gce.id_contrato_execucao,&#13;&#10;			gce.dt_execucao as dt_repasse,&#13;&#10;			gce.vl_execucao + coalesce(gce.vl_estornado, 0) as vl_total,&#13;&#10;			gce.nr_empenho,&#13;&#10;			gce.ano_empenho,&#13;&#10;			gce.nr_parcela,&#13;&#10;			gce.id_banco,&#13;&#10;			gce.cd_agencia,&#13;&#10;			gce.dv_agencia,&#13;&#10;			gce.cd_conta,&#13;&#10;			gce.dv_conta,&#13;&#10;			sb.cd_banco,&#13;&#10;			sb.ds_banco,&#13;&#10;			sp.nome_razao,&#13;&#10;			sp.documento_formatado&#13;&#10;		from&#13;&#10;			gcc_contrato gc&#13;&#10;			left outer join gcc_st_contrato stc on stc.id_st_contrato = gc.id_st_contrato&#13;&#10;			left outer join gcc_tp_classificacao tpc on tpc.id_tp_classificacao = gc.id_tp_classificacao&#13;&#10;			left outer join gcc_area_atuacao gaa on	gaa.id_area_atuacao = gc.id_area_atuacao&#13;&#10;			left outer join gcc_contrato_execucao gce on gce.id_contrato = gc.id_contrato&#13;&#10;			left outer join sis_banco sb on sb.id_banco = gce.id_banco&#13;&#10;			left outer join sis_pessoa sp on sp.id_pessoa = gc.id_pessoa&#13;&#10;		where&#13;&#10;			gc.id_tp_contrato = 2&#13;&#10;			and gc.id_tp_categoria = 2&#13;&#10;			and gce.id_tp_fase_execucao = 3&#13;&#10;			and gce.estorno = 0&#13;&#10;			and gc.id_entidade = :id_entidade&#13;&#10;			and sp.id_pessoa = :id_beneficiario&#13;&#10;			and gce.dt_execucao &gt;= :data_inicial&#13;&#10;			and gce.dt_execucao &lt;= :data_final&#13;&#10;	) repasses_sub_query&#13;&#10;	left outer join (&#13;&#10;		select&#13;&#10;			pexec.id_convenio_execucao,&#13;&#10;			pexec.valor as valor,&#13;&#10;			(&#13;&#10;				select&#13;&#10;					mov.id_st_convenio_prestacao&#13;&#10;				from&#13;&#10;					gcc_convenio_prestacao_mov mov&#13;&#10;				where&#13;&#10;					mov.id_convenio_prestacao = pexec.id_convenio_prestacao&#13;&#10;				order by&#13;&#10;					mov.dt_movimento desc,&#13;&#10;					mov.dt_hr_sistema desc,&#13;&#10;					mov.id_convenio_prestacao_mov desc&#13;&#10;				limit 1&#13;&#10;			) id_st_convenio_prestacao&#13;&#10;		from&#13;&#10;			gcc_convenio_prestacao_exec pexec&#13;&#10;	) query_vl_prestado_conta on&#13;&#10;	query_vl_prestado_conta.id_convenio_execucao = repasses_sub_query.id_contrato_execucao&#13;&#10;	and query_vl_prestado_conta.id_st_convenio_prestacao in (3, 4)&#13;&#10;group by&#13;&#10;	repasses_sub_query.id_contrato,&#13;&#10;	repasses_sub_query.nr_contrato,&#13;&#10;	repasses_sub_query.ano_contrato,&#13;&#10;	repasses_sub_query.id_st_contrato,&#13;&#10;	repasses_sub_query.ds_st_contrato,&#13;&#10;	repasses_sub_query.ds_tp_classificacao,&#13;&#10;	repasses_sub_query.ds_area_atuacao,&#13;&#10;	repasses_sub_query.nr_processo,&#13;&#10;	repasses_sub_query.ano_processo,&#13;&#10;	repasses_sub_query.dt_repasse,&#13;&#10;	repasses_sub_query.vl_total,&#13;&#10;	repasses_sub_query.nr_empenho,&#13;&#10;	repasses_sub_query.ano_empenho,&#13;&#10;	repasses_sub_query.nr_parcela,&#13;&#10;	repasses_sub_query.id_banco,&#13;&#10;	repasses_sub_query.cd_banco,&#13;&#10;	repasses_sub_query.ds_banco,&#13;&#10;	repasses_sub_query.cd_agencia,&#13;&#10;	repasses_sub_query.dv_agencia,&#13;&#10;	repasses_sub_query.cd_conta,&#13;&#10;	repasses_sub_query.dv_conta,&#13;&#10;	repasses_sub_query.nome_razao,&#13;&#10;	repasses_sub_query.documento_formatado,&#13;&#10;	repasses_sub_query.id_contrato_execucao&#13;&#10;order by&#13;&#10;	repasses_sub_query.dt_repasse desc,&#13;&#10;	repasses_sub_query.nr_contrato,&#13;&#10;	repasses_sub_query.ano_contrato,&#13;&#10;	repasses_sub_query.nr_empenho,&#13;&#10;	repasses_sub_query.ano_empenho,&#13;&#10;	repasses_sub_query.nr_parcela">
+        <Column Name="id_convenio" DataType="System.Int32"/>
+        <Column Name="nr_contrato" DataType="System.String"/>
+        <Column Name="ano_contrato" DataType="System.Int16"/>
+        <Column Name="id_st_contrato" DataType="System.Int32"/>
+        <Column Name="ds_st_convenio" DataType="System.String"/>
+        <Column Name="classificacao" DataType="System.String"/>
+        <Column Name="area_atuacao" DataType="System.String"/>
+        <Column Name="nr_processo" DataType="System.String"/>
+        <Column Name="ano_processo" DataType="System.String"/>
+        <Column Name="dt_repasse" DataType="System.DateTime"/>
+        <Column Name="vl_total" DataType="System.Double"/>
+        <Column Name="nr_empenho" DataType="System.Int32"/>
+        <Column Name="ano_empenho" DataType="System.Int32"/>
+        <Column Name="nr_parcela" DataType="System.Int32"/>
+        <Column Name="id_banco" DataType="System.Int32"/>
+        <Column Name="cd_banco" DataType="System.String"/>
+        <Column Name="ds_banco" DataType="System.String"/>
+        <Column Name="cd_agencia" DataType="System.String"/>
+        <Column Name="dv_agencia" DataType="System.String"/>
+        <Column Name="cd_conta" DataType="System.String"/>
+        <Column Name="dv_conta" DataType="System.String"/>
+        <Column Name="nome_razao" DataType="System.String"/>
+        <Column Name="documento_formatado" DataType="System.String"/>
+        <Column Name="id_repasse" DataType="System.Int32"/>
+        <Column Name="vl_prestado_conta" DataType="System.Double"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[id_entidade]"/>
+        <CommandParameter Name="id_beneficiario" DataType="9" Expression="[id_beneficiario]"/>
+        <CommandParameter Name="data_inicial" DataType="7" Expression="[data_inicial]"/>
+        <CommandParameter Name="data_final" DataType="7" Expression="[data_final]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="id_relatorio_filtro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="id_entidade" DataType="System.Int32" Expression="2"/>
+    <Parameter Name="personalizado" DataType="System.Int32" Expression="0"/>
+    <Parameter Name="id_usuario" DataType="System.Int32" Expression="20"/>
+    <Parameter Name="id_modulo" DataType="System.Int32" Expression="-1"/>
+    <Parameter Name="formato" DataType="System.String" Expression="' '"/>
+    <Parameter Name="codigo_relatorio" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="cnpj_formatado" DataType="System.String" AsString="46.482.840/0001-39"/>
+    <Parameter Name="cep_formatado" DataType="System.String" AsString="11660-900"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="nome_relatorio" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="competencia" DataType="System.DateTime" AsString=""/>
+    <Parameter Name="id_beneficiario" DataType="System.Int32" Expression="0"/>
+    <Parameter Name="data_inicial" DataType="System.String" Expression="&quot;01/01/2023&quot;"/>
+    <Parameter Name="data_final" DataType="System.String" Expression="&quot;25/01/2023&quot;"/>
+  </Dictionary>
+  <ReportPage Name="Page1" Watermark.Font="Arial, 60pt">
+    <PageHeaderBand Name="Cabecalho" Width="718.2" Height="105.84" Border.Lines="Bottom" BeforePrintEvent="Cabecalho_BeforePrint">
+      <PictureObject Name="Brasao" Top="9.45" Width="75.6" Height="75.6" DataColumn="SqlCliente.logotipo"/>
+      <TextObject Name="TxtCliente" Left="75.05" Top="9.45" Width="529.2" Height="18.9" Text="[SqlCliente.nome]" Font="Arial, 10pt, style=Bold"/>
+      <PictureObject Name="Logo" Left="604.8" Top="9.45" Width="113.4" Height="75.6" DataColumn="SqlCliente.slogan"/>
+      <TextObject Name="TxtTitulo1" Left="75.05" Top="28.35" Width="529.2" Height="18.9" Text="[SqlModulo.titulo_1]" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="TxtTitulo2" Left="75.05" Top="47.25" Width="529.2" Height="18.9" Text="[SqlModulo.titulo_2]" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="TxtTituloRelatorio" Left="75.05" Top="66.15" Width="529.2" Height="18.9" Text="[nome_relatorio]" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="TxtCompetencia" Left="576.45" Top="91.5" Width="141.75" Height="9.45" BeforePrintEvent="TxtCompetencia_BeforePrint" Text="Competência : [competencia]" HorzAlign="Right" Font="Arial, 7pt, style=Bold"/>
+    </PageHeaderBand>
+    <DataBand Name="Filtro" Top="109.84" Width="718.2" Height="18.9" BeforePrintEvent="Filtro_BeforePrint">
+      <TextObject Name="TxtFiltro" Top="3.78" Width="718.2" Height="11.34" Fill.Color="129, 245, 230, 207" Cursor="IBeam" Text="[filtro]" AutoShrink="FontSize" Font="Arial, 7pt, style=Bold"/>
+    </DataBand>
+    <DataBand Name="Data1" Top="189.66" Width="718.2" Height="340.2" CanGrow="true" KeepTogether="true">
+      <MSChartObject Name="MSChart1" Left="66.15" Top="9.45" Width="585.9" Height="311.85" DataSource="Table3" AutoSeriesColumn="[SqlRepasses.area_atuacao]" AutoSeriesColor="[SqlRepasses.vl_total]" ChartData="PENoYXJ0IEJvcmRlcmxpbmVDb2xvcj0iRGFya0dyYXkiIEJvcmRlcmxpbmVXaWR0aD0iMiIgQm9yZGVybGluZURhc2hTdHlsZT0iU29saWQiPg0KICA8U2VyaWVzPg0KICAgIDxTZXJpZXMgTmFtZT0iU2VyaWVzMSIgTGVnZW5kPSJEZWZhdWx0IiBYVmFsdWVUeXBlPSJTdHJpbmciIFlWYWx1ZVR5cGU9IkRvdWJsZSIgQ2hhcnRUeXBlPSJQaWUiIENoYXJ0QXJlYT0iRGVmYXVsdCI+DQogICAgICA8UG9pbnRzPg0KICAgICAgICA8RGF0YVBvaW50IFlWYWx1ZXM9IjEiIEF4aXNMYWJlbD0iQSIgLz4NCiAgICAgICAgPERhdGFQb2ludCBZVmFsdWVzPSIzIiBBeGlzTGFiZWw9IkIiIC8+DQogICAgICAgIDxEYXRhUG9pbnQgWVZhbHVlcz0iMiIgQXhpc0xhYmVsPSJDIiAvPg0KICAgICAgICA8RGF0YVBvaW50IFlWYWx1ZXM9IjQiIEF4aXNMYWJlbD0iRCIgLz4NCiAgICAgIDwvUG9pbnRzPg0KICAgIDwvU2VyaWVzPg0KICA8L1Nlcmllcz4NCiAgPExlZ2VuZHM+DQogICAgPExlZ2VuZCBOYW1lPSJEZWZhdWx0IiBBbGlnbm1lbnQ9IkNlbnRlciIgRG9ja2luZz0iQm90dG9tIj4NCiAgICA8L0xlZ2VuZD4NCiAgPC9MZWdlbmRzPg0KICA8VGl0bGVzPg0KICAgIDxUaXRsZSBOYW1lPSJUaXRsZTEiIFZpc2libGU9IkZhbHNlIiBUZXh0PSJSZXBhc3NlcyBwb3Igw6FyZWEgZGUgYXR1YcOnw6NvIj4NCiAgICA8L1RpdGxlPg0KICA8L1RpdGxlcz4NCiAgPENoYXJ0QXJlYXM+DQogICAgPENoYXJ0QXJlYSBOYW1lPSJEZWZhdWx0Ij4NCiAgICAgIDxBeGlzWT4NCiAgICAgICAgPE1ham9yR3JpZCBMaW5lQ29sb3I9IjY0LCA2NCwgNjQsIDY0IiAvPg0KICAgICAgPC9BeGlzWT4NCiAgICAgIDxBeGlzWD4NCiAgICAgICAgPE1ham9yR3JpZCBMaW5lQ29sb3I9IjY0LCA2NCwgNjQsIDY0IiAvPg0KICAgICAgPC9BeGlzWD4NCiAgICAgIDxBeGlzWDI+DQogICAgICAgIDxNYWpvckdyaWQgTGluZUNvbG9yPSI2NCwgNjQsIDY0LCA2NCIgLz4NCiAgICAgIDwvQXhpc1gyPg0KICAgICAgPEF4aXNZMj4NCiAgICAgICAgPE1ham9yR3JpZCBMaW5lQ29sb3I9IjY0LCA2NCwgNjQsIDY0IiAvPg0KICAgICAgPC9BeGlzWTI+DQogICAgPC9DaGFydEFyZWE+DQogIDwvQ2hhcnRBcmVhcz4NCiAgPEJvcmRlclNraW4gU2tpblN0eWxlPSJFbWJvc3MiIC8+DQo8L0NoYXJ0Pg==">
+        <MSChartSeries Name="Series1" XValue="[SqlRepasses.area_atuacao]" YValue1="[SqlRepasses.vl_total]"/>
+      </MSChartObject>
+      <DataHeaderBand Name="DataHeader1" Top="132.74" Width="718.2" Height="52.92">
+        <TextObject Name="Text5" Top="3.78" Width="721.98" Height="24.57" Fill.Color="42, 82, 118" Text="Beneficiário" VertAlign="Center" Font="Arial, 10pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text6" Top="33.35" Width="718.2" Height="18.9" Text="[SqlRepasses.nome_razao] [SqlRepasses.documento_formatado]" Font="Arial, 10pt">
+          <Formats>
+            <GeneralFormat/>
+            <GeneralFormat/>
+          </Formats>
+        </TextObject>
+      </DataHeaderBand>
+      <DataFooterBand Name="DataFooter1" Top="533.86" Width="718.2" Height="113.4" Border.Lines="All">
+        <TextObject Name="Memo11" Left="5.45" Top="18.9" Width="136.06" Height="18.9" Text="Intrumento de Parceria" Padding="2, 1, 2, 1" Font="Arial, 8pt, style=Bold"/>
+        <TextObject Name="Memo12" Left="5.45" Top="35.23" Width="136.06" Height="18.9" CanGrow="true" CanShrink="true" Text="[SqlRepasses.nr_contrato] /[SqlRepasses.ano_contrato]" Padding="2, 1, 2, 1" Font="Arial, 8pt">
+          <Formats>
+            <GeneralFormat/>
+            <GeneralFormat/>
+          </Formats>
+        </TextObject>
+        <TextObject Name="Memo13" Left="152.85" Top="18.9" Width="83.15" Height="18.9" Text="Classificação" Padding="2, 1, 2, 1" Font="Arial, 8pt, style=Bold"/>
+        <TextObject Name="Memo14" Left="152.85" Top="38.23" Width="83.15" Height="18.9" CanGrow="true" CanShrink="true" Text="[SqlRepasses.classificacao]" Padding="2, 1, 2, 1" Font="Arial, 8pt"/>
+        <TextObject Name="Memo15" Left="247.34" Top="18.9" Width="83.15" Height="18.9" Text="Chamamento" Padding="2, 1, 2, 1" Font="Arial, 8pt, style=Bold"/>
+        <TextObject Name="Memo16" Left="247.34" Top="38.23" Width="83.15" Height="18.9" CanGrow="true" CanShrink="true" Text="[SqlRepasses.nr_processo] -[SqlRepasses.ano_processo]" Padding="2, 1, 2, 1" Font="Arial, 8pt">
+          <Formats>
+            <GeneralFormat/>
+            <GeneralFormat/>
+          </Formats>
+        </TextObject>
+        <TextObject Name="Memo17" Left="341.83" Top="18.9" Width="96.38" Height="18.9" Text="Área de atuação" Padding="2, 1, 2, 1" Font="Arial, 8pt, style=Bold"/>
+        <TextObject Name="Memo18" Left="341.83" Top="38.23" Width="96.38" Height="18.9" CanGrow="true" CanShrink="true" Text="[SqlRepasses.area_atuacao]" Padding="2, 1, 2, 1" Font="Arial, 8pt"/>
+        <TextObject Name="Memo19" Left="449.54" Top="18.9" Width="96.38" Height="18.9" Text="Conta creditada" Padding="2, 1, 2, 1" Font="Arial, 8pt, style=Bold"/>
+        <TextObject Name="Memo20" Left="449.54" Top="38.23" Width="96.38" Height="18.9" CanGrow="true" CanShrink="true" Text="[SqlRepasses.cd_banco] -[SqlRepasses.ds_banco] [SqlRepasses.cd_agencia] -[SqlRepasses.dv_agencia] /[SqlRepasses.cd_conta] -[SqlRepasses.dv_conta]" Padding="2, 1, 2, 1" Font="Arial, 8pt">
+          <Formats>
+            <GeneralFormat/>
+            <GeneralFormat/>
+            <GeneralFormat/>
+            <GeneralFormat/>
+            <GeneralFormat/>
+            <GeneralFormat/>
+          </Formats>
+        </TextObject>
+        <TextObject Name="Memo25" Left="558.26" Top="18.9" Width="56.69" Height="18.9" Text="Data" Padding="2, 1, 2, 1" Font="Arial, 8pt, style=Bold"/>
+        <TextObject Name="Memo26" Left="558.26" Top="38.23" Width="66.14" Height="18.9" CanGrow="true" CanShrink="true" Text="[SqlRepasses.dt_repasse]" Padding="2, 1, 2, 1" Format="Date" Format.Format="d" Font="Arial, 8pt"/>
+        <TextObject Name="Memo27" Left="631.29" Top="18.9" Width="83.15" Height="18.9" Text="Empenho" Padding="2, 1, 2, 1" Font="Arial, 8pt, style=Bold"/>
+        <TextObject Name="Memo28" Left="631.29" Top="38.23" Width="83.15" Height="18.9" CanGrow="true" CanShrink="true" Text="[SqlRepasses.nr_empenho] /[SqlRepasses.ano_empenho]" Padding="2, 1, 2, 1" Font="Arial, 8pt">
+          <Formats>
+            <GeneralFormat/>
+            <GeneralFormat/>
+          </Formats>
+        </TextObject>
+        <TextObject Name="Memo29" Left="5.45" Top="68.43" Width="136.06" Height="18.9" Text="Valor do Repasse" Padding="2, 1, 2, 1" Font="Arial, 8pt, style=Bold"/>
+        <TextObject Name="Memo30" Left="5.45" Top="81.87" Width="98.27" Height="18.9" CanGrow="true" CanShrink="true" Text="[SqlRepasses.vl_total]" Padding="2, 1, 2, 1" Font="Arial, 8pt"/>
+        <TextObject Name="Memo31" Left="154.36" Top="68.43" Width="136.06" Height="18.9" Text="Valor prestado conta" Padding="2, 1, 2, 1" Font="Arial, 8pt, style=Bold"/>
+        <TextObject Name="Memo32" Left="154.36" Top="81.87" Width="117.17" Height="18.9" CanGrow="true" CanShrink="true" Text="[SqlRepasses.vl_prestado_conta]&#13;&#10;" Padding="2, 1, 2, 1" Font="Arial, 8pt"/>
+        <TextObject Name="Memo33" Left="342.76" Top="68.43" Width="211.65" Height="18.9" Text="Valor pendente de prestação de conta" Padding="2, 1, 2, 1" Font="Arial, 8pt, style=Bold"/>
+        <TextObject Name="Memo34" Left="342.76" Top="81.87" Width="207.87" Height="18.9" CanGrow="true" CanShrink="true" Text="[SqlRepasses.vl_total]" Padding="2, 1, 2, 1" Font="Arial, 8pt"/>
+      </DataFooterBand>
+    </DataBand>
+    <PageFooterBand Name="Rodape" Top="651.26" Width="718.2" Height="26.56" Border.Lines="Top" BeforePrintEvent="Rodape_BeforePrint">
+      <TextObject Name="TxtRodape" Width="614.25" Height="11.34" Text="TxtRodape" Font="Arial, 7pt"/>
+      <TextObject Name="TxtPaginacao" Left="614.4" Width="103.95" Height="11.34" Text="Página [Page#] de [TotalPages#]" HorzAlign="Right" Font="Arial, 7pt">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <TextObject Name="Text3" Top="15.22" Width="718.2" Height="11.34" Text="[SqlCliente.endereco] - [SqlCliente.bairro] - CEP: [cep_formatado] - [SqlCliente.nome_reduzido] - [SqlCliente.uf] | Tel:[SqlCliente.telefone]  | CNPJ: [cnpj_formatado]" Font="Arial, 7pt">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+    </PageFooterBand>
+  </ReportPage>
+</Report>

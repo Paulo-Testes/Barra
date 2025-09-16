@@ -1,0 +1,410 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="..\..\..\..\..\..\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/26/2025 16:19:44" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+ 
+    //========================================================================================================   
+    
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+ 
+    //========================================================================================================   
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }                  
+
+    //========================================================================================================   
+    
+    private void GrhContaEstoque_BeforePrint(object sender, EventArgs e)
+    {
+      int agrupar = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.agrupar&quot;));   
+      
+      GrhContaEstoque.Visible = agrupar == 1;
+    }
+                           
+    //========================================================================================================   
+   
+    private void GroupHeader2_BeforePrint(object sender, EventArgs e)
+    {
+      int agrupar = Convert.ToInt32(Report.GetColumnValue(&quot;SqlPrincipal.agrupar&quot;));
+      string tp00 = Report.GetColumnValue(&quot;SqlPrincipal.TP_00&quot;).ToString();
+
+      if (agrupar == 0)
+      {
+        if (tp00 == &quot;01&quot;)
+        {
+          GroupHeader2.Fill = ReportSummary1.Fill;
+          Text3.Visible = true;
+        }
+        else
+        {
+          GroupHeader2.Fill = GroupFooter1.Fill;
+          Text3.Visible = false;
+        }
+      }
+      else
+      {
+
+        if (tp00 == &quot;01&quot;)
+        {
+          Text3.Visible = true;
+        }
+        else
+        {
+          Text3.Visible = false;
+        }
+      }
+    }                          
+        
+    //======================================================================================================== 
+    
+
+    private void Data1_BeforePrint(object sender, EventArgs e)
+    {
+      // Deixa o Memo visível ou não, conforme TP_00
+      Text5.Visible = ((String)Report.GetColumnValue(&quot;SqlPrincipal.tp_00&quot;)).ToString() != &quot;01&quot;;
+
+      // Se TP_01 = 'CONSUMO', copia o estilo de Text2
+      if (((String)Report.GetColumnValue(&quot;SqlPrincipal.tp_01&quot;)).ToString() == &quot;CONSUMO&quot;)
+      {
+        Text4.Font = Text2.Font;
+      }
+      else
+      {
+        Text4.Font = Text5.Font;
+      }
+    }
+    
+    //========================================================================================================    
+
+    private void GroupFooter2_BeforePrint(object sender, EventArgs e)
+    {
+      GroupFooter2.Visible = ((String)Report.GetColumnValue(&quot;SqlPrincipal.tp_00&quot;)).ToString() !=&quot;01&quot;; 
+    }
+    
+    //========================================================================================================    
+    
+    private void GroupFooter1_BeforePrint(object sender, EventArgs e)
+    {
+      GroupFooter1.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.agrupar&quot;)).ToString() ==&quot;1&quot;;
+    }
+    
+    //========================================================================================================     
+    
+    private void ReportSummary1_BeforePrint(object sender, EventArgs e)
+    {
+      ReportSummary1.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.agrupar&quot;)).ToString() ==&quot;0&quot;;  
+    }  
+  
+    //=========================================================================================================  
+
+    private void _StartReport(object sender, EventArgs e)
+    {
+      // Referência ao próprio relatório
+      Report report = Report;
+    
+      string JOIN_API_CONTA_CONTABIL     = &quot;LEFT JOIN API_CONTA_CONTABIL BBB ON 1 = :AGRUPAR AND BBB.CP_ANO = :CP_ANO AND SUBSTRING(BBB.CD_CONTA_CONTABIL FROM 1 FOR 15) = AAA.CD_CONTA_CONTABIL_ESTOQUE&quot;;
+     
+      string DS_CONTA_CONTABIL_API       = &quot;, BBB.DS_CONTA_CONTABIL AS DS_CONTA_CONTABIL_ESTOQUE&quot;; 
+     
+      string DS_CONTA_CONTABIL           = &quot;, CAST(NULL AS VARCHAR(250)) AS DS_CONTA_CONTABIL_ESTOQUE&quot;;
+      
+      string JOIN_API_CONTA_CONTABIL_DET = &quot;LEFT JOIN API_CONTA_CONTABIL B2 ON B2.CP_ANO = :CP_ANO AND SUBSTRING(B2.CD_CONTA_CONTABIL FROM 1 FOR 15) = A2.CD_CONTA_CONTABIL_CONSUMO&quot;;
+     
+      string DS_CONTA_CONTABIL_DET_API   = &quot;, B2.DS_CONTA_CONTABIL AS DS_CONTA_CONTABIL_CONSUMO&quot;;
+      
+      string DS_CONTA_CONTABIL_DET       = &quot;, CAST(NULL AS VARCHAR(250)) AS DS_CONTA_CONTABIL_CONSUMO&quot;; 
+      int    Contabil                       =((Int32)Report.GetParameterValue(&quot;ExibirDsContaContabil&quot;)); 
+      
+      // Acessa a fonte de dados chamada &quot;SqlPrincipal&quot;
+      TableDataSource data_principal = report.GetDataSource(&quot;SqlPrincipal&quot;) as TableDataSource;
+      TableDataSource data_consumo = report.GetDataSource(&quot;SqlDetalheConsumo&quot;) as TableDataSource;
+
+      // Faz o replace para pesquisar um nome específico.
+      if (Contabil == 1) 
+      {  
+        data_principal.SelectCommand = data_principal.SelectCommand.Replace(&quot;/*JOIN_API_CONTA_CONTABIL*/&quot;, JOIN_API_CONTA_CONTABIL);
+        data_principal.SelectCommand = data_principal.SelectCommand.Replace(&quot;, '' AS DS_CONTA_CONTABIL_ESTOQUE&quot;, DS_CONTA_CONTABIL_API);
+        
+        data_consumo.SelectCommand = data_consumo.SelectCommand.Replace(&quot;/*JOIN_API_CONTA_CONTABIL*/&quot;, JOIN_API_CONTA_CONTABIL_DET);
+        data_consumo.SelectCommand = data_consumo.SelectCommand.Replace(&quot;, '' AS DS_CONTA_CONTABIL_CONSUMO&quot;, DS_CONTA_CONTABIL_DET_API);
+      }
+      else
+      {
+        data_principal.SelectCommand = data_principal.SelectCommand.Replace(&quot;/*JOIN_API_CONTA_CONTABIL*/&quot;,&quot;&quot;);
+        data_principal.SelectCommand = data_principal.SelectCommand.Replace(&quot;, '' AS DS_CONTA_CONTABIL_ESTOQUE&quot;, DS_CONTA_CONTABIL); 
+        
+        data_principal.SelectCommand = data_principal.SelectCommand.Replace(&quot;/*JOIN_API_CONTA_CONTABIL*/&quot;,&quot;&quot;);
+        data_consumo.SelectCommand = data_consumo.SelectCommand.Replace(&quot;, '' AS DS_CONTA_CONTABIL_CONSUMO&quot;, DS_CONTA_CONTABIL_DET); 
+       
+      }      
+    }
+    //=========================================================================================================  
+    
+  }    
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O3wJ22Egxh3PGzwxYyy1yTw=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlPrincipal" DataType="System.Int32" Enabled="true" SelectCommand="select  aaa.cd_conta_contabil_estoque&#13;&#10;      , '' AS DS_CONTA_CONTABIL_ESTOQUE                      &#13;&#10;      , aaa.cp_ano&#13;&#10;      , aaa.cp_mes_ini&#13;&#10;      , aaa.cp_mes_fin&#13;&#10;      , aaa.tp_00&#13;&#10;      , aaa.ds_00&#13;&#10;      , aaa.tp_01&#13;&#10;      , case when aaa.tp_01 = 'CONSUMO' then 1 else 0 end as econsumo&#13;&#10;      , aaa.ds_01&#13;&#10;      , aaa.tp_mate&#13;&#10;      , aaa.ds_alx&#13;&#10;      , aaa.id_almox&#13;&#10;      , aaa.agrupar&#13;&#10;      , aaa.vl_total&#13;&#10;&#13;&#10;   from (select aa.cd_conta_contabil_estoque&#13;&#10;              , aa.cp_ano&#13;&#10;              , aa.cp_mes_ini&#13;&#10;              , aa.cp_mes_fin&#13;&#10;              , aa.tp_00&#13;&#10;              , aa.ds_00&#13;&#10;              , aa.tp_01&#13;&#10;              , aa.ds_01&#13;&#10;              , cast(:tp_mate as int) tp_mate&#13;&#10;              , cast(case when :id_almox &lt;= 0 then 'TODOS' else bb.ds_almoxarifado end as varchar (254)) ds_alx&#13;&#10;              , cast(:id_almox as int) id_almox&#13;&#10;              , cast(:agrupar as int) agrupar&#13;&#10;              , round(sum(aa.vl_total), 2) vl_total&#13;&#10;&#13;&#10;           from (select cast(case when cast(:agrupar as integer) = 1 then b.cd_conta_contabil_estoque else '' end as varchar(30)) cd_conta_contabil_estoque&#13;&#10;                      , cast(:cp_ano as int) cp_ano&#13;&#10;                      , cast(:cp_mes_ini as int) cp_mes_ini&#13;&#10;                      , cast(:cp_mes_fin as int) cp_mes_fin&#13;&#10;                      , cast('01' as varchar(10)) tp_00&#13;&#10;                      , cast('SALDO ANTERIOR' as varchar(250)) ds_00&#13;&#10;                      , CAST(null AS varchar(5)) tp_01&#13;&#10;                      , CAST(null AS varchar(250)) ds_01&#13;&#10;                      , a.id_almoxarifado&#13;&#10;                      , round(sum(b.vl_total), 2) vl_total&#13;&#10;                   from sup_lancamento a&#13;&#10;                        left join sup_lancamento_it         b on b.id_lancamento              = a.id_lancamento&#13;&#10;                        left join sup_lancamento_saida      c on c.id_lancamento              = a.id_lancamento&#13;&#10;                        left join sup_lancamento_entrada    d on d.id_lancamento              = c.id_lancamento_entrada&#13;&#10;                        left join sup_lancamento_it         e on e.id_lancamento              = d.id_lancamento&#13;&#10;                                                             and e.id_material                = b.id_material&#13;&#10;                                                             and coalesce(e.id_ratif_item, 0) = coalesce(b.id_ratif_item, 0)&#13;&#10;                        left join sup_material              f on f.id_material                = b.id_material&#13;&#10;                  where a.id_entidade = :id_entidade&#13;&#10;                    and ( a.cp_ano &lt; :cp_ano or (a.cp_ano = :cp_ano and a.cp_mes &lt; :cp_mes_ini) )&#13;&#10;                    and ( f.tp_material = :tp_mate or :tp_mate &lt;= 0 )&#13;&#10;                    and ( a.id_almoxarifado = :id_almox or :id_almox &lt;= 0 )&#13;&#10;                  group by 1, 2, 3, 4, 5, 6, 7, 8, 9&#13;&#10;&#13;&#10;                  union&#13;&#10;&#13;&#10;                 select cast(case when cast(:agrupar as integer) = 1 then b.cd_conta_contabil_estoque else '' end as varchar(30)) cd_conta_contabil_estoque&#13;&#10;                      , cast(:cp_ano as int) cp_ano&#13;&#10;                      , cast(:cp_mes_ini as int) cp_mes_ini&#13;&#10;                      , cast(:cp_mes_fin as int) cp_mes_fin&#13;&#10;                      , cast(case when ( a.tp_lancamento = 0 and c.tp_entrada in (0, 1)                     )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada in (0, 1)) then '02'&#13;&#10;                                  when ( a.tp_lancamento = 0 and c.tp_entrada = 3                           )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 3      ) then '03'&#13;&#10;                                  when ( a.tp_lancamento = 0 and c.tp_entrada not in (0, 1, 2, 3, 4, 5, 7)  )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 5 and&#13;&#10;                                         e.tp_entrada not in (0, 1, 2, 3, 4, 5, 7)                          ) then '04'&#13;&#10;                                  when ( a.tp_lancamento = 0 and c.tp_entrada = 2                           )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 2      )&#13;&#10;                                    or ( a.tp_lancamento = 0 and c.tp_entrada = 5 and f.tp_saida = 2        )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 2                           ) then '05'&#13;&#10;                                  when ( a.tp_lancamento = 0 and c.tp_entrada = 7                           )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 9                           ) then '06'&#13;&#10;                                  when ( a.tp_lancamento = 1 and d.tp_saida not in (2, 5, 9))&#13;&#10;                                    or ( a.tp_lancamento = 0 and c.tp_entrada = 5 and&#13;&#10;                                         f.tp_saida not in (2, 5, 9)                                        )&#13;&#10;                                    or ( a.tp_lancamento = 0 and c.tp_entrada = 4                           )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 5 and&#13;&#10;                                         e.tp_entrada = 4                                                   ) then '99'&#13;&#10;                             end as varchar(10) ) tp_00&#13;&#10;                      , cast(case when ( a.tp_lancamento = 0 and c.tp_entrada in (0, 1)                     )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada in (0,1) ) then 'AQUISIÇÕES'&#13;&#10;                                  when ( a.tp_lancamento = 0 and c.tp_entrada = 3                           )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 3      ) then 'DOAÇÕES'&#13;&#10;                                  when ( a.tp_lancamento = 0 and c.tp_entrada not in (0, 1, 2, 3, 4, 5, 7)  )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 5 and&#13;&#10;                                         e.tp_entrada not in (0, 1, 2, 3, 4, 5, 7)                          ) then 'OUTRAS ENTRADAS'&#13;&#10;                                  when ( a.tp_lancamento = 0 and c.tp_entrada = 2                           )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 2      )&#13;&#10;                                    or ( a.tp_lancamento = 0 and c.tp_entrada = 5 and f.tp_saida = 2        )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 2                           ) then 'AJUSTE POR INVENTÁRIO'&#13;&#10;                                  when ( a.tp_lancamento = 0 and c.tp_entrada = 7                           )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 9                           ) then 'TRANSFERÊNCIAS ENTRE CONTA CONTÁBIL DE ESTOQUE'&#13;&#10;                                  when ( a.tp_lancamento = 1 and d.tp_saida not in (2, 5, 9))&#13;&#10;                                    or ( a.tp_lancamento = 0 and c.tp_entrada = 5 and&#13;&#10;                                         f.tp_saida not in (2, 5, 9)                                        )&#13;&#10;                                    or ( a.tp_lancamento = 0 and c.tp_entrada = 4                           )&#13;&#10;                                    or ( a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 4      )   then 'CONSUMO'&#13;&#10;                             end as varchar(250)) ds_00&#13;&#10;                      , cast(case when a.tp_lancamento = 0 and c.tp_entrada = 0                                 then '02.02'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 1                                 then '02.02'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada in (0, 1)      then '02.09'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 3                                 then '03.01'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 3            then '03.02'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada not in (0, 1, 2, 3, 4, 5, 7)        then '04.01'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 5 and&#13;&#10;                                       e.tp_entrada not in (0, 1, 2, 3, 4, 5, 7)                                then '04.02'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 2                                 then '05.01'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 5 and f.tp_saida = 2              then '05.02'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 2                                 then '05.03'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 2            then '05.04'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 7                                 then '06.01'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 9                                 then '06.02'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 7                                 then '99.01'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 0                                 then '99.02'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 1                                 then '99.03'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 8                                 then '99.04'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 3                                 then '99.05'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida not in (0, 1, 2, 3, 4, 5, 7, 8, 9)    then '99.06'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 5 and&#13;&#10;                                       f.tp_saida not in (2, 4, 5, 9)                                           then '99.09'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 4                                 then '99.20'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 5 and f.tp_saida = 4              then '99.21'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 4                                 then '99.30'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 4            then '99.31'&#13;&#10;                             end as varchar(10)) tp_01&#13;&#10;                      , cast(case when a.tp_lancamento = 0 and c.tp_entrada = 0                                 then '(+) Entradas com AF'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 1                                 then '(+) Entradas sem AF'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada in (0, 1)      then '(-) Estornos de entradas com ou sem AF'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 3                                 then '(+) Entradas por Doação'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 3            then '(-) Estornos de entradas por Doação'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada not in (0, 1, 2, 3, 4, 5, 7)        then '(+) Entradas'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 5 and&#13;&#10;                                       e.tp_entrada not in (0, 1, 2, 3, 4, 5, 7)                                then '(-) Estornos de Entradas'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 2                                 then '(+) Entradas por inventário'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 5 and f.tp_saida = 2              then '(+) Estornos de saídas por inventário'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 2                                 then '(-) Saídas por inventário'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 2            then '(-) Estornos de entradas por inventário'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 7                                 then '(+) Entradas por transferências'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 9                                 then '(-) Saídas por transferências'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 7                                 then '(-) Requisição'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 0                                 then '(-) Requisição On-Line'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 1                                 then '(-) Sem Requisição'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 8                                 then '(-) Consumo Imediato'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 3                                 then '(-) Perda'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida not in (0, 1, 2, 3, 4, 5, 7, 8, 9)    then '(-) Outras saídas'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 5 and&#13;&#10;                                       f.tp_saida not in (2, 4, 5, 9)                                           then '(+) Estornos de Consumo'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 4                                 then '(-) Saídas por transferência entre almoxarifados/unidades administrativas'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 5 and f.tp_saida = 4              then '(+) Estornos de saídas por transferência entre almoxarifados/unidades administrativas'&#13;&#10;                                  when a.tp_lancamento = 0 and c.tp_entrada = 4                                 then '(+) Entradas por transferência entre almoxarifados/unidades administrativas'&#13;&#10;                                  when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 4            then '(-) Estornos de entradas por transferência entre almoxarifados/unidades administrativas'&#13;&#10;                                    else null&#13;&#10;                               end as varchar(250)) ds_01&#13;&#10;                        , a.id_almoxarifado&#13;&#10;                        , round(sum(case when a.tp_lancamento = 0 and c.tp_entrada = 0                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 0 and c.tp_entrada = 1                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada in (0, 1) then round(h.vl_total / h.qtd * b.qtd, 2)&#13;&#10;                                         when a.tp_lancamento = 0 and c.tp_entrada = 3                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 3       then round(h.vl_total / h.qtd * b.qtd, 2)&#13;&#10;                                         when a.tp_lancamento = 0 and c.tp_entrada not in (0, 1, 2, 3, 4, 5, 7)   then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 5&#13;&#10;                                          and e.tp_entrada not in (0, 1, 2, 3, 4, 5, 7)                           then round(h.vl_total / h.qtd * b.qtd, 2)&#13;&#10;                                         when a.tp_lancamento = 0 and c.tp_entrada = 2                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 0 and c.tp_entrada = 5 and f.tp_saida   = 2       then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 2                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 5 and e.tp_entrada = 2       then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 7                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 0                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 1                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 8                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 3                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida not in (0,1,2,3,4, 5,7,8,9)      then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 0 and c.tp_entrada = 5 and f.tp_saida in(2,4,5,9) then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida   = 4                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 0 and c.tp_entrada = 5 and f.tp_saida = 4         then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 0 and c.tp_entrada = 4                            then b.vl_total&#13;&#10;                                         when a.tp_lancamento = 1 and d.tp_saida = 5 and e.tp_entrada = 4         then b.vl_total&#13;&#10;                                         else b.vl_total&#13;&#10;                                    end), 2) vl_total&#13;&#10;                     from sup_lancamento a&#13;&#10;                          left join sup_lancamento_it       b on b.id_lancamento    = a.id_lancamento&#13;&#10;                          left join sup_lancamento_entrada  c on c.id_lancamento    = a.id_lancamento&#13;&#10;                          left join sup_lancamento_saida    d on d.id_lancamento    = a.id_lancamento&#13;&#10;                          left join sup_lancamento_entrada  e on e.id_lancamento    = d.id_lancamento_entrada&#13;&#10;                          left join sup_lancamento_saida    f on f.id_lancamento    = c.id_lancamento_saida&#13;&#10;                          left join sup_material            g on g.id_material      = b.id_material&#13;&#10;                          left join sup_lancamento_it       h on h.id_lancamento    = e.id_lancamento&#13;&#10;                                                                 and a.tp_lancamento  = 1&#13;&#10;                                                                 and d.tp_saida       = 5&#13;&#10;                                                                 and e.tp_entrada not in (2,4,7)&#13;&#10;                                                                 and h.id_material = b.id_material&#13;&#10;                                                                 and (h.id_ratif_item = b.id_ratif_item or h.id_ratif_item is null)&#13;&#10;                    where a.id_entidade = :id_entidade&#13;&#10;                      and a.cp_ano = :cp_ano&#13;&#10;                      and a.cp_mes between :cp_mes_ini and :cp_mes_fin&#13;&#10;                      and (g.tp_material = :tp_mate or :tp_mate &lt;= 0)&#13;&#10;                      and (a.id_almoxarifado = :id_almox or :id_almox &lt;= 0)&#13;&#10;                    group by&#13;&#10;                      1, 2, 3, 4, 5, 6, 7, 8, 9&#13;&#10;&#13;&#10;                  union&#13;&#10;&#13;&#10;                 select cast((case when :agrupar = 1 then b.cd_conta_contabil_estoque else '' end) as varchar(30)) cd_conta_contabil_estoque&#13;&#10;                      , cast(:cp_ano as integer)        as cp_ano&#13;&#10;                      , cast(:cp_mes_ini as integer)    as cp_mes_ini&#13;&#10;                      , cast(:cp_mes_fin as integer)    as cp_mes_fin&#13;&#10;                      , '99'                            as tp_00&#13;&#10;                      , 'CONSUMO'                       as ds_00&#13;&#10;                      , case when round(g.vl_total / g.qtd * b.qtd, 2) &gt; b.vl_total then '99.90'&#13;&#10;                             when round(g.vl_total / g.qtd * b.qtd, 2) &lt; b.vl_total then '99.91'&#13;&#10;                        end tp_01&#13;&#10;                      , case when round(g.vl_total / g.qtd * b.qtd, 2) &gt; b.vl_total then '(-) Ajuste no consumo por estorno a menor do que o valor original da aquisição, doação e outras entradas'&#13;&#10;                             when round(g.vl_total / g.qtd * b.qtd, 2) &lt; b.vl_total then '(+) Ajuste no consumo por estorno a maior do que o valor original da aquisição, doação e outras entradas'&#13;&#10;                        end ds_01&#13;&#10;                      , a.id_almoxarifado&#13;&#10;                      , sum(round(b.vl_total-round(g.vl_total / g.qtd * b.qtd, 2), 2) ) vl_total&#13;&#10;                   from sup_lancamento a&#13;&#10;                        left join sup_lancamento_it      b  on  b.id_lancamento = a.id_lancamento&#13;&#10;                        left join sup_lancamento_saida   f  on  f.id_lancamento = a.id_lancamento&#13;&#10;                        left join sup_lancamento_entrada f1 on f1.id_lancamento = f.id_lancamento_entrada&#13;&#10;                        left join sup_material            m on  m.id_material   = b.id_material&#13;&#10;                        left join sup_lancamento_it       g on  g.id_lancamento = f1.id_lancamento&#13;&#10;                                                           and  g.id_material   = b.id_material&#13;&#10;                                                           and  coalesce(g.id_ratif_item, 0) = coalesce(b.id_ratif_item, 0)&#13;&#10;                  where a.id_entidade = :id_entidade&#13;&#10;                    and a.cp_ano = :cp_ano&#13;&#10;                    and a.cp_mes &gt;= :cp_mes_ini&#13;&#10;                    and a.cp_mes &lt;= :cp_mes_fin&#13;&#10;                    and a.tp_lancamento = 1&#13;&#10;                    and f.tp_saida = 5&#13;&#10;                    and not f1.tp_entrada in (2, 4, 7)&#13;&#10;                    and round(round(g.vl_total / g.qtd * b.qtd, 2) - b.vl_total,2) &lt;&gt; 0&#13;&#10;                    and (m.tp_material = :tp_mate or :tp_mate &lt;= 0)&#13;&#10;                    and (cast(:id_almox as integer) &lt;= 0 or a.id_almoxarifado = :id_almox)&#13;&#10;                  group by&#13;&#10;                    1, 2, 3, 4, 5, 6, 7, 8, 9&#13;&#10;&#13;&#10;                  union&#13;&#10;&#13;&#10;                 select distinct&#13;&#10;                        cast((case when :agrupar = 1 then b.cd_conta_contabil_estoque else '' end) as varchar(30)) cd_conta_contabil_estoque&#13;&#10;                      , cast(:cp_ano as integer) cp_ano&#13;&#10;                      , cast(:cp_mes_ini as integer) cp_mes_ini&#13;&#10;                      , cast(:cp_mes_fin as integer) cp_mes_fin&#13;&#10;                      , '99' tp_00&#13;&#10;                      , 'CONSUMO' ds_00&#13;&#10;                      , 'CONSUMO' tp_01&#13;&#10;                      , 'Detalhamento do consumo por conta contábil de consumo' ds_01&#13;&#10;                      , a.id_almoxarifado&#13;&#10;                      , cast(0 as double precision) vl_total&#13;&#10;                   from sup_lancamento a&#13;&#10;                        left join sup_lancamento_saida   f  on  f.id_lancamento = a.id_lancamento&#13;&#10;                        left join sup_lancamento_entrada f1 on f1.id_lancamento = f.id_lancamento_entrada&#13;&#10;                        left join sup_lancamento_it      b  on  b.id_lancamento = a.id_lancamento&#13;&#10;                        left join sup_material           m  on  m.id_material   = b.id_material&#13;&#10;                  where a.id_entidade = :id_entidade&#13;&#10;                    and a.cp_ano = :cp_ano&#13;&#10;                    and a.cp_mes &gt;= :cp_mes_ini&#13;&#10;                    and a.cp_mes &lt;= :cp_mes_fin&#13;&#10;                    and a.tp_lancamento = 1&#13;&#10;                    and (f.tp_saida not in (2, 5, 9) or f.tp_saida = 5 and f1.tp_entrada = 4)&#13;&#10;                    and (m.tp_material = :tp_mate or :tp_mate &lt;= 0)&#13;&#10;                    and (cast(:id_almox as integer) &lt;= 0 or a.id_almoxarifado = :id_almox)&#13;&#10;&#13;&#10;                  union&#13;&#10;&#13;&#10;                 select distinct&#13;&#10;                        cast((case when :agrupar = 1 then b.cd_conta_contabil_estoque else '' end) as varchar(30)) cd_conta_contabil_estoque&#13;&#10;                      , cast(:cp_ano as integer) cp_ano&#13;&#10;                      , cast(:cp_mes_ini as integer) cp_mes_ini&#13;&#10;                      , cast(:cp_mes_fin as integer) cp_mes_fin&#13;&#10;                      , '99' tp_00&#13;&#10;                      , 'CONSUMO' ds_00&#13;&#10;                      , 'CONSUMO' tp_01&#13;&#10;                      , 'Detalhamento do consumo por conta contábil de consumo' ds_01&#13;&#10;                      , a.id_almoxarifado&#13;&#10;                      , cast(0 as double precision) vl_total&#13;&#10;                   from sup_lancamento a&#13;&#10;                        left join sup_lancamento_entrada e  on  e.id_lancamento = a.id_lancamento&#13;&#10;                        left join sup_lancamento_saida   e1 on e1.id_lancamento = e.id_lancamento_saida&#13;&#10;                        left join sup_lancamento_it      b  on  b.id_lancamento = a.id_lancamento&#13;&#10;                        left join sup_material           m  on  m.id_material   = b.id_material&#13;&#10;                  where a.id_entidade = :id_entidade&#13;&#10;                    and a.cp_ano = :cp_ano&#13;&#10;                    and a.cp_mes &gt;= :cp_mes_ini&#13;&#10;                    and a.cp_mes &lt;= :cp_mes_fin&#13;&#10;                    and a.tp_lancamento = 0&#13;&#10;                    and (e.tp_entrada = 5 and e1.tp_saida not in (2, 5, 9) or e.tp_entrada = 4)&#13;&#10;                    and (m.tp_material = :tp_mate or :tp_mate &lt;= 0)&#13;&#10;                    and (cast(:id_almox as integer) &lt;= 0 or a.id_almoxarifado = :id_almox)&#13;&#10;                ) aa&#13;&#10;                left join sup_almoxarifado bb on bb.id_almoxarifado = aa.id_almoxarifado&#13;&#10;          group by&#13;&#10;                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12&#13;&#10;        ) aaa&#13;&#10;        /*JOIN_API_CONTA_CONTABIL*/&#13;&#10;  order by&#13;&#10;        aaa.cd_conta_contabil_estoque&#13;&#10;      , aaa.tp_00&#13;&#10;      , aaa.tp_01&#13;&#10;">
+        <Column Name="cd_conta_contabil_estoque" DataType="System.String"/>
+        <Column Name="cp_ano" DataType="System.Int32"/>
+        <Column Name="cp_mes_ini" DataType="System.Int32"/>
+        <Column Name="cp_mes_fin" DataType="System.Int32"/>
+        <Column Name="tp_00" DataType="System.String"/>
+        <Column Name="ds_00" DataType="System.String"/>
+        <Column Name="tp_01" DataType="System.String"/>
+        <Column Name="econsumo" DataType="System.Int32"/>
+        <Column Name="ds_01" DataType="System.String"/>
+        <Column Name="tp_mate" DataType="System.Int32"/>
+        <Column Name="ds_alx" DataType="System.String"/>
+        <Column Name="id_almox" DataType="System.Int32"/>
+        <Column Name="agrupar" DataType="System.Int32"/>
+        <Column Name="vl_total" DataType="System.Double"/>
+        <Column Name="ds_conta_contabil_estoque" DataType="System.String"/>
+        <CommandParameter Name="tp_mate" DataType="22" Expression="[tpMaterial]"/>
+        <CommandParameter Name="id_almox" DataType="22" Expression="[idAlmoxarifado]"/>
+        <CommandParameter Name="agrupar" DataType="22" Expression="[agrupar]"/>
+        <CommandParameter Name="cp_ano" DataType="22" Expression="[cpAno]"/>
+        <CommandParameter Name="cp_mes_ini" DataType="22" Expression="[cpMesIni]"/>
+        <CommandParameter Name="cp_mes_Fin" DataType="22" Expression="[cpMesFin]"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlDetalheConsumo" DataType="System.Int32" Enabled="true" SelectCommand="select a2.cd_conta_contabil_consumo&#13;&#10;     , '' AS DS_CONTA_CONTABIL_CONSUMO&#13;&#10;     , a2.cp_ano&#13;&#10;     , a2.cp_mes_ini&#13;&#10;     , a2.cp_mes_fin&#13;&#10;     , a2.vl_total&#13;&#10;  from (select a1.cd_conta_contabil_consumo&#13;&#10;             , a1.cp_ano&#13;&#10;             , a1.cp_mes_ini&#13;&#10;             , a1.cp_mes_fin&#13;&#10;             , round (sum(a1.vl_total), 2) as vl_total&#13;&#10;&#13;&#10;          from (select coalesce( trim(b.cd_conta_contabil_consumo), '0.0.0.0.0.00.00' ) as cd_conta_contabil_consumo&#13;&#10;                     , cast(:cp_ano as integer)     as cp_ano&#13;&#10;                     , cast(:cp_mes_ini as integer) as cp_mes_ini&#13;&#10;                     , cast(:cp_mes_fin as integer) as cp_mes_fin&#13;&#10;                     , sum(b.vl_total)              as vl_total&#13;&#10;                  from (select seq.id_sequencia as consumo&#13;&#10;                          from sis_sequencia seq&#13;&#10;                         where seq.id_sequencia = 1    ) s&#13;&#10;                       left join sup_lancamento          a  on 1                              = s.consumo&#13;&#10;                       left join sup_lancamento_it       b  on b.id_lancamento                = a.id_lancamento&#13;&#10;                       left join sup_lancamento_saida    f  on f.id_lancamento                = a.id_lancamento&#13;&#10;                       left join sup_lancamento_entrada  f1 on f1.id_lancamento               = f.id_lancamento_entrada&#13;&#10;                       left join sup_material            m  on m.id_material                  = b.id_material&#13;&#10;                 where a.cp_ano         = :cp_ano&#13;&#10;                   and a.cp_mes        &gt;= :cp_mes_ini&#13;&#10;                   and a.cp_mes        &lt;= :cp_mes_fin&#13;&#10;                   and a.tp_lancamento  = 1&#13;&#10;                   and ( ( f.tp_saida not in (2,5,9)            ) or&#13;&#10;                         ( f.tp_saida = 5 and f1.tp_entrada = 4 )   )&#13;&#10;                   and ( ( cast(:id_almox as integer) &lt;= 0 ) or&#13;&#10;                         ( a.id_almoxarifado = :id_almox   )   )&#13;&#10;                   and ( ( b.cd_conta_contabil_estoque = :cd_conta_contabil_estoque) or (:agrupar = 0) )&#13;&#10;                   and ( ( m.tp_material = :tp_mate) or (:tp_mate &lt;= 0) )&#13;&#10;                   and a.id_entidade = :id_entidade&#13;&#10;                 group by 1,2,3,4&#13;&#10;&#13;&#10;                 union all&#13;&#10;&#13;&#10;                select coalesce( trim(g.cd_conta_contabil_consumo),&#13;&#10;                                 trim(m.cd_conta_contabil_consumo), '0.0.0.0.0.00.00' ) as cd_conta_contabil_consumo&#13;&#10;                     , cast(:cp_ano as integer)     as cp_ano&#13;&#10;                     , cast(:cp_mes_ini as integer) as cp_mes_ini&#13;&#10;                     , cast(:cp_mes_fin as integer) as cp_mes_fin&#13;&#10;                     , sum(b.vl_total) as vl_total&#13;&#10;                  from (select seq.id_sequencia as consumo&#13;&#10;                          from sis_sequencia seq&#13;&#10;                         where seq.id_sequencia = 1   ) s&#13;&#10;                       left join sup_lancamento         a  on 1                              = s.consumo&#13;&#10;                       left join sup_lancamento_entrada e  on e.id_lancamento                = a.id_lancamento&#13;&#10;                       left join sup_lancamento_saida   e1 on e1.id_lancamento               = e.id_lancamento_saida&#13;&#10;                       left join sup_lancamento_it      b  on b.id_lancamento                = a.id_lancamento&#13;&#10;                       left join sup_material           m  on m.id_material                  = b.id_material&#13;&#10;                       left join sup_lancamento_it      g  on g.id_lancamento                = e1.id_lancamento&#13;&#10;                                                          and g.id_material                  = b.id_material&#13;&#10;                                                          and coalesce(g.id_ratif_item,0)    = coalesce(b.id_ratif_item,0)&#13;&#10;                 where a.cp_ano  = :cp_ano&#13;&#10;                   and a.cp_mes &gt;= :cp_mes_ini&#13;&#10;                   and a.cp_mes &lt;= :cp_mes_fin&#13;&#10;                   and a.tp_lancamento = 0&#13;&#10;                   and ( ( e.tp_entrada = 5 and e1.tp_saida not in (2,5,9) ) or&#13;&#10;                         ( e.tp_entrada = 4                                )   )&#13;&#10;                   and ( ( cast(:id_almox as integer) &lt;= 0 ) or&#13;&#10;                         ( a.id_almoxarifado = :id_almox   )   )&#13;&#10;                   and ( ( b.cd_conta_contabil_estoque = :cd_conta_contabil_estoque) or (:agrupar = 0) )&#13;&#10;                   and ( ( m.tp_material = :tp_mate) or (:tp_mate &lt;= 0) )&#13;&#10;                   and a.id_entidade = :id_entidade&#13;&#10;                 group by 1,2,3,4&#13;&#10;&#13;&#10;                 union all&#13;&#10;&#13;&#10;                select coalesce( trim(b.cd_conta_contabil_consumo), '0.0.0.0.0.00.00' ) as cd_conta_contabil_consumo&#13;&#10;                     , cast(:cp_ano as integer)     as cp_ano&#13;&#10;                     , cast(:cp_mes_ini as integer) as cp_mes_ini&#13;&#10;                     , cast(:cp_mes_fin as integer) as cp_mes_fin&#13;&#10;                     , sum(round(b.vl_total - round(g.vl_total / g.qtd * b.qtd, 2), 2)) as vl_total&#13;&#10;                  from (select seq.id_sequencia as consumo&#13;&#10;                          from sis_sequencia seq&#13;&#10;                         where seq.id_sequencia = 1 ) s&#13;&#10;                       left join sup_lancamento         a  on 1                              = s.consumo&#13;&#10;                       left join sup_lancamento_saida   f  on f.id_lancamento                = a.id_lancamento&#13;&#10;                       left join sup_lancamento_entrada f1 on f1.id_lancamento               = f.id_lancamento_entrada&#13;&#10;                       left join sup_lancamento_it      b  on b.id_lancamento                = a.id_lancamento&#13;&#10;                       left join sup_material           m  on m.id_material                  = b.id_material&#13;&#10;                       left join sup_lancamento_it      g  on g.id_lancamento                = f1.id_lancamento&#13;&#10;                                                          and g.id_material                  = b.id_material&#13;&#10;                                                          and coalesce(g.id_ratif_item,0)    = coalesce(b.id_ratif_item,0)&#13;&#10;                 where a.cp_ano  = :cp_ano&#13;&#10;                   and a.cp_mes &gt;= :cp_mes_ini&#13;&#10;                   and a.cp_mes &lt;= :cp_mes_fin&#13;&#10;                   and a.tp_lancamento    = 1&#13;&#10;                   and f.tp_saida         = 5&#13;&#10;                   and not f1.tp_entrada in (2,4,7)&#13;&#10;                   and ( (cast(:id_almox as integer) &lt;= 0 ) or&#13;&#10;                         ( a.id_almoxarifado = :id_almox  )  )&#13;&#10;                   and ( ( b.cd_conta_contabil_estoque = :cd_conta_contabil_estoque) or (:agrupar = 0) )&#13;&#10;                   and ( ( m.tp_material = :tp_mate) or (:tp_mate &lt;= 0) )&#13;&#10;                   and a.id_entidade = :id_entidade&#13;&#10;                 group by 1,2,3,4&#13;&#10;                having round(sum(round(g.vl_total / g.qtd * b.qtd, 2) - b.vl_total), 2) &lt;&gt; 0&#13;&#10;               ) a1&#13;&#10;&#13;&#10;         group by 1,2,3,4&#13;&#10;&#13;&#10;         having round( sum(a1.vl_total), 2) &lt;&gt; 0&#13;&#10;       ) a2&#13;&#10;       /*JOIN_API_CONTA_CONTABIL*/&#13;&#10; where 1 = :econsumo&#13;&#10; order by 1">
+        <Column Name="cd_conta_contabil_consumo" DataType="System.String"/>
+        <Column Name="cp_ano" DataType="System.Int32"/>
+        <Column Name="cp_mes_ini" DataType="System.Int32"/>
+        <Column Name="cp_mes_fin" DataType="System.Int32"/>
+        <Column Name="vl_total" DataType="System.Double"/>
+        <Column Name="ds_conta_contabil_consumo" DataType="System.String"/>
+        <CommandParameter Name="cp_ano" DataType="9" Expression="[SqlPrincipal.cp_ano]"/>
+        <CommandParameter Name="cp_mes_ini" DataType="9" Expression="[SqlPrincipal.cp_mes_ini]"/>
+        <CommandParameter Name="cp_mes_fin" DataType="9" Expression="[SqlPrincipal.cp_mes_fin]"/>
+        <CommandParameter Name="id_almox" DataType="9" Expression="[SqlPrincipal.id_almox]"/>
+        <CommandParameter Name="cd_conta_contabil_estoque" DataType="22" Expression="[SqlPrincipal.cd_conta_contabil_estoque]"/>
+        <CommandParameter Name="agrupar" DataType="9" Expression="[SqlPrincipal.agrupar]"/>
+        <CommandParameter Name="tp_mate" DataType="9" Expression="[SqlPrincipal.tp_mate]"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+        <CommandParameter Name="econsumo" DataType="9" Expression="[SqlPrincipal.econsumo]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="mes" DataType="System.Int32" Enabled="true" SelectCommand="SELECT &#13;&#10;    CASE &#13;&#10;        WHEN :CpMesIni = 1 THEN 'Janeiro'&#13;&#10;        WHEN :CpMesIni = 2 THEN 'Fevereiro'&#13;&#10;        WHEN :CpMesIni = 3 THEN 'Março'&#13;&#10;        WHEN :CpMesIni = 4 THEN 'Abril'&#13;&#10;        WHEN :CpMesIni = 5 THEN 'Maio'&#13;&#10;        WHEN :CpMesIni = 6 THEN 'Junho'&#13;&#10;        WHEN :CpMesIni = 7 THEN 'Julho'&#13;&#10;        WHEN :CpMesIni = 8 THEN 'Agosto'&#13;&#10;        WHEN :CpMesIni = 9 THEN 'Setembro'&#13;&#10;        WHEN :CpMesIni = 10 THEN 'Outubro'&#13;&#10;        WHEN :CpMesIni = 11 THEN 'Novembro'&#13;&#10;        WHEN :CpMesIni = 12 THEN 'Dezembro'&#13;&#10;        ELSE 'Mês inválido'&#13;&#10;    END AS MesInicio,&#13;&#10;    &#13;&#10;    CASE &#13;&#10;        WHEN :CpMesFin = 1 THEN 'Janeiro'&#13;&#10;        WHEN :CpMesFin = 2 THEN 'Fevereiro'&#13;&#10;        WHEN :CpMesFin = 3 THEN 'Março'&#13;&#10;        WHEN :CpMesFin = 4 THEN 'Abril'&#13;&#10;        WHEN :CpMesFin = 5 THEN 'Maio'&#13;&#10;        WHEN :CpMesFin = 6 THEN 'Junho'&#13;&#10;        WHEN :CpMesFin = 7 THEN 'Julho'&#13;&#10;        WHEN :CpMesFin = 8 THEN 'Agosto'&#13;&#10;        WHEN :CpMesFin = 9 THEN 'Setembro'&#13;&#10;        WHEN :CpMesFin = 10 THEN 'Outubro'&#13;&#10;        WHEN :CpMesFin = 11 THEN 'Novembro'&#13;&#10;        WHEN :CpMesFin = 12 THEN 'Dezembro'&#13;&#10;        ELSE 'Mês inválido'&#13;&#10;    END AS MesFim&#13;&#10; &#13;&#10;FROM &#13;&#10;    sup_lancamento a &#13;&#10;WHERE &#13;&#10;    a.cp_mes &gt;= :CpMesIni &#13;&#10;    AND a.cp_mes &lt;= :CpMesFin&#13;&#10; limit 1">
+        <Column Name="mesinicio" DataType="System.String"/>
+        <Column Name="mesfim" DataType="System.String"/>
+        <CommandParameter Name="CpMesIni" DataType="22" Expression="[cpMesIni]"/>
+        <CommandParameter Name="CpMesFin" DataType="22" Expression="[cpMesFin]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Balancete Almoxarifado - Casp&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="exibirDsContaContabil" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="agrupar" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="idAlmoxarifado" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="tpMaterial" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="cpMesFin" DataType="System.String" Expression="&quot;4&quot;"/>
+    <Parameter Name="cpMesIni" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="cpAno" DataType="System.String" Expression="&quot;2025&quot;"/>
+    <Total Name="Valor" Expression="[SqlPrincipal.vl_total]" Evaluator="Data1" PrintOn="GroupFooter2"/>
+    <Total Name="Geral" Expression="[SqlPrincipal.vl_total]" Evaluator="Data1" ResetAfterPrint="false"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho" Top="0">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="98.58">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child1" ZOrder="-1" Top="121.56" Width="718.2" Height="41.58" Border.Lines="Bottom">
+          <TextObject Name="Text14" Top="17.9" Width="264.6" Height="18.9" Text="Almoxarifado: [SqlPrincipal.ds_alx]" VertAlign="Bottom" Font="Arial, 7pt"/>
+          <TextObject Name="Text15" Left="453.6" Top="16" Width="264.6" Height="18.9" Text="Tipo de Material: [IIf([SqlPrincipal.TP_MATE] == 1,&quot;Consumo&quot;,IIf([SqlPrincipal.TP_MATE] == 2,&quot;Permanente&quot;,&quot;Todos&quot;))]&#13;&#10;" HorzAlign="Right" Font="Arial, 7pt"/>
+          <TextObject Name="Text13" Top="6" Width="264.6" Height="18.9" Text="Período de [mes.mesinicio] à [mes.mesfim] de [CpAno]&#13;&#10;" VertAlign="Bottom" Font="Arial, 7pt"/>
+          <LineObject Name="Line1" Top="9.45" Width="718.2"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="GrhContaEstoque" ZOrder="0" Top="167.22" Width="718.2" Height="18.9" BeforePrintEvent="GrhContaEstoque_BeforePrint" StartNewPage="true" Condition="[SqlPrincipal.cd_conta_contabil_estoque]">
+      <TextObject Name="Text1" Width="718.2" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Conta Estoque: [SqlPrincipal.cd_conta_contabil_estoque][IIf([ExibirDsContaContabil] == &quot;1&quot;, &quot;- &quot; +[SqlPrincipal.DS_CONTA_CONTABIL_ESTOQUE], &quot;&quot;)]&#13;&#10;" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <GroupHeaderBand Name="GroupHeader2" Top="190.21" Width="718.2" Height="18.9" CanGrow="true" BeforePrintEvent="GroupHeader2_BeforePrint" Condition="[SqlPrincipal.tp_00]">
+        <TextObject Name="Text2" Left="18.14" Width="610.09" Height="18.9" Fill.Color="Gainsboro" CanGrow="true" Text="[SqlPrincipal.DS_00]&#13;&#10;" VertAlign="Center" Font="Tahoma, 7pt, style=Bold">
+          <Highlight>
+            <Condition Expression="([SqlPrincipal.agrupar] == 0) &amp;&amp; ([SqlPrincipal.tp_00] == &quot;1&quot;)" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="Text3" Left="628.15" Width="90.34" Height="18.9" Fill.Color="Gainsboro" Text="[SqlPrincipal.VL_TOTAL]&#13;&#10;" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+        <DataBand Name="Data1" Top="213.19" Width="718.2" Height="18.9" BeforePrintEvent="Data1_BeforePrint" DataSource="Table" PrintIfDetailEmpty="true">
+          <TextObject Name="Text4" Left="37.8" Width="500.09" Height="18.9" Text="[SqlPrincipal.DS_01]&#13;&#10;" VertAlign="Center" Font="Tahoma, 7pt"/>
+          <TextObject Name="Text5" Left="537.65" Width="90.38" Height="18.9" Text="[SqlPrincipal.VL_TOTAL]&#13;&#10;" HorzAlign="Right" Font="Tahoma, 7pt">
+            <Formats>
+              <NumberFormat/>
+              <GeneralFormat/>
+            </Formats>
+            <Highlight>
+              <Condition Expression="[SqlPrincipal.vl_total] &lt;0" Font="Arial, 10pt"/>
+              <Condition Expression="[SqlPrincipal.vl_total] == 0" Visible="false" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+          <DataBand Name="Data2" Top="236.17" Width="718.2" Height="18.9" DataSource="Table1">
+            <TextObject Name="Text6" Left="66.15" Width="381.4" Height="18.9" Text="[SqlDetalheConsumo.CD_CONTA_CONTABIL_CONSUMO] [IIf([ExibirDsContaContabil] == &quot;1&quot;, &quot;- &quot; + [SqlDetalheConsumo.DS_CONTA_CONTABIL_CONSUMO], &quot;&quot;)]&#13;&#10;" Font="Tahoma, 7pt"/>
+            <TextObject Name="Text7" Left="447.33" Width="90.38" Height="18.9" Text="[SqlDetalheConsumo.vl_total]" HorzAlign="Right" Font="Tahoma, 7pt">
+              <Formats>
+                <NumberFormat/>
+                <GeneralFormat/>
+              </Formats>
+              <Highlight>
+                <Condition Expression="[SqlDetalheConsumo.vl_total] &lt; 0" Font="Arial, 10pt"/>
+              </Highlight>
+            </TextObject>
+          </DataBand>
+        </DataBand>
+        <GroupFooterBand Name="GroupFooter2" Top="259.15" Width="718.2" Height="18.9" BeforePrintEvent="GroupFooter2_BeforePrint">
+          <TextObject Name="Text8" Left="627.7" Width="90.38" Height="18.9" Border.Lines="Top" Text="[Valor]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 7pt">
+            <Highlight>
+              <Condition Expression="[Valor]&lt;0" Font="Arial, 10pt"/>
+            </Highlight>
+          </TextObject>
+        </GroupFooterBand>
+      </GroupHeaderBand>
+      <GroupFooterBand Name="GroupFooter1" Top="282.13" Width="718.2" Height="47.25" BeforePrintEvent="GroupFooter1_BeforePrint">
+        <TextObject Name="Text9" Width="604.8" Height="18.9" Fill.Color="41, 82, 118" Text="     Saldo Final" VertAlign="Center" Font="Tahoma, 7pt" TextFill.Color="White"/>
+        <TextObject Name="Text10" Left="604.8" Width="113.4" Height="18.9" Fill.Color="41, 82, 118" Text="[Geral]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7pt" TextFill.Color="White"/>
+      </GroupFooterBand>
+    </GroupHeaderBand>
+    <ReportSummaryBand Name="ReportSummary1" ZOrder="-1" Top="333.46" Width="718.2" Height="37.8" BeforePrintEvent="ReportSummary1_BeforePrint">
+      <TextObject Name="Text11" Width="604.8" Height="18.9" Fill.Color="224, 224, 224" Text="     Saldo Final" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+      <TextObject Name="Text12" Left="604.8" Width="113.4" Height="18.9" Fill.Color="224, 224, 224" Text="[Geral]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+    </ReportSummaryBand>
+    <inherited Name="BndRodape" Top="375.35">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

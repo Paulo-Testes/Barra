@@ -1,0 +1,321 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="C:\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="C:\Repositórios de Clientes\PESSOAS\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="06/06/2025 08:54:02" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }
+    
+    
+
+    private void MainPage_StartPage(object sender, EventArgs e)
+    {
+      if (Report.GetParameterValue(&quot;IdSolicitacaoCompra&quot;) == null || 
+        Convert.ToInt32(Report.GetParameterValue(&quot;IdSolicitacaoCompra&quot;)) &lt;= 0)
+      {
+        Report.SetParameterValue(&quot;IdSolicitacaoCompra&quot;, -123);
+      }
+
+      if (Report.GetParameterValue(&quot;IdPedidoPreEmpenho&quot;) == null || 
+        Convert.ToInt32(Report.GetParameterValue(&quot;IdPedidoPreEmpenho&quot;)) &lt;= 0)
+      {
+        Report.SetParameterValue(&quot;IdPedidoPreEmpenho&quot;, -123);
+      }
+
+      int idPedido = Convert.ToInt32(Report.GetParameterValue(&quot;IdPedidoPreEmpenho&quot;));
+      int idSolicitacao = Convert.ToInt32(Report.GetParameterValue(&quot;IdSolicitacaoCompra&quot;));
+
+      if (idPedido &gt; 0 &amp;&amp; idSolicitacao &gt; 0)
+      {
+        Report.SetParameterValue(&quot;IdSolicitacaoCompra&quot;, -123);
+      } 
+    }
+    
+    
+    
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O8ojylarNNwl5ivR7bZ5m1U=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlListaPedido" DataType="System.Int32" Enabled="true" SelectCommand="select distinct  &#13;&#10;       scif.id_pedido_reserva as id_pedido_pre_empenho                                                   &#13;&#10;  from sup_compra_item scit&#13;&#10;       left join sup_compra_item_ficha scif on scif.id_compra_item         = scit.id_compra_item                                                                                                                       &#13;&#10; where (scit.id_solicitacao_compra = :id_solicitacao_compra and cast(:id_pedido_pre_empenho as integer) = -123)&#13;&#10;   and scit.tp_item               in (0, 3)&#13;&#10;   and scif.id_pedido_reserva     is not null  -- com pedido de pre empenho definido&#13;&#10;   -- 00 aberto                                                                                                                     -- nao entra&#13;&#10;   -- 01 excluído                                                                                                                   -- nao entra&#13;&#10;   -- 02 liberado para dotação     ( aprovado na aprovação financeira ou na aprovação da sc quando não usa aprov. finac.  )         -- entra&#13;&#10;   -- 03 não liberado para dotação ( recusado na aprovação financeira ou na aprovação da sc quando não usa aprov. finac.  )         -- nao entra&#13;&#10;&#13;&#10;   -- 08 liberado para autorização de compra     ( aprovado na tela de dotação quando usa a tela de autorização da compra )         -- entra&#13;&#10;   -- 09 não liberado para autorização de compra ( recusado na tela de dotação quando usa a tela de autorização da compra )         -- nao entra&#13;&#10;&#13;&#10;   -- 10 recusado na definição de comprador      ( aprovado na tela de liberação de compra e recusado na definição de comprador )   -- entra&#13;&#10;&#13;&#10;   -- 04 liberado para compra      ( aprovado na tela de dotação não usando tela de autorização da compra e definição de comprador) -- entra&#13;&#10;   --                                aprovado na tela de autorização da compra quando não usa definição de compradores            ) -- entra&#13;&#10;   --                                aprovado na tela de definição de comprador                                                   ) -- entra&#13;&#10;&#13;&#10;   -- 05 não liberado para compra  ( recusado na tela de dotação não usando tela de autorização da compra e definição de comprador) -- nao entra&#13;&#10;   --                                recusado na tela de autorização da compra não usando definição de compradores                ) -- entra&#13;&#10;   --                                recusado na tela de definição de comprador                                                   ) -- entra&#13;&#10;&#13;&#10;   -- 06 recusado                  ( recusado na tela de itens para compra                                                        ) -- entra&#13;&#10;   -- 07 em processo               ( selecionado na tela de itens para compra para compor um processo de compra                   ) -- entra&#13;&#10;   and (    ( scit.st_compra_item        in (2, 8, 10, 4, 6, 7)     )&#13;&#10;         or ( scit.st_compra_item = 5                         and&#13;&#10;              (select coalesce(spar.utiliza_autcompra,0)&#13;&#10;                    + coalesce(spar.utiliza_comp     ,0)&#13;&#10;                 from sup_parametro spar&#13;&#10;                 limit 1                                  ) &gt; 0      )   )&#13;&#10;&#13;&#10; union&#13;&#10;&#13;&#10;select distinct  &#13;&#10;       aped.id_pedido_pre_empenho&#13;&#10;  from api_pedido_pre_empenho aped&#13;&#10; where (aped.id_pedido_pre_empenho = :id_pedido_pre_empenho and cast(:id_solicitacao_compra as integer) = -123)">
+        <Column Name="id_pedido_pre_empenho" DataType="System.Int32"/>
+        <CommandParameter Name="id_solicitacao_compra" DataType="9" Expression="[IdSolicitacaoCompra]"/>
+        <CommandParameter Name="id_pedido_pre_empenho" DataType="9" Expression="[IdPedidoPreEmpenho]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlPedidoPreEmpenho" DataType="System.Int32" Enabled="true" SelectCommand="SELECT APPE.ID_PEDIDO_PRE_EMPENHO&#13;&#10;     , APPE.NR_PEDIDO_PRE_EMPENHO&#13;&#10;     , APPE.CP_ANO      AS ANO_PEDIDO_PRE_EMPENHO &#13;&#10;     , APPE.DT_PEDIDO_PRE_EMPENHO&#13;&#10;&#13;&#10;     , APPE.ID_USUARIO_PEDIDO&#13;&#10;     , SIUP.DS_USUARIO     AS US_SOLICITANTE&#13;&#10;     , SIUP.NOME_USUARIO   AS DS_SOLICITANTE&#13;&#10;     &#13;&#10;     , APPE.ID_USUARIO_LIBERACAO&#13;&#10;     , SIUL.DS_USUARIO     AS US_APROVADOR&#13;&#10;     , SIUL.NOME_USUARIO   AS DS_APROVADOR&#13;&#10;                         &#13;&#10;     , CAST(CASE APPE.ID_TP_PEDIDO WHEN 1 THEN 'Inicial'&#13;&#10;                                   WHEN 2 THEN 'Reforço'&#13;&#10;                                   WHEN 3 THEN 'Anulação'&#13;&#10;            END AS VARCHAR(10))     AS TP_PEDIDO&#13;&#10;     , APPE.CD_TP_EMPENHO&#13;&#10;     , APPE.NR_PRE_EMPENHO&#13;&#10;     , APPE.CP_ANO                  AS ANO_PRE_EMPENHO    &#13;&#10;     , APPE.DT_PRE_EMPENHO&#13;&#10;     , SPRS.TP_PROC_DESPESA&#13;&#10;     , SPRS.NR_PROC_DESPESA&#13;&#10;     , SPRS.ANO_PROC_DESPESA&#13;&#10;     , CAST(COALESCE(APPE.DESEMBOLSO, SPRS.DESEMBOLSO) AS SMALLINT) AS DESEMBOLSO&#13;&#10;&#13;&#10;     , CAST(CASE WHEN SPRS.ID_SOLICITACAO_COMPRA IS NOT NULL THEN 'SC - ' || CAST(SLCP.NR_SOLICITACAO_COMPRA AS VARCHAR(20)) || '/' || CAST(SLCP.CP_ANO AS VARCHAR(20)) || ' (' || TSOL.SIGLA || ')'&#13;&#10;                 WHEN SPRS.ID_NAD                IS NOT NULL THEN 'NAD - ' || CAST(SNAD.NR_NAD AS VARCHAR(20)) || '/' || CAST(SNAD.CP_ANO AS VARCHAR(20))&#13;&#10;                 WHEN SPRS.ID_PROCESSO_COMPRA    IS NOT NULL THEN 'PC - ' || CAST(PCCP.NR_PROCESSO_COMPRA AS VARCHAR(20)) || '/' || CAST(PCCP.ANO_PROCESSO_COMPRA AS VARCHAR(20))&#13;&#10;                                                             ELSE ''&#13;&#10;            END AS VARCHAR(100))     AS FINALIDADE&#13;&#10;     &#13;&#10;     , ADPI.NR_FICHA_DESPESA &#13;&#10;     , ADPI.CD_UN_ORCAMENTARIA&#13;&#10;     , ADPI.DS_UN_ORCAMENTARIA&#13;&#10;     , ADPI.CD_UN_EXECUTORA&#13;&#10;     , ADPI.DS_UN_EXECUTORA&#13;&#10;     , ADPI.CD_FUNCAO&#13;&#10;     , ADPI.CD_SUBFUNCAO&#13;&#10;     , ADPI.CD_PROGRAMA&#13;&#10;     , ADPI.CD_ACAO&#13;&#10;     , ADPI.DS_ACAO&#13;&#10;     , ADPI.CD_FICHA_DESPESA&#13;&#10;     , ADPI.DS_FICHA_DESPESA&#13;&#10;     , ADPI.CD_ELEMENTO&#13;&#10;     , ADPI.DS_ELEMENTO    &#13;&#10;     , ADPI.ID_FONTE_RECURSO&#13;&#10;     , ADPI.CD_FONTE_RECURSO&#13;&#10;     , ADPI.DS_FONTE_RECURSO&#13;&#10;     , ADPI.CD_FIXO&#13;&#10;     , ADPI.CD_VARIAVEL&#13;&#10;     , ADPI.DS_APLICACAO&#13;&#10;     , ADPI.CD_CENTRO_CUSTO&#13;&#10;     , ADPI.DS_CENTRO_CUSTO&#13;&#10;     , ADPI.CD_TIPO_DESPESA&#13;&#10;     , ADPI.DS_TIPO_DESPESA    &#13;&#10;     , ADPI.RESPONSAVEL        AS ORDENADOR&#13;&#10;     &#13;&#10;     , APPE.HISTORICO    &#13;&#10;     , SPRS.SALDO_DISPONIVEL &#13;&#10;     , APPE.VL_DOCUMENTO&#13;&#10;     &#13;&#10;     , SPRS.SALDO_DISPONIVEL &#13;&#10;     - APPE.VL_DOCUMENTO      AS SALDO_SEGUINTE&#13;&#10;&#13;&#10; FROM API_PEDIDO_PRE_EMPENHO APPE&#13;&#10;      LEFT JOIN SUP_PEDIDO_RESERVA     SPRS  ON SPRS.ID_PEDIDO_RESERVA       = APPE.ID_PEDIDO_PRE_EMPENHO  &#13;&#10;&#13;&#10;      LEFT JOIN SUP_SOLICITACAO_COMPRA SLCP ON SLCP.ID_SOLICITACAO_COMPRA    = SPRS.ID_SOLICITACAO_COMPRA&#13;&#10;      LEFT JOIN SUP_PROCESSO_COMPRA    PCCP ON PCCP.ID_PROCESSO_COMPRA       = SPRS.ID_PROCESSO_COMPRA&#13;&#10;      LEFT JOIN SUP_NAD                SNAD ON SNAD.ID_NAD                   = SPRS.ID_NAD&#13;&#10;&#13;&#10;      LEFT JOIN SUP_TP_SOLICITACAO     TSOL ON TSOL.TP_SOLICITACAO           = SLCP.TP_SOLICITACAO&#13;&#10;&#13;&#10;      LEFT JOIN SIS_USUARIO            SIUP  ON SIUP.ID_USUARIO              = APPE.ID_USUARIO_PEDIDO&#13;&#10;      LEFT JOIN SIS_USUARIO            SIUL  ON SIUL.ID_USUARIO              = APPE.ID_USUARIO_LIBERACAO    &#13;&#10;      LEFT JOIN API_DOTACAO_POR_ID(APPE.ID_FICHA, APPE.ID_PLANO_CONTA, APPE.ID_APLICACAO, APPE.ID_CENTRO_CUSTO, APPE.ID_TP_DESPESA, APPE.ID_ORDENADOR) ADPI ON 1 = 1&#13;&#10;WHERE APPE.ID_PEDIDO_PRE_EMPENHO = :ID_PEDIDO_PRE_EMPENHO">
+        <Column Name="id_pedido_pre_empenho" DataType="System.Int32"/>
+        <Column Name="nr_pedido_pre_empenho" DataType="System.Int32"/>
+        <Column Name="ano_pedido_pre_empenho" DataType="System.Int32"/>
+        <Column Name="dt_pedido_pre_empenho" DataType="System.DateTime"/>
+        <Column Name="id_usuario_pedido" DataType="System.Int32"/>
+        <Column Name="us_solicitante" DataType="System.String"/>
+        <Column Name="ds_solicitante" DataType="System.String"/>
+        <Column Name="id_usuario_liberacao" DataType="System.Int32"/>
+        <Column Name="us_aprovador" DataType="System.String"/>
+        <Column Name="ds_aprovador" DataType="System.String"/>
+        <Column Name="tp_pedido" DataType="System.String"/>
+        <Column Name="cd_tp_empenho" DataType="System.Int32"/>
+        <Column Name="nr_pre_empenho" DataType="System.Int32"/>
+        <Column Name="ano_pre_empenho" DataType="System.Int32"/>
+        <Column Name="dt_pre_empenho" DataType="System.DateTime"/>
+        <Column Name="tp_proc_despesa" DataType="System.Int32"/>
+        <Column Name="nr_proc_despesa" DataType="System.Int32"/>
+        <Column Name="ano_proc_despesa" DataType="System.Int32"/>
+        <Column Name="desembolso" DataType="System.Int16"/>
+        <Column Name="finalidade" DataType="System.String"/>
+        <Column Name="nr_ficha_despesa" DataType="System.Int32"/>
+        <Column Name="cd_un_orcamentaria" DataType="System.String"/>
+        <Column Name="ds_un_orcamentaria" DataType="System.String"/>
+        <Column Name="cd_un_executora" DataType="System.String"/>
+        <Column Name="ds_un_executora" DataType="System.String"/>
+        <Column Name="cd_funcao" DataType="System.String"/>
+        <Column Name="cd_subfuncao" DataType="System.String"/>
+        <Column Name="cd_programa" DataType="System.String"/>
+        <Column Name="cd_acao" DataType="System.String"/>
+        <Column Name="ds_acao" DataType="System.String"/>
+        <Column Name="cd_ficha_despesa" DataType="System.String"/>
+        <Column Name="ds_ficha_despesa" DataType="System.String"/>
+        <Column Name="cd_elemento" DataType="System.String"/>
+        <Column Name="ds_elemento" DataType="System.String"/>
+        <Column Name="id_fonte_recurso" DataType="System.Int32"/>
+        <Column Name="cd_fonte_recurso" DataType="System.String"/>
+        <Column Name="ds_fonte_recurso" DataType="System.String"/>
+        <Column Name="cd_fixo" DataType="System.String"/>
+        <Column Name="cd_variavel" DataType="System.String"/>
+        <Column Name="ds_aplicacao" DataType="System.String"/>
+        <Column Name="cd_centro_custo" DataType="System.String"/>
+        <Column Name="ds_centro_custo" DataType="System.String"/>
+        <Column Name="cd_tipo_despesa" DataType="System.String"/>
+        <Column Name="ds_tipo_despesa" DataType="System.String"/>
+        <Column Name="ordenador" DataType="System.String"/>
+        <Column Name="historico" DataType="System.String"/>
+        <Column Name="saldo_disponivel" DataType="System.Double"/>
+        <Column Name="vl_documento" DataType="System.Double"/>
+        <Column Name="saldo_seguinte" DataType="System.Double"/>
+        <CommandParameter Name="ID_PEDIDO_PRE_EMPENHO" DataType="9" Expression="[SqlListaPedido.id_pedido_pre_empenho]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;PEDIDO DE PRÉ-EMPENHO&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="5928"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idSolicitacaoCompra" DataType="System.Int64" Expression="-123"/>
+    <Parameter Name="idPedidoPreEmpenho" DataType="System.Int64" Expression="-123"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="98.67">
+        <inherited Name="TxtFiltro"/>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="GrhListaPedido" ZOrder="0" Top="121.73" Width="718.2" Height="9.45" Condition="[SqlListaPedido.id_pedido_pre_empenho]">
+      <DataBand Name="BndListaPedido" Top="135.35" Width="718.2" Height="9.45" DataSource="Table">
+        <DataBand Name="BndPedidoPreEmpenho" Top="148.97" Width="718.2" Height="368.55" DataSource="Table1">
+          <TextObject Name="Text1" Width="280.1" Height="24.95" Border.Lines="All" Border.Color="41, 82, 118" Fill.Color="41, 82, 118" Text="Pedido de Pré-Empenho: [SqlPedidoPreEmpenho.nr_pedido_pre_empenho]/[SqlPedidoPreEmpenho.ano_pedido_pre_empenho]" VertAlign="Center" Font="Tahoma, 10pt, style=Bold" TextFill.Color="White">
+            <Formats>
+              <CustomFormat Format="00000"/>
+              <GeneralFormat/>
+            </Formats>
+          </TextObject>
+          <TextObject Name="Text2" Top="24.95" Width="120.2" Height="20.03" Border.Lines="All" Text="Pedido em:" HorzAlign="Right" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text3" Top="44.98" Width="120.2" Height="20.03" Border.Lines="All" Text="Tipo de Pedido:" HorzAlign="Right" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text4" Top="65.02" Width="120.2" Height="20.03" Border.Lines="All" Text="Tipo de Empenho:" HorzAlign="Right" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text5" Top="85.05" Width="120.2" Height="20.03" Border.Lines="All" Text="Desembolso (meses):" HorzAlign="Right" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text6" Left="120.2" Top="24.95" Width="85.05" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[SqlPedidoPreEmpenho.dt_pedido_pre_empenho]" Format="Date" Format.Format="d" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text7" Left="120.2" Top="44.98" Width="85.05" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[SqlPedidoPreEmpenho.tp_pedido]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text8" Left="120.2" Top="65.02" Width="85.05" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[IIf([SqlPedidoPreEmpenho.cd_tp_empenho] == 1, &quot;Ordinário&quot;, IIf([SqlPedidoPreEmpenho.cd_tp_empenho] == 2, &quot;Global&quot;, &quot;Estimativo&quot;))]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text9" Left="120.2" Top="85.05" Width="85.05" Height="20.03" Border.Lines="All" Text="[SqlPedidoPreEmpenho.desembolso]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text10" Left="204.88" Top="24.95" Width="65.02" Height="20.03" Border.Lines="Right, Top, Bottom" Text="Solicitante:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text11" Left="204.88" Top="44.98" Width="65.02" Height="20.03" Border.Lines="Right, Top, Bottom" Text="Aprovador:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text12" Left="204.88" Top="65.02" Width="65.02" Height="20.03" Border.Lines="Right, Top, Bottom" Text="Finalidade:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text13" Left="204.88" Top="85.05" Width="125.87" Height="20.03" Border.Lines="Right, Top, Bottom" Text="Autorização de despesa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text14" Left="269.89" Top="24.95" Width="448.31" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[Trim([SqlPedidoPreEmpenho.ds_solicitante])] - [Trim([SqlPedidoPreEmpenho.us_solicitante])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text15" Left="269.89" Top="44.98" Width="448.31" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[Trim([SqlPedidoPreEmpenho.ds_aprovador])] - [Trim([SqlPedidoPreEmpenho.us_aprovador])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text16" Left="269.89" Top="65.02" Width="448.31" Height="20.03" Border.Lines="All" Fill.Color="ButtonFace" Text="[SqlPedidoPreEmpenho.finalidade]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text17" Left="330.75" Top="85.05" Width="134.57" Height="20.03" Border.Lines="All" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text18" Left="464.94" Top="85.05" Width="76.73" Height="20.03" Border.Lines="Right, Top, Bottom" Text="Pré-Empenho:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text19" Left="541.3" Top="85.05" Width="176.9" Height="20.03" Border.Lines="All" Text="[IIf([SqlPedidoPreEmpenho.nr_pre_empenho] != null,[SqlPedidoPreEmpenho.nr_pre_empenho].ToString(&quot;D5&quot;) + &quot; - &quot; + ((DateTime)[SqlPedidoPreEmpenho.dt_pre_empenho]).ToString(&quot;dd/MM/yyyy&quot;),&quot;&quot;)]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text23" Top="125.12" Width="269.89" Height="20.03" Fill.Color="ButtonFace" Text="Dotação" VertAlign="Center" Font="Tahoma, 10pt, style=Bold"/>
+          <TextObject Name="Text24" Top="145.15" Width="120.2" Height="20.03" Border.Lines="All" Text="Ficha de despesa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text25" Top="165.19" Width="120.2" Height="20.03" Border.Lines="All" Text="Unidade Orçamentária:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text26" Top="205.25" Width="120.2" Height="20.03" Border.Lines="All" Text="Funcional Programática:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7.6pt"/>
+          <TextObject Name="Text27" Top="225.29" Width="120.2" Height="20.03" Border.Lines="All" Text="Elemento:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text28" Top="245.32" Width="120.2" Height="20.03" Border.Lines="All" Text="Subelemento:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text29" Top="265.36" Width="120.2" Height="20.03" Border.Lines="All" Text="Fonte de Recurso:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text30" Top="285.39" Width="120.2" Height="20.03" Border.Lines="All" Text="Aplicação:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text31" Top="305.42" Width="120.2" Height="20.03" Border.Lines="All" Text="Centro de Custo:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text32" Top="325.46" Width="120.2" Height="20.03" Border.Lines="All" Text="Tipo de despesa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text33" Top="345.49" Width="120.2" Height="20.03" Border.Lines="All" Text="Ordenador:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text34" Top="185.22" Width="120.2" Height="20.03" Border.Lines="All" Text="Unidade Executora:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text35" Left="120.2" Top="145.15" Width="598.37" Height="20.03" Border.Lines="All" Text="[SqlPedidoPreEmpenho.nr_ficha_despesa]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text36" Left="120.2" Top="165.19" Width="598.37" Height="20.03" Border.Lines="All" Text="[Trim([SqlPedidoPreEmpenho.cd_un_orcamentaria])] - [Trim([SqlPedidoPreEmpenho.ds_un_orcamentaria])]" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text37" Left="120.2" Top="185.22" Width="598.37" Height="20.03" Border.Lines="All" Text="[Trim([SqlPedidoPreEmpenho.cd_un_executora])] - [Trim([SqlPedidoPreEmpenho.ds_un_executora])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text38" Left="120.2" Top="205.25" Width="598.37" Height="20.03" Border.Lines="All" Text="[Trim([SqlPedidoPreEmpenho.cd_funcao])].[Trim([SqlPedidoPreEmpenho.cd_subfuncao])].[Trim([SqlPedidoPreEmpenho.cd_programa])].[Trim([SqlPedidoPreEmpenho.cd_acao])] - [Trim([SqlPedidoPreEmpenho.ds_acao])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text39" Left="120.2" Top="225.29" Width="598.37" Height="20.03" Border.Lines="All" Text="[Trim([SqlPedidoPreEmpenho.cd_ficha_despesa])] - [Trim([SqlPedidoPreEmpenho.ds_ficha_despesa])]&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text40" Left="120.2" Top="245.32" Width="598.37" Height="20.03" Border.Lines="All" Text="[Trim([SqlPedidoPreEmpenho.cd_elemento])] - [Trim([SqlPedidoPreEmpenho.ds_elemento])]&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text41" Left="120.2" Top="265.36" Width="598.37" Height="20.03" Border.Lines="All" Text="[Trim([SqlPedidoPreEmpenho.cd_fonte_recurso])] - [Trim([SqlPedidoPreEmpenho.ds_fonte_recurso])]&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text42" Left="120.2" Top="285.39" Width="598.37" Height="20.03" Border.Lines="All" Text="[Trim([SqlPedidoPreEmpenho.cd_fixo])].[Trim([SqlPedidoPreEmpenho.cd_variavel])] - [Trim([SqlPedidoPreEmpenho.ds_aplicacao])]&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text43" Left="120.2" Top="305.42" Width="598.37" Height="20.03" Border.Lines="All" Text="[Trim([SqlPedidoPreEmpenho.cd_centro_custo])] - [Trim([SqlPedidoPreEmpenho.ds_centro_custo])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text44" Left="120.2" Top="325.46" Width="598.37" Height="20.03" Border.Lines="All" Text="[Trim([SqlPedidoPreEmpenho.cd_tipo_despesa])] - [Trim([SqlPedidoPreEmpenho.ds_tipo_despesa])]&#13;&#10;" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <TextObject Name="Text45" Left="120.2" Top="345.49" Width="598.37" Height="20.03" Border.Lines="All" Text="[SqlPedidoPreEmpenho.ordenador]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+          <ChildBand Name="BndPedidoHistorico" Top="521.68" Width="718.2" Height="66.15" CanGrow="true">
+            <TextObject Name="Text46" Top="15.12" Width="269.89" Height="20.03" Fill.Color="ButtonFace" Text="Histórico" VertAlign="Center" Font="Tahoma, 10pt, style=Bold"/>
+            <TextObject Name="Text47" Top="35.15" Width="718.2" Height="20.03" Border.Lines="All" CanGrow="true" Text="[SqlPedidoPreEmpenho.historico]" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <ChildBand Name="BndPedidoAssinante" Top="592" Width="718.2" Height="245.7">
+              <TextObject Name="Text48" Top="15.12" Width="275.18" Height="24.95" Border.Lines="Left, Right, Top" Text="Saldo disponível na ficha na elaboração do pedido:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="Text49" Top="40.07" Width="275.18" Height="24.95" Border.Lines="Left, Right" Text="Valor do Pedido:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 10pt, style=Bold"/>
+              <TextObject Name="Text50" Top="65.02" Width="275.18" Height="24.95" Border.Lines="Left, Right, Bottom" Text="Saldo disponível na ficha após a elaboração do pedido:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+              <TextObject Name="Text51" Left="275.18" Top="15.12" Width="150.07" Height="24.95" Border.Lines="All" Text="[SqlPedidoPreEmpenho.saldo_disponivel]&#13;&#10;" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 10pt"/>
+              <TextObject Name="Text52" Left="275.18" Top="40.07" Width="150.07" Height="24.95" Border.Lines="All" Fill.Color="53, 103, 149" Text="[SqlPedidoPreEmpenho.vl_documento]&#13;&#10;" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 10pt, style=Bold" TextFill.Color="White"/>
+              <TextObject Name="Text53" Left="275.18" Top="65.02" Width="150.07" Height="24.95" Border.Lines="All" Text="[SqlPedidoPreEmpenho.saldo_seguinte]&#13;&#10;" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 10pt"/>
+              <TextObject Name="Text54" Left="424.87" Top="15.12" Width="293.33" Height="24.95" Border.Lines="Left, Right, Top" Text="Controle Orçamentário - Financeiro" HorzAlign="Center" Font="Tahoma, 10pt"/>
+              <TextObject Name="Text55" Left="424.87" Top="40.07" Width="293.33" Height="24.95" Border.Lines="Left, Right" Text="Data:_____/_____/_________" Font="Tahoma, 10pt"/>
+              <TextObject Name="Text56" Left="424.87" Top="65.02" Width="293.33" Height="24.95" Border.Lines="Right, Bottom" Text="ASS:_________________________________" VertAlign="Bottom" Font="Tahoma, 10pt"/>
+              <LineObject Name="Line1" Top="198.45" Width="325.08"/>
+              <TextObject Name="Text57" Top="199.58" Width="325.08" Height="29.86" Text="ORDENADOR&#13;&#10;[SqlPedidoPreEmpenho.ordenador]&#13;&#10;" HorzAlign="Center" VertAlign="Bottom" Font="Tahoma, 8pt"/>
+            </ChildBand>
+          </ChildBand>
+        </DataBand>
+      </DataBand>
+    </GroupHeaderBand>
+    <inherited Name="BndRodape" Top="841.87">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

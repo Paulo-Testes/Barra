@@ -1,0 +1,638 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\Documents\PESSOAS\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="..\..\..\..\..\..\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\designer-FRX\Documents\PESSOAS\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/29/2025 11:18:20" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }    
+
+    private void grpCabecalhoEntrada_BeforePrint(object sender, EventArgs e)
+    {
+      grpCabecalhoEntrada.Visible = ((String)Report.GetParameterValue(&quot;tpLancamento&quot;) == &quot;0&quot;);
+    }
+
+    private void bndCabecalhoSaida_BeforePrint(object sender, EventArgs e)
+    {
+      bndCabecalhoSaida.Visible = ((String)Report.GetParameterValue(&quot;tpLancamento&quot;) == &quot;1&quot;);
+    }
+
+    private void grpAgrupamento_BeforePrint(object sender, EventArgs e)
+    {
+      grpAgrupamento.Visible = ((String)Report.GetParameterValue(&quot;tpAgrupamento&quot;) != &quot;0&quot;);
+    }
+
+    private void grpLancamentoEntrada_BeforePrint(object sender, EventArgs e)
+    {
+      grpLancamentoEntrada.Visible = ((String)Report.GetParameterValue(&quot;tpLancamento&quot;) == &quot;0&quot;); 
+    }
+
+    private void SqlLancamentoTP_ENTRADA_BeforePrint(object sender, EventArgs e)
+    {
+      string[] TP_ENTRADA = new string[]
+        {
+        &quot;AF&quot;,
+        &quot;Sem AF&quot;,
+        &quot;Inventário&quot;,
+        &quot;Doação&quot;,
+        &quot;Transferência&quot;,
+        &quot;Estorno de Saída&quot;,
+        &quot;Outros&quot;,
+        &quot;Transferência de Conta Contábil de Estoque&quot;,
+        &quot;Produto acabado&quot;
+        };
+
+      Int16 index = (Int16)Report.GetColumnValue(&quot;SqlLancamento.TP_ENTRADA&quot;);
+      SqlLancamentoTP_ENTRADA.Text = (index &gt;= 0 &amp;&amp; index &lt; TP_ENTRADA.Length) ? TP_ENTRADA[index] : &quot;&quot;;
+    }
+
+    private void SqlLancamentoTP_SAIDA_BeforePrint(object sender, EventArgs e)
+    {
+      string[] TP_SAIDA = new string[]
+        {
+        &quot;Requisição on-line&quot;,
+        &quot;Sem Requisição&quot;,
+        &quot;Inventário&quot;,
+        &quot;Perda&quot;,
+        &quot;Transferência&quot;,
+        &quot;Estorno de Entrada&quot;,
+        &quot;Outros&quot;,
+        &quot;Requisição&quot;,
+        &quot;Consumo imediato&quot;,
+        &quot;Transferência de Conta Contábil de Estoque&quot;,
+        &quot;Dispensação&quot;,
+        &quot;Materiais para produção&quot;
+        };
+
+      Int16 index = (Int16)Report.GetColumnValue(&quot;SqlLancamento.TP_SAIDA&quot;);
+      SqlLancamentoTP_SAIDA.Text = (index &gt;= 0 &amp;&amp; index &lt; TP_SAIDA.Length) ? TP_SAIDA[index] : &quot;&quot;;
+    }
+
+    private void bndLancamentoSaida_BeforePrint(object sender, EventArgs e)
+    {
+      bndLancamentoSaida.Visible = ((String)Report.GetParameterValue(&quot;tpLancamento&quot;) == &quot;1&quot;);
+    }
+
+    private void bndAlmoxarifado_BeforePrint(object sender, EventArgs e)
+    {
+      bndAlmoxarifado.Visible = ((String)Report.GetParameterValue(&quot;exibirAlmoxarifado&quot;) == &quot;1&quot;);
+    }
+
+    private void bndUnidadeEstoque_BeforePrint(object sender, EventArgs e)
+    {
+      bndUnidadeEstoque.Visible = ((String)Report.GetParameterValue(&quot;exibirUnidadeEstoque&quot;) == &quot;1&quot;);
+    }
+
+    private void bndAlmoxarife_BeforePrint(object sender, EventArgs e)
+    {
+      bndAlmoxarife.Visible = ((String)Report.GetParameterValue(&quot;ExibirAlmoxarife&quot;) == &quot;1&quot;);
+    }
+
+    private void bndObservacao_BeforePrint(object sender, EventArgs e)
+    {
+      bndObservacao.Visible = 
+        ((String)Report.GetParameterValue(&quot;ExibirObservacao&quot;) == &quot;1&quot;) &amp;&amp; 
+        !string.IsNullOrWhiteSpace(((string)Report.GetColumnValue(&quot;SqlLancamento.OBS&quot;)).Trim());
+    }
+
+    private void bndAF_BeforePrint(object sender, EventArgs e)
+    {
+      bndAF.Visible = 
+        ((String)Report.GetParameterValue(&quot;ExibirAF&quot;) == &quot;1&quot;) &amp;&amp;
+        ((Int32)Report.GetColumnValue(&quot;SqlLancamento.NR_AUTORIZACAO&quot;) != 0);
+    }
+
+    private void bndRequisicao_BeforePrint(object sender, EventArgs e)
+    {
+      bndRequisicao.Visible =
+        ((String)Report.GetParameterValue(&quot;ExibirRequisicao&quot;) == &quot;1&quot;) &amp;&amp;
+        ((Int32)Report.GetColumnValue(&quot;SqlLancamento.NR_REQUISICAO&quot;) != 0);
+    }
+
+    private void bndDispensacao_BeforePrint(object sender, EventArgs e)
+    {
+      bndDispensacao.Visible =
+        ((String)Report.GetParameterValue(&quot;ExibirDispensacao&quot;) == &quot;1&quot;) &amp;&amp;
+        !string.IsNullOrWhiteSpace(((string)Report.GetColumnValue(&quot;SqlLancamento.NOME_BENEFICIARIO_DISPENS&quot;)).Trim());
+    }
+
+    private void bndDocumento_BeforePrint(object sender, EventArgs e)
+    {
+      // Array equivalente ao TP_DOCUMENTO do Pascal
+      string[] TP_DOCUMENTO = { &quot;Memorando&quot;, &quot;Ofício&quot;, &quot;Requisição&quot; };
+
+      // Verifica visibilidade do band conforme parâmetros e campos
+      bndDocumento.Visible =
+        ((String)Report.GetParameterValue(&quot;ExibirDocumento&quot;) == &quot;1&quot;) &amp;&amp;
+        ((Int32)Report.GetColumnValue(&quot;SqlLancamento.NR_DOCUMENTO&quot;) != 0);
+
+      if (bndDocumento.Visible)
+      {
+        // Recupera os valores dos campos
+        int tipo = (int)(Int16)Report.GetColumnValue(&quot;SqlLancamento.TP_DOCUMENTO&quot;);
+        Int64 numero = (Int32)Report.GetColumnValue(&quot;SqlLancamento.NR_DOCUMENTO&quot;);
+        Int64 ano = (Int16)Report.GetColumnValue(&quot;SqlLancamento.ANO_DOCUMENTO&quot;);
+
+        // Monta o texto formatado
+        SqlLancamentoDOCUMENTO.Text = 
+          &quot;&lt;b&gt;Documento&lt;/b&gt;: &quot; + TP_DOCUMENTO[tipo] + &quot; &quot; + numero + &quot;/&quot; + ano;
+      }
+    }
+
+    private void bndDescricaoCompleta_BeforePrint(object sender, EventArgs e)
+    {
+      bndDescricaoCompleta.Visible =
+        ((String)Report.GetParameterValue(&quot;ExibirDescricaoCompleta&quot;) == &quot;1&quot;) &amp;&amp;
+        !string.IsNullOrWhiteSpace(((string)Report.GetColumnValue(&quot;SqlLancamento.DS_COMPLETA&quot;)).Trim());
+    }
+
+    private void bndLote_BeforePrint(object sender, EventArgs e)
+    {
+      bndLote.Visible =
+        ((String)Report.GetParameterValue(&quot;ExibirLote&quot;) == &quot;1&quot;) &amp;&amp;
+        !string.IsNullOrWhiteSpace(((string)Report.GetColumnValue(&quot;SqlLancamento.DS_LOTE&quot;)).Trim());
+    }
+
+    private void bndContaContabilEstoque_BeforePrint(object sender, EventArgs e)
+    {
+      bndContaContabilEstoque.Visible =
+        ((String)Report.GetParameterValue(&quot;ExibirContaContabil&quot;) == &quot;1&quot;) &amp;&amp;
+        !string.IsNullOrWhiteSpace(((string)Report.GetColumnValue(&quot;SqlLancamento.CD_CONTA_CONTABIL_ESTOQUE&quot;)).Trim());
+    }
+
+    private void bndContaContabilConsumo_BeforePrint(object sender, EventArgs e)
+    {
+      bndContaContabilConsumo.Visible =
+        ((String)Report.GetParameterValue(&quot;ExibirContaContabil&quot;) == &quot;1&quot;) &amp;&amp;
+        !string.IsNullOrWhiteSpace(((string)Report.GetColumnValue(&quot;SqlLancamento.CD_CONTA_CONTABIL_CONSUMO&quot;)).Trim());
+    }
+
+    private void bndLocalizacao_BeforePrint(object sender, EventArgs e)
+    {
+      bndLocalizacao.Visible =
+       ((String)Report.GetParameterValue(&quot;ExibirLocalizacao&quot;) == &quot;1&quot;) &amp;&amp;
+        !string.IsNullOrWhiteSpace(((string)Report.GetColumnValue(&quot;SqlLancamento.LOCALIZACAO_FISICA&quot;)).Trim());
+    }
+
+    private void TxtDatas_BeforePrint(object sender, EventArgs e)
+    {
+      string tpEntrada = Report.GetParameterValue(&quot;tpEntrada&quot;)?.ToString() ?? &quot;&quot;;
+      string tpSaida   = Report.GetParameterValue(&quot;tpSaida&quot;)?.ToString() ?? &quot;&quot;;
+
+      string[] TP_ENTRADA = new string[]
+        {
+        &quot;AF&quot;,
+        &quot;Sem AF&quot;,
+        &quot;Inventário&quot;,
+        &quot;Doação&quot;,
+        &quot;Transferência&quot;,
+        &quot;Estorno de Saída&quot;,
+        &quot;Outros&quot;,
+        &quot;Transferência de Conta Contábil de Estoque&quot;,
+        &quot;Produto acabado&quot;
+        };
+
+      string[] TP_SAIDA = new string[]
+        {
+        &quot;Requisição on-line&quot;,
+        &quot;Sem Requisição&quot;,
+        &quot;Inventário&quot;,
+        &quot;Perda&quot;,
+        &quot;Transferência&quot;,
+        &quot;Estorno de Entrada&quot;,
+        &quot;Outros&quot;,
+        &quot;Requisição&quot;,
+        &quot;Consumo imediato&quot;,
+        &quot;Transferência de Conta Contábil de Estoque&quot;,
+        &quot;Dispensação&quot;,
+        &quot;Materiais para produção&quot;
+        };
+
+      // Opção 1: Se os parâmetros ainda são índices numéricos (como strings)
+      if (!string.IsNullOrEmpty(tpEntrada) &amp;&amp; int.TryParse(tpEntrada, out int indexEntrada) &amp;&amp; indexEntrada &gt; -1)
+      {
+      TxtDatas.Text = TxtDatas.Text.Replace(&quot;&lt;DsTpEntrada&gt;&quot;, 
+        (indexEntrada &gt;= 0 &amp;&amp; indexEntrada &lt; TP_ENTRADA.Length) ? TP_ENTRADA[indexEntrada] : &quot;&quot;);
+    }
+
+      if (!string.IsNullOrEmpty(tpSaida) &amp;&amp; int.TryParse(tpSaida, out int indexSaida) &amp;&amp; indexSaida &gt; -1)
+      {
+      TxtDatas.Text = TxtDatas.Text.Replace(&quot;&lt;DsTpSaida&gt;&quot;, // CORREÇÃO: era &lt;DsTpEntrada&gt;
+        (indexSaida &gt;= 0 &amp;&amp; indexSaida &lt; TP_SAIDA.Length) ? TP_SAIDA[indexSaida] : &quot;&quot;); // CORREÇÃO: era TP_ENTRADA
+      }
+
+      // Opção 2: Se os parâmetros agora são os próprios valores das descrições
+      /*
+      if (!string.IsNullOrEmpty(tpEntrada))
+      {
+      TxtDatas.Text = TxtDatas.Text.Replace(&quot;&lt;DsTpEntrada&gt;&quot;, tpEntrada);
+      }
+
+      if (!string.IsNullOrEmpty(tpSaida))
+      {
+      TxtDatas.Text = TxtDatas.Text.Replace(&quot;&lt;DsTpSaida&gt;&quot;, tpSaida);
+      }
+      */
+    }
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAf45SGh+1JQ06HfUCwVjdXLyOtFr5FbmNWNqr1W8I2tPRGoPzSsFGNAQf85ceZvCGogRGJncwLI0VhpBoFVj/qSQKkbhjw8vK4wcDZgU0qxRBjxKLft4b57N2TUbv5ohw=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = log.id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlPeriodo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT to_date(:dataInicial, 'DD/MM/YYYY') AS DT_INICIO&#13;&#10;     , to_date(:dataFinal, 'DD/MM/YYY') AS DT_FINAL&#13;&#10;  FROM SIS_SEQUENCIA A&#13;&#10; WHERE A.ID_SEQUENCIA = 1">
+        <Column Name="dt_inicio" DataType="System.DateTime"/>
+        <Column Name="dt_final" DataType="System.DateTime"/>
+        <CommandParameter Name="dataInicial" DataType="22" Expression="[dataInicial]"/>
+        <CommandParameter Name="dataFinal" DataType="22" Expression="[dataFinal]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlLancamento" DataType="System.Int32" Enabled="true" SelectCommand="SELECT CASE WHEN 0 &gt;= :TP_AGRUPAMENTO THEN '0'&#13;&#10;            WHEN 1  = :TP_AGRUPAMENTO THEN LPAD(D.CD_ALMOXARIFADO, 20, '0')&#13;&#10;            WHEN 2  = :TP_AGRUPAMENTO THEN LPAD(E.CD_UNIDADE_ESTOQUE, 20, '0')&#13;&#10;            WHEN 3  = :TP_AGRUPAMENTO THEN LPAD(M.CD_CENTRO_CONSUMO, 20, '0')&#13;&#10;            WHEN 4  = :TP_AGRUPAMENTO THEN LPAD(CAST(P.TP_MATERIAL      AS CHAR(1))               ||&#13;&#10;                                                LPAD(CAST(R.CD_GRUPO    AS VARCHAR(20)), 3, '0')  ||&#13;&#10;                                                LPAD(CAST(Q.CD_GRUPO    AS VARCHAR(20)), 3, '0')  ||&#13;&#10;                                                LPAD(CAST(P.CD_MATERIAL AS VARCHAR(20)), 6, '0'), 20, '0')&#13;&#10;       END AS CHAVE_AGRUPAMENTO&#13;&#10;     , CASE WHEN 0 &gt;= :TP_AGRUPAMENTO THEN NULL&#13;&#10;            WHEN 1  = :TP_AGRUPAMENTO THEN CAST(D.CD_ALMOXARIFADO    AS VARCHAR(20)) || ' - ' || D.DS_ALMOXARIFADO&#13;&#10;            WHEN 2  = :TP_AGRUPAMENTO THEN CAST(E.CD_UNIDADE_ESTOQUE AS VARCHAR(20)) || ' - ' || E.DS_UNIDADE_ESTOQUE&#13;&#10;            WHEN 3  = :TP_AGRUPAMENTO THEN CAST(M.CD_CENTRO_CONSUMO  AS VARCHAR(20)) || ' - ' || M.DS_CENTRO_CONSUMO&#13;&#10;            WHEN 4  = :TP_AGRUPAMENTO THEN CAST(P.CD_MATERIAL        AS VARCHAR(20)) || ' - ' || P.DS_MATERIAL&#13;&#10;       END AS DS_AGRUPAMENTO&#13;&#10;     , A.ID_LANCAMENTO&#13;&#10;     , A.DT_LANCAMENTO&#13;&#10;     , A.NR_LANCAMENTO&#13;&#10;     , A.TP_LANCAMENTO&#13;&#10;     , A.TP_DOCUMENTO&#13;&#10;     , A.NR_DOCUMENTO&#13;&#10;     , A.ANO_DOCUMENTO&#13;&#10;     , A.OBS&#13;&#10;     , EE.ID_SERIE_NF                                                           AS TP_DOC_FISCAL&#13;&#10;     , EE.SERIE_NF                                                              AS SR_DOC_FISCAL&#13;&#10;     , DD.NR_NF                                                                 AS NR_DOC_FISCAL&#13;&#10;     , DD.DS_NF                                                                 AS DS_DOC_FISCAL&#13;&#10;     , D.CD_ALMOXARIFADO&#13;&#10;     , D.DS_ALMOXARIFADO&#13;&#10;     , E.CD_UNIDADE_ESTOQUE&#13;&#10;     , E.DS_UNIDADE_ESTOQUE&#13;&#10;     , F.DS_USUARIO                                                             AS NOME_ALMOXARIFE&#13;&#10;     , F.NOME_USUARIO                                                           AS NOME_COMPLETO_ALMOXARIFE&#13;&#10;     , B.TP_ENTRADA&#13;&#10;     , G.NR_LANCAMENTO                                                          AS NR_LANCAMENTO_SAIDA     &#13;&#10;     , G.DT_LANCAMENTO                                                          AS DT_LANCAMENTO_SAIDA&#13;&#10;     , H.NR_AUTORIZACAO&#13;&#10;     , H.ANO_AUTORIZACAO&#13;&#10;     , I.NOME_RAZAO                                                             AS FORNECEDOR&#13;&#10;     , C.TP_SAIDA&#13;&#10;     , J.NR_LANCAMENTO                                                          AS NR_LANCAMENTO_ENTRADA      &#13;&#10;     , J.DT_LANCAMENTO                                                          AS DT_LANCAMENTO_ENTRADA      &#13;&#10;     , L.NR_REQUISICAO&#13;&#10;     , L.CP_ANO                                                                 AS ANO_REQUISICAO&#13;&#10;     , M.CD_CENTRO_CONSUMO&#13;&#10;     , M.DS_CENTRO_CONSUMO&#13;&#10;     , N.DS_USUARIO                                                             AS NOME_REQUISITANTE&#13;&#10;     , N.NOME_USUARIO 	                                                          AS NOME_COMPLETO_REQUISITANTE&#13;&#10;     , CAST(CAST(P.TP_MATERIAL      AS CHAR(1))               || '.' ||&#13;&#10;            LPAD(CAST(R.CD_GRUPO    AS VARCHAR(20)), 3, '0')  || '.' ||&#13;&#10;            LPAD(CAST(Q.CD_GRUPO    AS VARCHAR(20)), 3, '0')  || '.' ||&#13;&#10;            LPAD(CAST(P.CD_MATERIAL AS VARCHAR(20)), 6, '0')&#13;&#10;            AS VARCHAR(120) )                                              AS CD_CLASSIFICACAO&#13;&#10;     , P.CD_MATERIAL&#13;&#10;     , P.TP_MATERIAL&#13;&#10;     , P.DS_MATERIAL&#13;&#10;     , P.DS_COMPLETA&#13;&#10;     , P.UN_MATERIAL&#13;&#10;     , P.LOCALIZACAO_FISICA&#13;&#10;     , O.CD_CONTA_CONTABIL_CONSUMO&#13;&#10;     , CC1.DS_CONTA_CONTABIL                                                    AS DS_CONTA_CONTABIL_CONSUMO&#13;&#10;     , O.CD_CONTA_CONTABIL_ESTOQUE&#13;&#10;     , CC2.DS_CONTA_CONTABIL                                                    AS DS_CONTA_CONTABIL_ESTOQUE&#13;&#10;     , R.CD_GRUPO&#13;&#10;     , R.DS_GRUPO&#13;&#10;     , Q.CD_GRUPO                                                               AS CD_SUBGRUPO&#13;&#10;     , Q.DS_GRUPO                                                               AS DS_SUBGRUPO&#13;&#10;     , ROUND(O.QTD, 4)                                                          AS QTD&#13;&#10;     , ROUND(O.VL_TOTAL, 2)                                                     AS VL_TOTAL&#13;&#10;     , ROUND(CASE WHEN ROUND(O.QTD, 4) = 0 THEN 0 ELSE O.VL_TOTAL / O.QTD END,2)AS VL_UNITARIO&#13;&#10;     , V.CD_ALMOXARIFADO                                                        AS CD_ALMOXARIFADO_DESTINO&#13;&#10;     , V.DS_ALMOXARIFADO                                                        AS DS_ALMOXARIFADO_DESTINO&#13;&#10;     , SDB.NOME                                                                 AS NOME_BENEFICIARIO_DISPENS&#13;&#10;     , CASE WHEN LENGTH(TRIM(SDB.CPF)) = 11 THEN SDBF.DOCUMENTO_FORMATADO&#13;&#10;            ELSE SDB.CPF END                                                    AS CPF_BENEFICIARIO_DISPENS&#13;&#10;     , SDB.RG_NUMERO                                                            AS RG_BENEFICIARIO_DISPENS&#13;&#10;     , CASE WHEN LENGTH(TRIM(SDB.CARTAO_SUS)) = 15 THEN SDBS.RESULT&#13;&#10;            ELSE SDB.CARTAO_SUS END                                             AS SUS_BENEFICIARIO_DISPENS&#13;&#10;     , SDB.OUTROS                                                               AS OUTROS_BENEFICIARIO_DISPENS&#13;&#10;     , SDR.NOME                                                                 AS NOME_RESPONSAVEL_DISPENS&#13;&#10;     , CASE WHEN LENGTH(TRIM(SDR.CPF)) = 11 THEN SDRF.DOCUMENTO_FORMATADO&#13;&#10;            ELSE SDR.CPF END                                                    AS CPF_RESPONSAVEL_DISPENS&#13;&#10;     , SDR.RG_NUMERO                                                            AS RG_RESPONSAVEL_DISPENS&#13;&#10;     , SPS.NOME                                                                 AS NOME_PROFISSIONAL_SAUDE&#13;&#10;     , SPS.DOCUMENTO                                                            AS DOC_PROFISSIONAL_SAUDE&#13;&#10;     , LTE.DS_LOTE&#13;&#10;  FROM (&#13;&#10;        SELECT SRF.ID_FILTRO&#13;&#10;          FROM SIS_RELATORIO_FILTRO SRF&#13;&#10;         WHERE SRF.ID_RELATORIO_FILTRO = :ID_RELATORIO_FILTRO&#13;&#10;       ) FTR&#13;&#10;       RIGHT JOIN SUP_LANCAMENTO                A   ON A.ID_ENTIDADE                    = :ID_ENTIDADE                    &#13;&#10;                                                   AND A.CP_ANO                         = :CP_ANO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            &#13;&#10;                                                   AND A.TP_LANCAMENTO                  = :TP_LANCAMENTO&#13;&#10;       LEFT JOIN SUP_USUARIO                    T   ON T.ID_USUARIO                     = :ID_USUARIO&#13;&#10;       LEFT JOIN SUP_ACESSO_ALMOXARIFADO        S   ON S.ID_ALMOXARIFADO                = A.ID_ALMOXARIFADO&#13;&#10;                                                   AND S.ID_GRUPO_USUARIO               = T.ID_GRUPO_USUARIO&#13;&#10;       LEFT JOIN SUP_LANCAMENTO_ENTRADA         B   ON B.ID_LANCAMENTO                  = A.ID_LANCAMENTO      &#13;&#10;       LEFT JOIN SUP_LANCAMENTO_SAIDA           C   ON C.ID_LANCAMENTO                  = A.ID_LANCAMENTO&#13;&#10;       LEFT JOIN SUP_LANCAMENTO_ENTRADA         C2  ON C2.ID_LANCAMENTO                 = C.ID_LANCAMENTO_ENTRADA&#13;&#10;                                                   AND C.TP_SAIDA                       = 8&#13;&#10;       LEFT JOIN SUP_ALMOXARIFADO               D   ON D.ID_ALMOXARIFADO                = A.ID_ALMOXARIFADO&#13;&#10;       LEFT JOIN SUP_UNIDADE_ESTOQUE            E   ON E.ID_UNIDADE_ESTOQUE             = A.ID_UNIDADE_ESTOQUE&#13;&#10;       LEFT JOIN SIS_USUARIO                    F   ON F.ID_USUARIO                     = A.ID_USUARIO  &#13;&#10;       LEFT JOIN SUP_LIBERACAO_NF               U   ON U.ID_LIBERACAO_NF                = B.ID_LIBERACAO_NF      &#13;&#10;       LEFT JOIN SUP_AUTORIZACAO                H   ON H.ID_AUTORIZACAO                 = U.ID_AUTORIZACAO&#13;&#10;       LEFT JOIN SIS_PESSOA_NF                  DD  ON DD.ID_PESSOA_NF                  = COALESCE(B.ID_DOC_FISCAL, C2.ID_DOC_FISCAL)      &#13;&#10;       LEFT JOIN SIS_SERIE_NF                   EE  ON EE.ID_SERIE_NF                   = DD.ID_SERIE_NF&#13;&#10;       LEFT JOIN SIS_PESSOA                     I   ON I.ID_PESSOA                      = COALESCE(B.ID_FORNECEDOR, C2.ID_FORNECEDOR) &#13;&#10;       LEFT JOIN SUP_LANCAMENTO                 G   ON G.ID_LANCAMENTO                  = B.ID_LANCAMENTO_SAIDA         &#13;&#10;       LEFT JOIN SUP_LANCAMENTO                 J   ON J.ID_LANCAMENTO                  = C.ID_LANCAMENTO_ENTRADA       &#13;&#10;       LEFT JOIN SUP_REQUISICAO                 L   ON L.ID_REQUISICAO                  = C.ID_REQUISICAO&#13;&#10;       LEFT JOIN SUP_CENTRO_CONSUMO             M   ON M.ID_CENTRO_CONSUMO              = C.ID_CENTRO_CONSUMO&#13;&#10;       LEFT JOIN SIS_USUARIO                    N   ON N.ID_USUARIO                     = C.ID_REQUISITANTE&#13;&#10; &#13;&#10;       LEFT JOIN SUP_ALMOXARIFADO               V   ON V.ID_ALMOXARIFADO                = C.ID_ALMOXARIFADO_DEST      &#13;&#10;       LEFT JOIN SUP_DISPENSACAO_BENEFICIARIO   SDB ON SDB.ID_DISPENSACAO_BENEFICIARIO  = C.ID_DISPENSACAO_BENEFICIARIO&#13;&#10;       LEFT JOIN SIS_FORMATA_DOCUMENTO(2, SDB.CPF) SDBF ON 1                            = 1&#13;&#10;       LEFT JOIN FORMATSTRING(SDB.CARTAO_SUS, '000.000.000.000.000') SDBS ON 1          = 1&#13;&#10;       LEFT JOIN SUP_DISPENSACAO_RESPONSAVEL    SDR ON SDR.ID_DISPENSACAO_RESPONSAVEL   = C.ID_DISPENSACAO_RESPONSAVEL   &#13;&#10;       LEFT JOIN SIS_FORMATA_DOCUMENTO(2, SDR.CPF) SDRF ON 1                            = 1&#13;&#10;       LEFT JOIN SUP_PROFISSIONAL_SAUDE         SPS ON SPS.ID_PROFISSIONAL_SAUDE        = C.ID_PROFISSIONAL_SAUDE&#13;&#10;&#13;&#10;       LEFT JOIN SUP_LANCAMENTO_IT              O   ON O.ID_LANCAMENTO                  = A.ID_LANCAMENTO&#13;&#10;                                                      /*FILTRO_MATERIAL*/&#13;&#10;       LEFT JOIN SUP_MATERIAL                   P   ON P.ID_MATERIAL                    = O.ID_MATERIAL      &#13;&#10;       LEFT JOIN SUP_GRUPO                      Q   ON Q.ID_GRUPO                       = P.ID_GRUPO&#13;&#10;       LEFT JOIN SUP_GRUPO                      R   ON R.ID_GRUPO                       = Q.ID_GRUPO_PAI&#13;&#10;&#13;&#10;       LEFT JOIN SIS_SEQUENCIA                  SSQ ON SSQ.ID_SEQUENCIA                 = 1&#13;&#10;                                                   AND 1                                = :EXIBIR_DS_CONTA_CONTABIL&#13;&#10;       LEFT JOIN API_CONTA_CONTABIL             CC1 ON 1                                = SSQ.ID_SEQUENCIA&#13;&#10;                                                   AND CC1.CP_ANO                       = :CP_ANO&#13;&#10;                                                   AND ( CC1.CD_CONTA_CONTABIL          = O.CD_CONTA_CONTABIL_CONSUMO OR&#13;&#10;                                                         CC1.CD_CONTA_CONTABIL          = O.CD_CONTA_CONTABIL_CONSUMO  || '.00.00.00' )&#13;&#10;       LEFT JOIN API_CONTA_CONTABIL             CC2 ON 1                                = SSQ.ID_SEQUENCIA&#13;&#10;                                                   AND CC2.CP_ANO                       = :CP_ANO&#13;&#10;                                                   AND ( CC2.CD_CONTA_CONTABIL          = O.CD_CONTA_CONTABIL_ESTOQUE OR&#13;&#10;                                                         CC2.CD_CONTA_CONTABIL          = O.CD_CONTA_CONTABIL_ESTOQUE  || '.00.00.00' )&#13;&#10;&#13;&#10;       LEFT JOIN /*LATERAL_JOIN*/&#13;&#10;                 (&#13;&#10;                   SELECT SLM.ID_LANCAMENTO_IT&#13;&#10;                        , CAST(STRING_AGG('Nº: ' || SLO.NR_LOTE ||&#13;&#10;                                    ', Fabricação: ' || CAST(LPAD(CAST(EXTRACT( DAY FROM SLO.DT_FABRICACAO)   AS VARCHAR(2)), 2, '0') || '/' ||&#13;&#10;                                                             LPAD(CAST(EXTRACT( MONTH FROM SLO.DT_FABRICACAO) AS VARCHAR(2)), 2, '0') || '/' ||&#13;&#10;                                                             LPAD(CAST(EXTRACT( YEAR FROM SLO.DT_FABRICACAO)  AS VARCHAR(4)), 4, '0') AS VARCHAR(10)) ||&#13;&#10;                                    ', Validade: '   || CAST(LPAD(CAST(EXTRACT( DAY FROM SLO.DT_VALIDADE)     AS VARCHAR(2)), 2, '0') || '/' ||&#13;&#10;                                                             LPAD(CAST(EXTRACT( MONTH FROM SLO.DT_VALIDADE)   AS VARCHAR(2)), 2, '0') || '/' ||&#13;&#10;                                                             LPAD(CAST(EXTRACT( YEAR FROM SLO.DT_VALIDADE)    AS VARCHAR(4)), 4, '0') AS VARCHAR(10))&#13;&#10;                                    , CHR(13) ) AS VARCHAR(30000)) AS DS_LOTE&#13;&#10;                     FROM SUP_LOTE_MOV SLM                                                                  &#13;&#10;                          LEFT JOIN SUP_LOTE SLO ON SLO.ID_LOTE = SLM.ID_LOTE&#13;&#10;                    /*LATERAL_WHERE*/&#13;&#10;                    GROUP BY 1&#13;&#10;                 )                              LTE ON LTE.ID_LANCAMENTO_IT             = O.ID_LANCAMENTO_IT&#13;&#10; &#13;&#10; WHERE A.ID_ENTIDADE   = :ID_ENTIDADE                                                                    &#13;&#10;   AND A.CP_ANO        = :CP_ANO&#13;&#10;   AND A.TP_LANCAMENTO = :TP_LANCAMENTO&#13;&#10;   AND A.DT_LANCAMENTO BETWEEN :DT_LANCAMENTO_INICIAL AND :DT_LANCAMENTO_FINAL&#13;&#10;   AND ( A.ID_USUARIO           = :ID_ALMOXARIFE     OR -1 = :ID_ALMOXARIFE     )&#13;&#10;   AND ( A.ID_ALMOXARIFADO      = :ID_ALMOXARIFADO   OR -1 = :ID_ALMOXARIFADO   ) &#13;&#10;   AND ( A.ID_UNIDADE_ESTOQUE   = :ID_UN_ESTOQUE     OR -1 = :ID_UN_ESTOQUE     )&#13;&#10;   AND ( S.ALMOXARIFE           = 1 OR S.CONSULTAR = 1                          )&#13;&#10;   AND ( C.ID_CENTRO_CONSUMO    = :ID_CENTRO_CONSUMO OR -1 = :ID_CENTRO_CONSUMO )&#13;&#10;   AND ( I.ID_PESSOA            = :ID_FORNECEDOR     OR -1 = :ID_FORNECEDOR     )&#13;&#10;   AND ( B.TP_ENTRADA           = :TP_ENTRADA        OR -1 = :TP_ENTRADA        )&#13;&#10;   AND ( C.TP_SAIDA             = :TP_SAIDA          OR -1 = :TP_SAIDA          )&#13;&#10;   /*FILTRO_MATERIAL*/&#13;&#10;&#13;&#10; ORDER BY&#13;&#10;       CASE WHEN 0 = :TP_AGRUPAMENTO THEN '0'&#13;&#10;            WHEN 1 = :TP_AGRUPAMENTO THEN LPAD(D.CD_ALMOXARIFADO, 20, '0')&#13;&#10;            WHEN 2 = :TP_AGRUPAMENTO THEN LPAD(E.CD_UNIDADE_ESTOQUE, 20, '0')&#13;&#10;            WHEN 3 = :TP_AGRUPAMENTO THEN LPAD(M.CD_CENTRO_CONSUMO, 20, '0')&#13;&#10;            WHEN 4 = :TP_AGRUPAMENTO THEN LPAD(CAST(P.TP_MATERIAL      AS CHAR(1))               ||&#13;&#10;                                               LPAD(CAST(R.CD_GRUPO    AS VARCHAR(20)), 3, '0')  ||&#13;&#10;                                               LPAD(CAST(Q.CD_GRUPO    AS VARCHAR(20)), 3, '0')  ||&#13;&#10;                                               LPAD(CAST(P.CD_MATERIAL AS VARCHAR(20)), 6, '0'), 20, '0')&#13;&#10;       END&#13;&#10;     , A.DT_LANCAMENTO&#13;&#10;     , A.NR_LANCAMENTO&#13;&#10;     , P.TP_MATERIAL&#13;&#10;     , LPAD(CAST(R.CD_GRUPO    AS VARCHAR(20)), 3, '0')&#13;&#10;     , LPAD(CAST(Q.CD_GRUPO    AS VARCHAR(20)), 3, '0')&#13;&#10;     , LPAD(CAST(P.CD_MATERIAL AS VARCHAR(20)), 6, '0')">
+        <Column Name="chave_agrupamento" DataType="System.String"/>
+        <Column Name="ds_agrupamento" DataType="System.String"/>
+        <Column Name="id_lancamento" DataType="System.Int32"/>
+        <Column Name="dt_lancamento" DataType="System.DateTime"/>
+        <Column Name="nr_lancamento" DataType="System.Int32"/>
+        <Column Name="tp_lancamento" DataType="System.Int16"/>
+        <Column Name="tp_documento" DataType="System.Int16"/>
+        <Column Name="nr_documento" DataType="System.Int32"/>
+        <Column Name="ano_documento" DataType="System.Int16"/>
+        <Column Name="obs" DataType="System.String"/>
+        <Column Name="tp_doc_fiscal" DataType="System.Int32"/>
+        <Column Name="sr_doc_fiscal" DataType="System.String"/>
+        <Column Name="nr_doc_fiscal" DataType="System.String"/>
+        <Column Name="ds_doc_fiscal" DataType="System.String"/>
+        <Column Name="cd_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <Column Name="cd_unidade_estoque" DataType="System.Int32"/>
+        <Column Name="ds_unidade_estoque" DataType="System.String"/>
+        <Column Name="nome_almoxarife" DataType="System.String"/>
+        <Column Name="nome_completo_almoxarife" DataType="System.String"/>
+        <Column Name="tp_entrada" DataType="System.Int16"/>
+        <Column Name="nr_lancamento_saida" DataType="System.Int32"/>
+        <Column Name="dt_lancamento_saida" DataType="System.DateTime"/>
+        <Column Name="nr_autorizacao" DataType="System.Int32"/>
+        <Column Name="ano_autorizacao" DataType="System.Int32"/>
+        <Column Name="fornecedor" DataType="System.String"/>
+        <Column Name="tp_saida" DataType="System.Int16"/>
+        <Column Name="nr_lancamento_entrada" DataType="System.Int32"/>
+        <Column Name="dt_lancamento_entrada" DataType="System.DateTime"/>
+        <Column Name="nr_requisicao" DataType="System.Int32"/>
+        <Column Name="ano_requisicao" DataType="System.Int16"/>
+        <Column Name="cd_centro_consumo" DataType="System.Int32"/>
+        <Column Name="ds_centro_consumo" DataType="System.String"/>
+        <Column Name="nome_requisitante" DataType="System.String"/>
+        <Column Name="nome_completo_requisitante" DataType="System.String"/>
+        <Column Name="cd_classificacao" DataType="System.String"/>
+        <Column Name="cd_material" DataType="System.Int32"/>
+        <Column Name="tp_material" DataType="System.Int16"/>
+        <Column Name="ds_material" DataType="System.String"/>
+        <Column Name="ds_completa" DataType="System.String"/>
+        <Column Name="un_material" DataType="System.String"/>
+        <Column Name="localizacao_fisica" DataType="System.String"/>
+        <Column Name="cd_conta_contabil_consumo" DataType="System.String"/>
+        <Column Name="ds_conta_contabil_consumo" DataType="System.String"/>
+        <Column Name="cd_conta_contabil_estoque" DataType="System.String"/>
+        <Column Name="ds_conta_contabil_estoque" DataType="System.String"/>
+        <Column Name="cd_grupo" DataType="System.Int32"/>
+        <Column Name="ds_grupo" DataType="System.String"/>
+        <Column Name="cd_subgrupo" DataType="System.Int32"/>
+        <Column Name="ds_subgrupo" DataType="System.String"/>
+        <Column Name="qtd" DataType="System.Double"/>
+        <Column Name="vl_total" DataType="System.Double"/>
+        <Column Name="vl_unitario" DataType="System.Double"/>
+        <Column Name="cd_almoxarifado_destino" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado_destino" DataType="System.String"/>
+        <Column Name="nome_beneficiario_dispens" DataType="System.String"/>
+        <Column Name="cpf_beneficiario_dispens" DataType="System.String"/>
+        <Column Name="rg_beneficiario_dispens" DataType="System.String"/>
+        <Column Name="sus_beneficiario_dispens" DataType="System.String"/>
+        <Column Name="outros_beneficiario_dispens" DataType="System.String"/>
+        <Column Name="nome_responsavel_dispens" DataType="System.String"/>
+        <Column Name="cpf_responsavel_dispens" DataType="System.String"/>
+        <Column Name="rg_responsavel_dispens" DataType="System.String"/>
+        <Column Name="nome_profissional_saude" DataType="System.String"/>
+        <Column Name="doc_profissional_saude" DataType="System.String"/>
+        <Column Name="ds_lote" DataType="System.String"/>
+        <CommandParameter Name="TP_AGRUPAMENTO" DataType="22" Expression="[tpAgrupamento]"/>
+        <CommandParameter Name="ID_RELATORIO_FILTRO" DataType="9" Expression="[idRelatorioFiltro]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+        <CommandParameter Name="CP_ANO" DataType="22" Expression="[cpAno]"/>
+        <CommandParameter Name="TP_LANCAMENTO" DataType="22" Expression="[tpLancamento]"/>
+        <CommandParameter Name="ID_USUARIO" DataType="9" Expression="[idUsuario]"/>
+        <CommandParameter Name="EXIBIR_DS_CONTA_CONTABIL" DataType="22" Expression="[exibirContaContabil]"/>
+        <CommandParameter Name="DT_LANCAMENTO_INICIAL" DataType="7" Expression="[SqlPeriodo.dt_inicio]"/>
+        <CommandParameter Name="DT_LANCAMENTO_FINAL" DataType="7" Expression="[SqlPeriodo.dt_final]"/>
+        <CommandParameter Name="ID_ALMOXARIFE" DataType="22" Expression="[idAlmoxarife]"/>
+        <CommandParameter Name="ID_ALMOXARIFADO" DataType="22" Expression="[idAlmoxarifado]"/>
+        <CommandParameter Name="ID_UN_ESTOQUE" DataType="22" Expression="[idUnidadeEstoque]"/>
+        <CommandParameter Name="ID_CENTRO_CONSUMO" DataType="22" Expression="[idCentroConsumo]"/>
+        <CommandParameter Name="ID_FORNECEDOR" DataType="22" Expression="[idFornecedor]"/>
+        <CommandParameter Name="TP_ENTRADA" DataType="22" Expression="[tpEntrada]"/>
+        <CommandParameter Name="TP_SAIDA" DataType="22" Expression="[tpSaida]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlAlmoxarifado" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_ALMOXARIFADO&#13;&#10;     , A.DS_ALMOXARIFADO&#13;&#10;  FROM SUP_ALMOXARIFADO A&#13;&#10; WHERE A.ID_ALMOXARIFADO = :ID_ALMOXARIFADO">
+        <Column Name="cd_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <CommandParameter Name="ID_ALMOXARIFADO" DataType="22" Expression="[idAlmoxarifado]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlCentroConsumo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_CENTRO_CONSUMO&#13;&#10;     , A.DS_CENTRO_CONSUMO&#13;&#10;  FROM SUP_CENTRO_CONSUMO A&#13;&#10; WHERE A.ID_CENTRO_CONSUMO = :ID_CENTRO_CONSUMO">
+        <Column Name="cd_centro_consumo" DataType="System.Int32"/>
+        <Column Name="ds_centro_consumo" DataType="System.String"/>
+        <CommandParameter Name="ID_CENTRO_CONSUMO" DataType="22" Expression="[idCentroConsumo]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="SqlUnidadeEstoque" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_UNIDADE_ESTOQUE&#13;&#10;     , A.DS_UNIDADE_ESTOQUE&#13;&#10;  FROM SUP_UNIDADE_ESTOQUE A&#13;&#10; WHERE A.ID_UNIDADE_ESTOQUE = :ID_UNIDADE_ESTOQUE">
+        <Column Name="cd_unidade_estoque" DataType="System.Int32"/>
+        <Column Name="ds_unidade_estoque" DataType="System.String"/>
+        <CommandParameter Name="ID_UNIDADE_ESTOQUE" DataType="22" Expression="[idUnidadeEstoque]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table5" Alias="SqlFornecedor" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.NOME_RAZAO&#13;&#10;     , A.DOCUMENTO_FORMATADO&#13;&#10;  FROM SIS_PESSOA A&#13;&#10; WHERE A.ID_PESSOA = :ID_FORNECEDOR">
+        <Column Name="nome_razao" DataType="System.String"/>
+        <Column Name="documento_formatado" DataType="System.String"/>
+        <CommandParameter Name="ID_FORNECEDOR" DataType="22" Expression="[idFornecedor]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table6" Alias="SqlAlmoxarife" DataType="System.Int32" Enabled="true" SelectCommand="SELECT TRIM(A.DS_USUARIO) AS NOME&#13;&#10;     , A.NOME_USUARIO AS NOME_COMPLETO&#13;&#10;  FROM SIS_USUARIO A&#13;&#10; WHERE A.ID_USUARIO = :ID_ALMOXARIFE">
+        <Column Name="nome" DataType="System.String"/>
+        <Column Name="nome_completo" DataType="System.String"/>
+        <CommandParameter Name="ID_ALMOXARIFE" DataType="22" Expression="[idAlmoxarife]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Lançamentos de &quot; + IIf([tpLancamento] == &quot;0&quot;, &quot;Entrada&quot;, &quot;Saída&quot;)"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="174"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="2602"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="tpAgrupamento" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="tpLancamento" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="cpAno" DataType="System.String" Expression="&quot;2025&quot;"/>
+    <Parameter Name="dataInicial" DataType="System.String" Expression="&quot;01/08/2025&quot;"/>
+    <Parameter Name="dataFinal" DataType="System.String" Expression="&quot;31/08/2025&quot;"/>
+    <Parameter Name="idAlmoxarife" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idAlmoxarifado" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idUnidadeEstoque" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idCentroConsumo" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idFornecedor" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="dbms" DataType="System.String" Expression="&quot;xxx&quot;"/>
+    <Parameter Name="exibirDescricaoCompleta" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="exibirLote" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="exibirAlmoxarifado" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="exibirUnidadeEstoque" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="exibirAlmoxarife" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="exibirObservacao" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="exibirAF" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="exibirRequisicao" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="exibirDispensacao" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="exibirDocumento" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="exibirLocalizacao" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="tpEntrada" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="tpSaida" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="exibirContaContabil" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Total Name="Total" Expression="[SqlLancamento.vl_total]" Evaluator="bndEntradaItem"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho" Top="0">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="97.75">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child1" ZOrder="-1" Top="119.9" Width="718.2" Height="34.02">
+          <TextObject Name="TxtDatas" Width="718.2" Height="15.12" Fill.Color="129, 245, 230, 207" Cursor="IBeam" CanGrow="true" BeforePrintEvent="TxtDatas_BeforePrint" Text="Período entre &lt;b&gt;[dataInicial]&lt;/b&gt; e &lt;b&gt;[dataFinal]&lt;/b&gt;[IIf(ToInt32([tpEntrada]) != -1, &quot; | Tipo de entrada: &lt;b&gt;[dsTpEntrada]&lt;/b&gt;&quot;, &quot;&quot;)][IIf(ToInt32([tpSaida]) != -1, &quot; | Tipo de saída: &lt;b&gt;[dsTpSaida]&lt;/b&gt;&quot;, &quot;&quot;)][IIf(ToInt32([idAlmoxarifado]) != -1, Format(&quot; | Almoxarifado: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlAlmoxarifado.CD_ALMOXARIFADO], [SqlAlmoxarifado.DS_ALMOXARIFADO]), &quot;&quot;)][IIf(ToInt32([idUnidadeEstoque]) != -1, Format(&quot; | Un. estoque: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlUnidadeEstoque.CD_UNIDADE_ESTOQUE],[SqlUnidadeEstoque.DS_UNIDADE_ESTOQUE]), &quot;&quot;)][IIf(ToInt32([idCentroConsumo]) != -1, Format(&quot; | Centro de Consumo: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlCentroConsumo.CD_CENTRO_CONSUMO], [SqlCentroConsumo.DS_CENTRO_CONSUMO]), &quot;&quot;)][IIf(ToInt32([idAlmoxarife]) != -1, Format(&quot; | Almoxarife: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, Trim([SqlAlmoxarife.NOME]), [SqlAlmoxarife.NOME_COMPLETO]), &quot;&quot;)][IIf(ToInt32([IdFornecedor]) != -1, Format(&quot; | Fornecedor: &lt;b&gt;{0} ({1})&lt;/b&gt;&quot;, Trim([SqlFornecedor.NOME_RAZAO]), [SqlFornecedor.DOCUMENTO_FORMATADO]), &quot;&quot;)]" VertAlign="Bottom" Font="Tahoma, 7pt, style=Bold" Wysiwyg="true" TextRenderType="HtmlTags"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="grpCabecalhoEntrada" ZOrder="0" Top="157.18" Width="718.2" Height="30.24" BeforePrintEvent="grpCabecalhoEntrada_BeforePrint" Condition="[SqlUsuario.nome]">
+      <TextObject Name="Memo14" Width="215.08" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Lançamento" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text3" Left="215.08" Width="343.22" Height="15.12" Border.Lines="Left, Top, Bottom" Fill.Color="41, 82, 118" Text="Fornecedor" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text4" Left="558.31" Width="159.89" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Documento Fiscal" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text5" Top="15.12" Width="45.74" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Número" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text6" Left="45.74" Top="15.12" Width="60.1" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Data" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text7" Left="105.84" Top="15.12" Width="109.24" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Tipo" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text8" Left="215.08" Top="15.12" Width="343.22" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Nome" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text9" Left="558.31" Top="15.12" Width="80.14" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Série" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text10" Left="638.06" Top="15.12" Width="80.14" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Número" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <ChildBand Name="bndCabecalhoSaida" Top="190.67" Width="718.2" Height="30.24" BeforePrintEvent="bndCabecalhoSaida_BeforePrint">
+        <TextObject Name="Text18" Left="215.08" Width="503.12" Height="30.24" Border.Lines="All" Fill.Color="41, 82, 118" Text="Centro de Consumo/Almoxarifado de Destino&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text17" Width="215.08" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Lançamento" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text19" Top="15.12" Width="45.74" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Número" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text20" Left="45.74" Top="15.12" Width="60.1" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Data" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+        <TextObject Name="Text21" Left="105.84" Top="15.12" Width="109.24" Height="15.12" Border.Lines="All" Fill.Color="41, 82, 118" Text="Tipo" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      </ChildBand>
+      <GroupHeaderBand Name="grpAgrupamento" Top="224.16" Width="718.2" Height="12.85" BeforePrintEvent="grpAgrupamento_BeforePrint" Condition="[SqlLancamento.chave_agrupamento]">
+        <TextObject Name="Text22" Width="718.2" Height="12.85" Fill.Color="Gainsboro" Text="[SqlLancamento.ds_agrupamento]" Font="Tahoma, 6pt, style=Bold"/>
+        <GroupHeaderBand Name="grpLancamentoEntrada" Top="240.26" Width="718.2" Height="10.96" BeforePrintEvent="grpLancamentoEntrada_BeforePrint" Condition="[SqlLancamento.id_lancamento]">
+          <TextObject Name="SqlLancamentoFORNECEDOR" Left="215.08" Width="343.22" Height="10.96" Fill.Color="White" Text="[SqlLancamento.fornecedor]" Font="Tahoma, 6pt, style=Bold"/>
+          <TextObject Name="SqlLancamentoNR_LANCAMENTO" Width="45.74" Height="10.96" Fill.Color="White" Text="[Format(&quot;{0:000000}&quot;, [SqlLancamento.nr_lancamento])]" Font="Tahoma, 6pt, style=Bold"/>
+          <TextObject Name="SqlLancamentoDT_LANCAMENTO" Left="45.74" Width="60.1" Height="10.96" Fill.Color="White" Text="[SqlLancamento.dt_lancamento]" Font="Tahoma, 6pt, style=Bold"/>
+          <TextObject Name="SqlLancamentoTP_ENTRADA" Left="105.84" Width="109.24" Height="10.96" Fill.Color="White" BeforePrintEvent="SqlLancamentoTP_ENTRADA_BeforePrint" Font="Tahoma, 6pt, style=Bold"/>
+          <TextObject Name="SqlLancamentoSR_DOC_FISCAL" Left="558.31" Width="80.14" Height="10.96" Fill.Color="White" Text="[SqlLancamento.sr_doc_fiscal]" Font="Tahoma, 6pt, style=Bold"/>
+          <TextObject Name="SqlLancamentoNR_DOC_FISCAL" Left="638.06" Width="80.14" Height="10.96" Fill.Color="White" Text="[SqlLancamento.nr_doc_fiscal]" Font="Tahoma, 6pt, style=Bold"/>
+          <ChildBand Name="bndLancamentoSaida" Top="254.47" Width="718.2" Height="10.96" BeforePrintEvent="bndLancamentoSaida_BeforePrint">
+            <TextObject Name="Text32" Left="215.08" Width="503.12" Height="10.96" Fill.Color="White" Text="[IIf(Trim([SqlLancamento.ds_almoxarifado_destino])!= &quot;&quot;,ToString([SqlLancamento.cd_almoxarifado_destino]) + &quot;-&quot; + [SqlLancamento.ds_almoxarifado_destino],IIf(Trim([SqlLancamento.ds_centro_consumo]) != &quot;&quot;, ToString([SqlLancamento.cd_centro_consumo]) + &quot;-&quot; + [SqlLancamento.ds_centro_consumo],&quot;&quot;))]" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="Text29" Width="45.74" Height="10.96" Fill.Color="White" Text="[Format(&quot;{0:000000}&quot;, [SqlLancamento.nr_lancamento])]" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="Text30" Left="45.74" Width="60.1" Height="10.96" Fill.Color="White" Text="[SqlLancamento.dt_lancamento]" Font="Tahoma, 6pt, style=Bold"/>
+            <TextObject Name="SqlLancamentoTP_SAIDA" Left="105.84" Width="109.24" Height="10.96" Fill.Color="White" BeforePrintEvent="SqlLancamentoTP_SAIDA_BeforePrint" Font="Tahoma, 6pt, style=Bold"/>
+            <ChildBand Name="bndAlmoxarifado" Top="268.69" Width="718.2" Height="10.96" BeforePrintEvent="bndAlmoxarifado_BeforePrint">
+              <TextObject Name="SqlLancamentoCD_ALMOXARIFADO" Width="718.2" Height="10.96" Text="&lt;b&gt;Almoxarifado&lt;/b&gt;: [SqlLancamento.CD_ALMOXARIFADO] - [SqlLancamento.DS_ALMOXARIFADO]" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+              <ChildBand Name="bndUnidadeEstoque" Top="282.9" Width="718.2" Height="10.96" BeforePrintEvent="bndUnidadeEstoque_BeforePrint">
+                <TextObject Name="Text34" Width="718.2" Height="10.96" Text="&lt;b&gt;Unidade de estoque&lt;/b&gt;: [SqlLancamento.CD_UNIDADE_ESTOQUE] - [SqlLancamento.DS_UNIDADE_ESTOQUE]&#13;&#10;" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+                <ChildBand Name="bndAlmoxarife" Top="297.11" Width="718.2" Height="10.96" BeforePrintEvent="bndAlmoxarife_BeforePrint">
+                  <TextObject Name="Text35" Width="718.2" Height="10.96" Text="&lt;b&gt;Almoxarife&lt;/b&gt;: [Trim[SqlLancamento.NOME_ALMOXARIFE]] - [SqlLancamento.NOME_COMPLETO_ALMOXARIFE]&#13;&#10;" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+                  <ChildBand Name="bndObservacao" Top="311.32" Width="718.2" Height="10.96" BeforePrintEvent="bndObservacao_BeforePrint">
+                    <TextObject Name="Text36" Width="718.2" Height="10.96" Text="&lt;b&gt;Observação&lt;/b&gt;: [SqlLancamento.OBS]&#13;&#10;" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+                    <ChildBand Name="bndAF" Top="325.53" Width="718.2" Height="10.96" BeforePrintEvent="bndAF_BeforePrint">
+                      <TextObject Name="Text37" Width="718.2" Height="10.96" Text="&lt;b&gt;Autorização&lt;/b&gt;: AF [Format(&quot;{0:000000}&quot;, [SqlLancamento.NR_AUTORIZACAO])]/[SqlLancamento.ANO_AUTORIZACAO]&#13;&#10;" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+                      <ChildBand Name="bndRequisicao" Top="339.75" Width="718.2" Height="10.96" BeforePrintEvent="bndRequisicao_BeforePrint">
+                        <TextObject Name="Text38" Width="718.2" Height="10.96" Text="&lt;b&gt;Requisição&lt;/b&gt;: REQ [Format(&quot;{0:000000}&quot;, [SqlLancamento.NR_REQUISICAO])]/[SqlLancamento.ANO_REQUISICAO] &lt;b&gt;Requisitante&lt;/b&gt;: [Trim([SqlLancamento.NOME_REQUISITANTE])] - [SqlLancamento.NOME_COMPLETO_REQUISITANTE]&#13;&#10;" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+                        <ChildBand Name="bndDispensacao" Top="353.96" Width="718.2" Height="10.96" BeforePrintEvent="bndDispensacao_BeforePrint">
+                          <TextObject Name="Text39" Width="718.2" Height="10.96" Text="&lt;b&gt;Beneficiário&lt;/b&gt;: [SqlLancamento.NOME_BENEFICIARIO_DISPENS] ([IIf(Trim([SqlLancamento.CPF_BENEFICIARIO_DISPENS]) != &quot;&quot;, &quot;CPF: &quot; +  [SqlLancamento.CPF_BENEFICIARIO_DISPENS], IIf(Trim([SqlLancamento.RG_BENEFICIARIO_DISPENS]) != &quot;&quot;, &quot;RG: &quot; + [SqlLancamento.RG_BENEFICIARIO_DISPENS], IIf(Trim([SqlLancamento.SUS_BENEFICIARIO_DISPENS]) != &quot;&quot;, &quot;SUS: &quot; + [SqlLancamento.SUS_BENEFICIARIO_DISPENS], &quot;&quot;)))]) [IIf(Trim([SqlLancamento.NOME_PROFISSIONAL_SAUDE]) != &quot;&quot;, &quot; &lt;b&gt;prescrito por&lt;/b&gt;: &quot; + [SqlLancamento.NOME_PROFISSIONAL_SAUDE] + &quot; (&quot; + [SqlLancamento.DOC_PROFISSIONAL_SAUDE] + &quot;)&quot;, &quot;&quot;)]&#13;&#10;" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+                          <ChildBand Name="bndDocumento" Top="368.17" Width="718.2" Height="10.96" BeforePrintEvent="bndDocumento_BeforePrint">
+                            <TextObject Name="SqlLancamentoDOCUMENTO" Width="718.2" Height="10.96" Text="&lt;b&gt;Documento&lt;/b&gt;: &#13;&#10;" Font="Arial, 6pt" TextRenderType="HtmlTags"/>
+                          </ChildBand>
+                        </ChildBand>
+                      </ChildBand>
+                    </ChildBand>
+                  </ChildBand>
+                </ChildBand>
+              </ChildBand>
+            </ChildBand>
+          </ChildBand>
+          <GroupHeaderBand Name="grpMaterial" Top="382.38" Width="718.2" Height="10.96" Condition="[SqlLancamento.id_lancamento]">
+            <TextObject Name="Text41" Width="44.98" Height="10.96" Font="Tahoma, 6pt"/>
+            <TextObject Name="Text42" Left="44.98" Width="418.07" Height="10.96" Border.Lines="All" Border.Color="White" Fill.Color="ButtonFace" Text="MATERIAL" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt"/>
+            <TextObject Name="Text43" Left="463.05" Width="35.15" Height="10.96" Border.Lines="All" Border.Color="White" Fill.Color="ButtonFace" Text="UN" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt"/>
+            <TextObject Name="Text44" Left="498.2" Width="60.1" Height="10.96" Border.Lines="All" Border.Color="White" Fill.Color="ButtonFace" Text="QTDE" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt"/>
+            <TextObject Name="Text45" Left="558.31" Width="80.14" Height="10.96" Border.Lines="All" Border.Color="White" Fill.Color="ButtonFace" Text="VL. UNITÁRIO" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt"/>
+            <TextObject Name="Text46" Left="638.06" Width="80.14" Height="10.96" Border.Lines="All" Border.Color="White" Fill.Color="ButtonFace" Text="VL. TOTAL" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 6pt"/>
+            <DataBand Name="bndEntradaItem" Top="396.59" Width="718.2" Height="10.96" DataSource="Table1">
+              <TextObject Name="SqlLancamentoUN_MATERIAL" Left="463.05" Width="35.15" Height="10.96" Border.Color="White" Text="[SqlLancamento.un_material]" HorzAlign="Center" Font="Tahoma, 6pt"/>
+              <TextObject Name="SqlLancamentoQTD" Left="498.2" Width="60.1" Height="10.96" Border.Color="White" Text="[SqlLancamento.qtd]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" Font="Tahoma, 6pt"/>
+              <TextObject Name="SqlLancamentoVL_UNITARIO" Left="558.31" Width="80.14" Height="10.96" Border.Color="White" Text="[SqlLancamento.vl_unitario]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt"/>
+              <TextObject Name="SqlLancamentoVL_TOTAL" Left="638.06" Width="80.14" Height="10.96" Border.Color="White" Text="[SqlLancamento.vl_total]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt"/>
+              <TextObject Name="Text51" Width="44.98" Height="10.96" Font="Tahoma, 6pt"/>
+              <TextObject Name="SqlLancamentoDS_MATERIAL" Left="80.14" Width="383.29" Height="10.96" Border.Color="White" Text="[SqlLancamento.CD_CLASSIFICACAO] - [SqlLancamento.DS_MATERIAL]&#13;&#10;" Font="Tahoma, 6pt"/>
+              <TextObject Name="SqlLancamentoCD_MATERIAL" Left="44.98" Width="35.15" Height="10.96" Border.Color="White" Text="[Format(&quot;{0:000000}&quot;, [SqlLancamento.CD_MATERIAL])]&#13;&#10;" HorzAlign="Center" Font="Tahoma, 6pt"/>
+              <ChildBand Name="bndDescricaoCompleta" Top="410.81" Width="718.2" Height="15.12" BeforePrintEvent="bndDescricaoCompleta_BeforePrint">
+                <TextObject Name="Text54" Left="80.14" Top="4.16" Width="60.1" Height="10.96" Border.Color="White" Text="Desc. completa:" HorzAlign="Right" Font="Tahoma, 6pt"/>
+                <TextObject Name="SqlLancamentoDS_COMPLETA" Left="139.86" Top="4.16" Width="577.96" Height="10.96" Border.Color="White" Text="[SqlLancamento.ds_completa]" Font="Tahoma, 6pt, style=Italic"/>
+                <ChildBand Name="bndLote" Top="429.18" Width="718.2" Height="15.12" BeforePrintEvent="bndLote_BeforePrint">
+                  <TextObject Name="Text56" Left="139.86" Top="4.16" Width="578.34" Height="10.96" Border.Color="White" Text="[SqlLancamento.ds_lote]" Font="Tahoma, 6pt, style=Italic"/>
+                  <TextObject Name="Text57" Top="4.16" Width="139.86" Height="10.96" Border.Color="White" Text="Lotes:" HorzAlign="Right" Font="Tahoma, 6pt"/>
+                  <ChildBand Name="bndContaContabilEstoque" Top="447.55" Width="718.2" Height="15.12" BeforePrintEvent="bndContaContabilEstoque_BeforePrint">
+                    <TextObject Name="Text58" Top="4.16" Width="139.86" Height="10.96" Text="Conta de Estoque:" HorzAlign="Right" Font="Tahoma, 6pt"/>
+                    <TextObject Name="Text59" Left="139.86" Top="4.16" Width="578.34" Height="10.96" Text="[SqlLancamento.CD_CONTA_CONTABIL_ESTOQUE] - [SqlLancamento.DS_CONTA_CONTABIL_ESTOQUE]&#13;&#10;" Font="Tahoma, 6pt, style=Italic"/>
+                    <ChildBand Name="bndContaContabilConsumo" Top="465.92" Width="718.2" Height="15.12" BeforePrintEvent="bndContaContabilConsumo_BeforePrint">
+                      <TextObject Name="Text60" Top="4.16" Width="139.86" Height="10.96" Text="Conta de consumo:" HorzAlign="Right" Font="Tahoma, 6pt"/>
+                      <TextObject Name="Text62" Left="139.86" Top="4.16" Width="578.34" Height="10.96" Text="[SqlLancamento.CD_CONTA_CONTABIL_CONSUMO] - [SqlLancamento.DS_CONTA_CONTABIL_CONSUMO]&#13;&#10;" Font="Tahoma, 6pt, style=Italic"/>
+                      <ChildBand Name="bndLocalizacao" Top="484.29" Width="718.2" Height="15.12" BeforePrintEvent="bndLocalizacao_BeforePrint">
+                        <TextObject Name="Text61" Top="4.16" Width="139.86" Height="10.96" Text="Localização:" HorzAlign="Right" Font="Tahoma, 6pt"/>
+                        <TextObject Name="Text63" Left="139.86" Top="4.16" Width="578.34" Height="10.96" Text="[SqlLancamento.LOCALIZACAO_FISICA]&#13;&#10;" Font="Tahoma, 6pt, style=Italic"/>
+                      </ChildBand>
+                    </ChildBand>
+                  </ChildBand>
+                </ChildBand>
+              </ChildBand>
+            </DataBand>
+          </GroupHeaderBand>
+          <GroupFooterBand Name="grfMaterial" Top="502.67" Width="718.2" Height="11.34">
+            <LineObject Name="Line2" Top="9.45" Width="718.2"/>
+          </GroupFooterBand>
+        </GroupHeaderBand>
+        <GroupFooterBand Name="grfLancamento" Top="517.26" Width="718.2"/>
+      </GroupHeaderBand>
+      <GroupFooterBand Name="grfAgrupamento" Top="520.51" Width="718.2" Height="40.07">
+        <TextObject Name="Text64" Width="607.07" Height="12.85" Fill.Color="Gainsboro" Text="[IIf([TpAgrupamento] == &quot;0&quot;, &quot;Total&quot;, &quot;Total de '&quot;+ [SqlLancamento.DS_AGRUPAMENTO] + &quot;'&quot;)]" Font="Tahoma, 6pt"/>
+        <TextObject Name="Text65" Left="607.07" Width="111.13" Height="12.85" Fill.Color="Gainsboro" Text="[Total]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" Font="Tahoma, 6pt, style=Bold"/>
+      </GroupFooterBand>
+    </GroupHeaderBand>
+    <inherited Name="BndRodape" Top="563.83">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

@@ -1,0 +1,287 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="C:\Users\Embras\Desktop\FAST\Pessoas sg\retrato.frx" BaseReportAbsolutePath="C:\Users\Embras\Desktop\FAST\Pessoas sg\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/06/2025 13:11:13" ReportInfo.CreatorVersion="2025.1.10.0">
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O9++jSWWhkoy+i/uVL2gdA8=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlInstrumento" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;	a2.id_convenio_prestacao,&#13;&#10;	a2.nr_sequencial,&#13;&#10;	coalesce(a2.dt_st_convenio_prestacao,	a2.dt_convenio_prestacao) as dt_convenio_prestacao,&#13;&#10;	a2.id_tp_convenio_prestacao,&#13;&#10;	a2.ds_tp_convenio_prestacao,&#13;&#10;	a2.id_st_convenio_prestacao,&#13;&#10;	a2.ds_st_convenio_prestacao,&#13;&#10;	a2.vl_repasse,&#13;&#10;	a2.vl_rendimento,&#13;&#10;	a2.vl_despesa,&#13;&#10;	a2.vl_devolucao,&#13;&#10;	a2.vl_investimento_proprio,&#13;&#10;	a2.nr_contrato,&#13;&#10;	a2.ano_contrato,&#13;&#10;	a2.nome_razao,&#13;&#10;	a2.documento_formatado&#13;&#10;from&#13;&#10;	(&#13;&#10;	select&#13;&#10;		a1.nr_contrato,&#13;&#10;		a1.ano_contrato,&#13;&#10;		a1.nome_razao,&#13;&#10;		a1.documento_formatado,&#13;&#10;		a1.id_convenio_prestacao,&#13;&#10;		a1.nr_sequencial,&#13;&#10;		a1.dt_convenio_prestacao,&#13;&#10;		a1.id_tp_convenio_prestacao,&#13;&#10;		a1.ds_tp_convenio_prestacao,&#13;&#10;		(&#13;&#10;			select&#13;&#10;				mov1.id_st_convenio_prestacao&#13;&#10;			from&#13;&#10;			gcc_convenio_prestacao_mov mov1&#13;&#10;			where&#13;&#10;				mov1.id_convenio_prestacao = a1.id_convenio_prestacao&#13;&#10;			order by&#13;&#10;				mov1.dt_movimento desc,&#13;&#10;				mov1.dt_hr_sistema desc,&#13;&#10;				mov1.id_convenio_prestacao_mov desc&#13;&#10;			limit 1&#13;&#10;		) id_st_convenio_prestacao,&#13;&#10;		(&#13;&#10;		select&#13;&#10;			stcp.ds_st_convenio_prestacao&#13;&#10;		from&#13;&#10;		gcc_convenio_prestacao_mov mov2&#13;&#10;			left outer join gcc_st_convenio_prestacao stcp on stcp.id_st_convenio_prestacao = mov2.id_st_convenio_prestacao&#13;&#10;		where&#13;&#10;			mov2.id_convenio_prestacao = a1.id_convenio_prestacao&#13;&#10;		order by&#13;&#10;			mov2.dt_movimento desc,&#13;&#10;			mov2.dt_hr_sistema desc,&#13;&#10;			mov2.id_convenio_prestacao_mov desc&#13;&#10;		limit 1) ds_st_convenio_prestacao,&#13;&#10;		(&#13;&#10;		select&#13;&#10;			cast(case&#13;&#10;				when mov3.id_st_convenio_prestacao_ant is not null then mov3.dt_movimento&#13;&#10;			end as timestamp)&#13;&#10;		from&#13;&#10;			gcc_convenio_prestacao_mov mov3&#13;&#10;		where&#13;&#10;			mov3.id_convenio_prestacao = a1.id_convenio_prestacao&#13;&#10;		order by&#13;&#10;			mov3.dt_movimento desc,&#13;&#10;			mov3.dt_hr_sistema desc,&#13;&#10;			mov3.id_convenio_prestacao_mov desc&#13;&#10;		limit 1) dt_st_convenio_prestacao,&#13;&#10;		a1.vl_repasse,&#13;&#10;		a1.vl_rendimento,&#13;&#10;		a1.vl_despesa,&#13;&#10;		a1.vl_devolucao,&#13;&#10;		a1.vl_investimento_proprio&#13;&#10;	from&#13;&#10;		(&#13;&#10;			select&#13;&#10;				gc.nr_contrato,&#13;&#10;				gc.ano_contrato,&#13;&#10;				sp.nome_razao,&#13;&#10;				sp.documento_formatado,&#13;&#10;				gcp.id_convenio_prestacao,&#13;&#10;				gcp.id_contrato,&#13;&#10;				gcp.nr_sequencial,&#13;&#10;				gcp.dt_convenio_prestacao,&#13;&#10;				gcp.id_tp_convenio_prestacao,&#13;&#10;				tpcp.ds_tp_convenio_prestacao,&#13;&#10;				coalesce(sum(case when gce.id_tp_fase_execucao = 3 then pexec.valor end),	0) as vl_repasse,&#13;&#10;				coalesce(sum(case when pexec.rendimento = 1 and pexec.id_convenio_execucao is null then pexec.valor end),	0) as vl_rendimento,&#13;&#10;				coalesce(sum(case when pexec.id_convenio_execucao is null and pexec.rendimento = 0 and pexec.devolucao = 0 then pexec.valor end),	0) as vl_despesa,&#13;&#10;				coalesce(sum(case when pexec.id_convenio_execucao is null and pexec.rendimento = 0 and pexec.devolucao = 1 then pexec.valor end),	0) as vl_devolucao,&#13;&#10;				coalesce(sum(case when pexec.id_convenio_execucao is null and pexec.rendimento = 0 and pexec.devolucao = 0 then pexec.vl_contrapartida end), 0) as vl_investimento_proprio&#13;&#10;			from&#13;&#10;				gcc_convenio_prestacao gcp&#13;&#10;				left outer join gcc_contrato gc on gc.id_contrato = gcp.id_contrato&#13;&#10;				left outer join gcc_tp_convenio_prestacao tpcp on tpcp.id_tp_convenio_prestacao = gcp.id_tp_convenio_prestacao&#13;&#10;				left outer join gcc_convenio_prestacao_exec pexec on pexec.id_convenio_prestacao = gcp.id_convenio_prestacao&#13;&#10;				left outer join gcc_contrato_execucao gce on gce.id_contrato_execucao = pexec.id_convenio_execucao&#13;&#10;				left outer join sis_pessoa sp on sp.id_pessoa = gc.id_pessoa&#13;&#10;			where&#13;&#10;				gcp.id_convenio_prestacao = :id_convenio&#13;&#10;				and gc.id_entidade = :id_entidade&#13;&#10;				and gc.id_tp_categoria = 2&#13;&#10;			group by&#13;&#10;				gc.nr_contrato,&#13;&#10;				gc.ano_contrato,&#13;&#10;				sp.nome_razao,&#13;&#10;				sp.documento_formatado,&#13;&#10;				gcp.id_convenio_prestacao,&#13;&#10;				gcp.id_contrato,&#13;&#10;				gcp.nr_sequencial,&#13;&#10;				gcp.dt_convenio_prestacao,&#13;&#10;				gcp.id_tp_convenio_prestacao,&#13;&#10;				tpcp.ds_tp_convenio_prestacao&#13;&#10;		) a1&#13;&#10;	) a2&#13;&#10;where&#13;&#10;	a2.id_st_convenio_prestacao in (3, 4, 102, 104)&#13;&#10;order by&#13;&#10;	a2.nr_sequencial&#13;&#10;limit 1">
+        <Column Name="id_convenio_prestacao" DataType="System.Int32"/>
+        <Column Name="nr_sequencial" DataType="System.Int32"/>
+        <Column Name="dt_convenio_prestacao" DataType="System.DateTime"/>
+        <Column Name="id_tp_convenio_prestacao" DataType="System.Int32"/>
+        <Column Name="ds_tp_convenio_prestacao" DataType="System.String"/>
+        <Column Name="id_st_convenio_prestacao" DataType="System.Int32"/>
+        <Column Name="ds_st_convenio_prestacao" DataType="System.String"/>
+        <Column Name="vl_repasse" DataType="System.Double"/>
+        <Column Name="vl_rendimento" DataType="System.Double"/>
+        <Column Name="vl_despesa" DataType="System.Double"/>
+        <Column Name="vl_devolucao" DataType="System.Double"/>
+        <Column Name="vl_investimento_proprio" DataType="System.Double"/>
+        <Column Name="nr_contrato" DataType="System.String"/>
+        <Column Name="ano_contrato" DataType="System.Int16"/>
+        <Column Name="nome_razao" DataType="System.String"/>
+        <Column Name="documento_formatado" DataType="System.String"/>
+        <CommandParameter Name="ID_CONVENIO" DataType="9" Expression="[id_Convenio]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlRepasse" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;	pexec.id_convenio_prestacao_exec,&#13;&#10;	pexec.valor as vl_repasse,&#13;&#10;	gce.dt_execucao as dt_prestacao_execucao,&#13;&#10;	gce.nr_empenho,&#13;&#10;	gce.ano_empenho,&#13;&#10;	gce.nr_liquidacao,&#13;&#10;	gce.ano_liquidacao,&#13;&#10;	gce.dt_vencimento,&#13;&#10;	gce.nr_parcela,&#13;&#10;	gce.id_contrato_movimento,&#13;&#10;	gce.id_banco,&#13;&#10;	gce.cd_agencia,&#13;&#10;	gce.dv_agencia,&#13;&#10;	gce.cd_conta,&#13;&#10;	gce.dv_conta,&#13;&#10;	mov.nr_sequencial,&#13;&#10;	tpcm.ds_tp_contrato_movimento,&#13;&#10;	sb.cd_banco,&#13;&#10;	sb.ds_banco&#13;&#10;from&#13;&#10;	gcc_convenio_prestacao_exec pexec&#13;&#10;	left outer join gcc_convenio_prestacao gcp on gcp.id_convenio_prestacao = pexec.id_convenio_prestacao&#13;&#10;	left outer join gcc_contrato_execucao gce on gce.id_contrato_execucao = pexec.id_convenio_execucao&#13;&#10;	left outer join gcc_contrato gc on	gc.id_contrato = gce.id_contrato&#13;&#10;	left outer join gcc_contrato_movimento mov on	mov.id_contrato_movimento = gce.id_contrato_movimento&#13;&#10;	left outer join gcc_tp_contrato_movimento tpcm on tpcm.id_tp_contrato_movimento = mov.id_tp_contrato_movimento&#13;&#10;	left outer join sis_banco sb on sb.id_banco = gce.id_banco&#13;&#10;where&#13;&#10;	gc.id_entidade = 2&#13;&#10;	and pexec.id_convenio_prestacao = 57&#13;&#10;	and pexec.devolucao = 0&#13;&#10;	and pexec.rendimento = 0&#13;&#10;	and gce.id_tp_fase_execucao = 3&#13;&#10;order by&#13;&#10;	gce.dt_execucao,&#13;&#10;	gce.id_contrato_execucao">
+        <Column Name="id_convenio_prestacao_exec" DataType="System.Int32"/>
+        <Column Name="vl_repasse" DataType="System.Double"/>
+        <Column Name="dt_prestacao_execucao" DataType="System.DateTime"/>
+        <Column Name="nr_empenho" DataType="System.Int32"/>
+        <Column Name="ano_empenho" DataType="System.Int32"/>
+        <Column Name="nr_liquidacao" DataType="System.Int32"/>
+        <Column Name="ano_liquidacao" DataType="System.Int32"/>
+        <Column Name="dt_vencimento" DataType="System.DateTime"/>
+        <Column Name="nr_parcela" DataType="System.Int32"/>
+        <Column Name="id_contrato_movimento" DataType="System.Int32"/>
+        <Column Name="id_banco" DataType="System.Int32"/>
+        <Column Name="cd_agencia" DataType="System.String"/>
+        <Column Name="dv_agencia" DataType="System.String"/>
+        <Column Name="cd_conta" DataType="System.String"/>
+        <Column Name="dv_conta" DataType="System.String"/>
+        <Column Name="nr_sequencial" DataType="System.Int32"/>
+        <Column Name="ds_tp_contrato_movimento" DataType="System.String"/>
+        <Column Name="cd_banco" DataType="System.String"/>
+        <Column Name="ds_banco" DataType="System.String"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlRendimento" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;	pexec.id_convenio_prestacao_exec,&#13;&#10;	pexec.dt_prestacao_execucao,&#13;&#10;	pexec.valor as vl_rendimento,&#13;&#10;	pexec.id_banco,&#13;&#10;	pexec.cd_agencia,&#13;&#10;	pexec.dv_agencia,&#13;&#10;	pexec.cd_conta,&#13;&#10;	pexec.dv_conta,&#13;&#10;	sb.cd_banco,&#13;&#10;	sb.ds_banco&#13;&#10;from&#13;&#10;	gcc_convenio_prestacao_exec pexec&#13;&#10;	left outer join gcc_convenio_prestacao gcp on gcp.id_convenio_prestacao = pexec.id_convenio_prestacao&#13;&#10;	left outer join gcc_contrato gc on gc.id_contrato = gcp.id_contrato&#13;&#10;	left outer join sis_banco sb on	sb.id_banco = pexec.id_banco&#13;&#10;where&#13;&#10;	pexec.id_convenio_prestacao = :id_convenio&#13;&#10;	and gc.id_entidade = :id_entidade&#13;&#10;	and pexec.devolucao = 0&#13;&#10;	and pexec.rendimento = 1&#13;&#10;	and pexec.id_convenio_execucao is null&#13;&#10;order by&#13;&#10;	pexec.dt_prestacao_execucao">
+        <Column Name="id_convenio_prestacao_exec" DataType="System.Int32"/>
+        <Column Name="dt_prestacao_execucao" DataType="System.DateTime"/>
+        <Column Name="vl_rendimento" DataType="System.Double"/>
+        <Column Name="id_banco" DataType="System.Int32"/>
+        <Column Name="cd_agencia" DataType="System.String"/>
+        <Column Name="dv_agencia" DataType="System.String"/>
+        <Column Name="cd_conta" DataType="System.String"/>
+        <Column Name="dv_conta" DataType="System.String"/>
+        <Column Name="cd_banco" DataType="System.String"/>
+        <Column Name="ds_banco" DataType="System.String"/>
+        <CommandParameter Name="ID_CONVENIO" DataType="9" Expression="[id_Convenio]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlDespesas" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;	pexec.id_convenio_prestacao_exec,&#13;&#10;	pexec.id_convenio_prestacao,&#13;&#10;	pexec.dt_prestacao_execucao,&#13;&#10;	pexec.nome_credor,&#13;&#10;	pexec.documento,&#13;&#10;	pexec.id_genero_despesa,&#13;&#10;	pexec.genero_despesa,&#13;&#10;	pexec.documento_fiscal,&#13;&#10;	pexec.dt_emissao,&#13;&#10;	pexec.vl_bruto,&#13;&#10;	pexec.vl_juros,&#13;&#10; COALESCE(pexec.vl_descontos, 0) AS vl_descontos,&#13;&#10;	coalesce(pexec.vl_bruto, 0) + coalesce(pexec.vl_juros, 0) - coalesce(pexec.vl_descontos, 0) as vl_liquido,&#13;&#10;	pexec.vl_contrapartida as vl_investimento_proprio,&#13;&#10;	pexec.valor as vl_despesa,&#13;&#10;	pexec.cd_agencia,&#13;&#10;	pexec.dv_agencia,&#13;&#10;	pexec.cd_conta,&#13;&#10;	pexec.dv_conta,&#13;&#10; pexec.id_banco,&#13;&#10;	COALESCE(ggd.ds_genero_despesa, '-') AS ds_genero_despesa,&#13;&#10;	sb.cd_banco,&#13;&#10;	sb.ds_banco&#13;&#10;from&#13;&#10;	gcc_convenio_prestacao_exec pexec&#13;&#10;	left outer join gcc_convenio_prestacao gcp on	gcp.id_convenio_prestacao = pexec.id_convenio_prestacao&#13;&#10;	left outer join gcc_contrato gc on gc.id_contrato = gcp.id_contrato&#13;&#10;	left outer join gcc_genero_despesa ggd on	ggd.id_genero_despesa = pexec.id_genero_despesa&#13;&#10;	left outer join sis_banco sb on sb.id_banco = pexec.id_banco&#13;&#10;where&#13;&#10;	pexec.id_convenio_prestacao = :id_convenio&#13;&#10;	and gc.id_entidade = :id_entidade&#13;&#10;	and pexec.id_convenio_execucao is null&#13;&#10;	and pexec.devolucao = 0&#13;&#10;	and pexec.rendimento = 0&#13;&#10;order by&#13;&#10;	pexec.dt_prestacao_execucao,&#13;&#10;	pexec.nome_credor&#13;&#10;">
+        <Column Name="id_convenio_prestacao_exec" DataType="System.Int32"/>
+        <Column Name="id_convenio_prestacao" DataType="System.Int32"/>
+        <Column Name="dt_prestacao_execucao" DataType="System.DateTime"/>
+        <Column Name="nome_credor" DataType="System.String"/>
+        <Column Name="documento" DataType="System.String"/>
+        <Column Name="id_genero_despesa" DataType="System.Int32"/>
+        <Column Name="genero_despesa" DataType="System.String"/>
+        <Column Name="documento_fiscal" DataType="System.String"/>
+        <Column Name="dt_emissao" DataType="System.DateTime"/>
+        <Column Name="vl_bruto" DataType="System.Double"/>
+        <Column Name="vl_juros" DataType="System.Double"/>
+        <Column Name="vl_descontos" DataType="System.Double"/>
+        <Column Name="vl_liquido" DataType="System.Double"/>
+        <Column Name="vl_investimento_proprio" DataType="System.Double"/>
+        <Column Name="vl_despesa" DataType="System.Double"/>
+        <Column Name="cd_agencia" DataType="System.String"/>
+        <Column Name="dv_agencia" DataType="System.String"/>
+        <Column Name="cd_conta" DataType="System.String"/>
+        <Column Name="dv_conta" DataType="System.String"/>
+        <Column Name="id_banco" DataType="System.Int32"/>
+        <Column Name="ds_genero_despesa" DataType="System.String"/>
+        <Column Name="cd_banco" DataType="System.String"/>
+        <Column Name="ds_banco" DataType="System.String"/>
+        <CommandParameter Name="ID_CONVENIO" DataType="9" Expression="[id_Convenio]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="SqlDevolucao" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;	pexec.id_convenio_prestacao_exec,&#13;&#10;	pexec.id_convenio_prestacao,&#13;&#10;	pexec.dt_prestacao_execucao,&#13;&#10;	pexec.valor as vl_devolucao,&#13;&#10;	pexec.id_banco,&#13;&#10;	pexec.cd_agencia,&#13;&#10;	pexec.dv_agencia,&#13;&#10;	pexec.cd_conta,&#13;&#10;	pexec.dv_conta,&#13;&#10;	sb.cd_banco,&#13;&#10;	sb.ds_banco&#13;&#10;from&#13;&#10;	gcc_convenio_prestacao_exec pexec&#13;&#10;	left outer join gcc_convenio_prestacao gcp on	gcp.id_convenio_prestacao = pexec.id_convenio_prestacao&#13;&#10;	left outer join gcc_contrato gc on gc.id_contrato = gcp.id_contrato&#13;&#10;	left outer join sis_banco sb on sb.id_banco = pexec.id_banco&#13;&#10;where&#13;&#10;	pexec.id_convenio_prestacao = :id_convenio&#13;&#10;	and gc.id_entidade = :id_entidade&#13;&#10;	and pexec.id_convenio_execucao is null&#13;&#10;	and pexec.devolucao = 1&#13;&#10;	and pexec.rendimento = 0&#13;&#10;order by&#13;&#10;	pexec.dt_prestacao_execucao">
+        <Column Name="id_convenio_prestacao_exec" DataType="System.Int32"/>
+        <Column Name="id_convenio_prestacao" DataType="System.Int32"/>
+        <Column Name="dt_prestacao_execucao" DataType="System.DateTime"/>
+        <Column Name="vl_devolucao" DataType="System.Double"/>
+        <Column Name="id_banco" DataType="System.Int32"/>
+        <Column Name="cd_agencia" DataType="System.String"/>
+        <Column Name="dv_agencia" DataType="System.String"/>
+        <Column Name="cd_conta" DataType="System.String"/>
+        <Column Name="dv_conta" DataType="System.String"/>
+        <Column Name="cd_banco" DataType="System.String"/>
+        <Column Name="ds_banco" DataType="System.String"/>
+        <CommandParameter Name="ID_CONVENIO" DataType="9" Expression="[id_Convenio]"/>
+        <CommandParameter Name="ID_ENTIDADE" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Prestação de Contas&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="id_Beneficiario" DataType="System.Int64" AsString=""/>
+    <Parameter Name="id_Convenio" DataType="System.Int64" Expression="665"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child2" ZOrder="-1" Top="173.4" Width="718.2" Height="37.8">
+          <TextObject Name="Text1" Top="9.45" Width="718.2" Height="18.9" Text="PRESTAÇÃO DE CONTAS DO TERCEIRO SETOR" HorzAlign="Center" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <DataBand Name="MasterData1" ZOrder="0" Top="276.15" Width="718.2" Height="66.15" DataSource="Table">
+      <TextObject Name="Text25" Width="718.2" Height="66.15" Border.Lines="Left, Right, Top" VertAlign="Center" Font="Arial, 9pt"/>
+      <TextObject Name="Text3" Left="5.67" Top="6.05" Width="85.05" Height="26.46" Text="Instrumento &#13;&#10;de parceria" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="num" Left="5.67" Top="28.35" Width="75.6" Height="26.46" Text="[SqlInstrumento.nr_contrato] / [SqlInstrumento.ano_contrato]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text5" Left="92.99" Top="6.05" Width="219.24" Height="18.9" Text="Beneficiário" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="beneficiario" Left="92.99" Top="28.35" Width="219.24" Height="26.46" CanGrow="true" Text="[SqlInstrumento.nome_razao] / [SqlInstrumento.documento_formatado]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text7" Left="323.57" Top="6.05" Width="54.81" Height="18.9" Text="Número" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="situacao" Left="323.57" Top="25.7" Width="49.14" Height="26.46" Text="[SqlInstrumento.nr_sequencial]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text9" Left="384.05" Top="6.05" Width="56.7" Height="18.9" Text="Data" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="dt_assinatura" Left="384.05" Top="25.7" Width="68.04" Height="26.46" Text="[SqlInstrumento.dt_convenio_prestacao]" Format="Date" Format.Format="d" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text11" Left="452.09" Top="6.05" Width="151.2" Height="18.9" Text="Tipo de prestação" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="classificacao" Left="452.09" Top="25.7" Width="151.2" Height="26.46" Text="[SqlInstrumento.ds_tp_convenio_prestacao]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text13" Left="614.63" Top="6.05" Width="97.52" Height="18.9" Text="Situação" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="proposta" Left="614.63" Top="25.7" Width="97.52" Height="18.9" Text="[SqlInstrumento.ds_st_convenio_prestacao]" VertAlign="Center" Font="Arial, 8pt"/>
+      <ChildBand Name="Child1" Top="362.3" Width="718.2" Height="47.25">
+        <TextObject Name="Text24" Width="718.2" Height="47.25" Border.Lines="Left, Right, Bottom" VertAlign="Center" Font="Arial, 9pt"/>
+        <TextObject Name="Text14" Left="5.67" Width="75.6" Height="18.9" Text="Repasses" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text15" Left="92.99" Width="105.84" Height="18.9" Text="Rendimentos" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text16" Left="210.17" Width="102.06" Height="18.9" Text="Despesas" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text17" Left="323.57" Width="117.18" Height="18.9" Text="Devoluções" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text18" Left="452.09" Width="139.86" Height="18.9" Text="Tipo de prestação" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text19" Left="5.45" Top="17.01" Width="75.6" Height="18.9" Text="[SqlInstrumento.vl_repasse]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text20" Left="92.77" Top="17.01" Width="105.84" Height="18.9" Text="[SqlInstrumento.vl_rendimento]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text21" Left="209.95" Top="17.01" Width="102.06" Height="18.9" Text="[SqlInstrumento.vl_despesa]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text22" Left="323.35" Top="17.01" Width="117.18" Height="18.9" Text="[SqlInstrumento.vl_devolucao]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text23" Left="451.87" Top="17.01" Width="139.86" Height="18.9" Text="[SqlInstrumento.vl_investimento_proprio]" VertAlign="Center" Font="Arial, 8pt"/>
+      </ChildBand>
+      <DataHeaderBand Name="DataHeader1" Top="231.2" Width="718.2" Height="24.95">
+        <TextObject Name="Text2" Width="204.88" Height="24.95" Border.Lines="All" Border.Width="0.5" Fill.Color="41, 82, 118" Text="Prestação de Contas" VertAlign="Center" Font="Arial, 12pt, style=Bold" TextFill.Color="White"/>
+      </DataHeaderBand>
+      <DataBand Name="DetailData1" Top="475.63" Width="718.2" Height="56.7" Border.Lines="All" DataSource="Table1">
+        <TextObject Name="Text74" Width="718.2" Height="56.7" Border.Lines="All" HorzAlign="Right" VertAlign="Center" Font="Arial, 9pt, style=Bold">
+          <Highlight>
+            <Condition Expression="[Row#] % 2 == 1" Fill.Color="WhiteSmoke" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="Text27" Left="6.05" Top="6.05" Width="60.48" Height="18.9" Text="Repasse" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text28" Left="77.87" Top="6.05" Width="130.41" Height="18.9" Text="Data do vencimento" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text29" Left="210.17" Top="6.05" Width="75.6" Height="18.9" Text="Valor" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text30" Left="300.89" Top="6.05" Width="75.6" Height="18.9" Text="Empenho" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text31" Left="387.83" Top="6.05" Width="151.2" Height="18.9" Text="Liquidação" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text32" Left="550.37" Top="6.05" Width="158.76" Height="18.9" Text="Conta creditada" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text33" Left="5.45" Top="24.41" Width="64.26" Height="18.9" Text="[SqlRepasse.dt_prestacao_execucao]" Format="Date" Format.Format="d" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text34" Left="77.27" Top="24.41" Width="124.74" Height="18.9" Text="[SqlRepasse.dt_vencimento]" Format="Date" Format.Format="d" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text35" Left="209.57" Top="24.41" Width="75.6" Height="18.9" Text="[SqlRepasse.vl_repasse]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text36" Left="300.29" Top="24.41" Width="75.6" Height="18.9" Text="[SqlRepasse.nr_empenho] / [SqlRepasse.ano_empenho]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text37" Left="387.23" Top="24.41" Width="151.2" Height="18.9" Text="[SqlRepasse.nr_liquidacao] / [SqlRepasse.ano_liquidacao]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text38" Left="549.77" Top="24.41" Width="158.76" Height="18.9" CanGrow="true" Text="[SqlRepasse.cd_banco] - [SqlRepasse.ds_banco] [SqlRepasse.cd_agencia] - [SqlRepasse.dv_agencia] / [SqlRepasse.cd_conta] - [SqlRepasse.dv_conta]" VertAlign="Center" Font="Arial, 8pt"/>
+        <DataHeaderBand Name="DataHeader2" Top="429.55" Width="718.2" Height="26.08">
+          <TextObject Name="Text26" Top="7.18" Width="113.4" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Repasses" VertAlign="Center" Font="Arial, 9pt, style=Bold" TextFill.Color="White"/>
+        </DataHeaderBand>
+      </DataBand>
+      <DataBand Name="Data1" Top="599.17" Width="718.2" Height="47.25" Border.Lines="All" DataSource="Table2">
+        <TextObject Name="Text75" Width="718.2" Height="47.25" Border.Lines="All" HorzAlign="Right" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text68" Left="6.05" Top="6.05" Width="226.8" Height="18.9" Text="Repasse" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text69" Left="244.19" Top="6.05" Width="226.8" Height="18.9" Text="Data do vencimento" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text70" Left="482.33" Top="6.05" Width="226.8" Height="18.9" Text="Valor" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text71" Left="5.45" Top="19.66" Width="226.8" Height="18.9" Text="[SqlRendimento.dt_prestacao_execucao]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text72" Left="243.59" Top="19.66" Width="226.8" Height="18.9" Text="[SqlRendimento.cd_banco] - [SqlRendimento.ds_banco] [SqlRendimento.cd_agencia] - [SqlRendimento.dv_agencia] / [SqlRendimento.cd_conta] - [SqlRendimento.dv_conta]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text73" Left="481.73" Top="19.66" Width="226.8" Height="18.9" Text="[SqlRendimento.vl_rendimento]" HorzAlign="Right" VertAlign="Center" Font="Arial, 8pt"/>
+        <DataHeaderBand Name="DataHeader5" Top="552.33" Width="718.2" Height="26.84">
+          <TextObject Name="Text67" Top="7.94" Width="113.4" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Rendimentos" VertAlign="Center" Font="Arial, 9pt, style=Bold" TextFill.Color="White"/>
+        </DataHeaderBand>
+      </DataBand>
+      <DataBand Name="DetailData3" Top="713.26" Width="718.2" Height="151.2" CanGrow="true" DataSource="Table3">
+        <TextObject Name="Text76" Width="718.2" Height="151.2" Border.Lines="All" HorzAlign="Right" VertAlign="Center" Font="Arial, 9pt, style=Bold">
+          <Highlight>
+            <Condition Expression="[Row#] % 2 == 1" Fill.Color="WhiteSmoke" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+          </Highlight>
+        </TextObject>
+        <TextObject Name="Text40" Left="6.05" Top="7.56" Width="68.04" Height="18.9" Text="Despesa" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text41" Left="74.09" Top="7.56" Width="122.85" Height="18.9" Text="Documento Fiscal" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text42" Left="198.83" Top="7.56" Width="107.73" Height="18.9" Text="Tipo de despesa" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text43" Left="308.45" Top="7.56" Width="222.64" Height="18.9" Text="Credor" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text44" Left="5.45" Top="26.68" Width="68.04" Height="18.9" CanGrow="true" Text="[SqlDespesas.dt_prestacao_execucao]" Format="Date" Format.Format="d" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text45" Left="73.49" Top="26.68" Width="122.85" Height="18.9" CanGrow="true" Text="[SqlDespesas.documento_fiscal] - [SqlDespesas.dt_emissao]" VertAlign="Center" Font="Arial, 8pt">
+          <Formats>
+            <GeneralFormat/>
+            <DateFormat/>
+          </Formats>
+        </TextObject>
+        <TextObject Name="Text46" Left="198.23" Top="26.68" Width="107.73" Height="18.9" CanGrow="true" Text="[SqlDespesas.ds_genero_despesa]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text47" Left="307.85" Top="26.68" Width="401.81" Height="18.9" CanGrow="true" Text="[SqlDespesas.nome_credor] - [SqlDespesas.documento]" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text48" Left="6.05" Top="56.7" Width="183.33" Height="18.9" Text="Valor do documento" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text49" Left="198.83" Top="56.7" Width="98.28" Height="18.9" Text="Desconto" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text50" Left="412.02" Top="56.7" Width="115.29" Height="18.9" Text="Valor da despesa" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text51" Left="529.2" Top="56.7" Width="122.85" Height="18.9" Text="Pago com repasse" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text52" Left="308.07" Top="56.7" Width="102.06" Height="18.9" Text="Multas e Juros" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text53" Left="5.45" Top="75.6" Width="183.33" Height="18.9" Text="[SqlDespesas.vl_bruto]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text54" Left="199.23" Top="75.6" Width="98.28" Height="18.9" Text="[SqlDespesas.vl_descontos]" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text55" Left="412.42" Top="75.6" Width="105.84" Height="18.9" Text="[SqlDespesas.vl_despesa]" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text56" Left="529.6" Top="75.6" Width="113.4" Height="18.9" Text="[SqlDespesas.vl_despesa]" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text57" Left="308.47" Top="75.6" Width="92.61" Height="18.9" Text="[SqlDespesas.vl_juros]" Format="Currency" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text58" Left="6.05" Top="101.3" Width="183.33" Height="18.9" Text="Investimento próprio" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text59" Left="198.83" Top="101.3" Width="200.34" Height="18.9" Text="Pago com a conta" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text60" Left="5.45" Top="120.42" Width="183.33" Height="18.9" Text="[SqlDespesas.vl_investimento_proprio]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text61" Left="198.23" Top="120.42" Width="200.34" Height="18.9" Text="[SqlDespesas.cd_banco] - [SqlDespesas.ds_banco] [SqlDespesas.cd_agencia] - [SqlDespesas.dv_agencia] / [SqlDespesas.cd_conta] - [SqlDespesas.dv_conta]" VertAlign="Center" Font="Arial, 8pt"/>
+        <DataHeaderBand Name="DataHeader3" Top="666.42" Width="718.2" Height="26.84" RepeatOnEveryPage="true">
+          <TextObject Name="Text39" Top="7.94" Width="113.4" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Despesas" VertAlign="Center" Font="Arial, 9pt, style=Bold" TextFill.Color="White"/>
+        </DataHeaderBand>
+      </DataBand>
+      <DataBand Name="Data4" Top="930.54" Width="718.2" Height="47.25" Border.Lines="All" DataSource="Table4">
+        <TextObject Name="Text77" Width="718.2" Height="47.25" HorzAlign="Right" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text63" Left="6.05" Top="5.67" Width="347.38" Height="15.12" Text="Data" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text64" Left="363.64" Top="5.67" Width="347.38" Height="15.12" Text="Valor da Devolução" VertAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text65" Left="6.05" Top="19.9" Width="347.38" Height="15.12" Text="[SqlDevolucao.dt_prestacao_execucao]" Format="Date" Format.Format="d" VertAlign="Center" Font="Arial, 8pt"/>
+        <TextObject Name="Text66" Left="363.64" Top="19.9" Width="347.38" Height="15.12" Text="[SqlDevolucao.vl_devolucao]" VertAlign="Center" Font="Arial, 8pt"/>
+        <DataHeaderBand Name="DataHeader4" Top="884.46" Width="718.2" Height="26.08">
+          <TextObject Name="Text62" Top="7.18" Width="113.4" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Devoluções" VertAlign="Center" Font="Arial, 9pt, style=Bold" TextFill.Color="White"/>
+        </DataHeaderBand>
+      </DataBand>
+    </DataBand>
+    <inherited Name="BndRodape" Top="997.79">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

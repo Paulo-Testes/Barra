@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="C:\Users\Embras\Desktop\FAST\gsr-designer-frx\designer-win-x64\sup\sup\gsr-reports\base\retrato.frx" BaseReportAbsolutePath="C:\Users\Embras\Desktop\FAST\gsr-designer-frx\designer-win-x64\sup\sup\gsr-reports\base\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="06/04/2025 16:44:24" ReportInfo.CreatorVersion="2025.1.10.0">
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O4GzcTRMKQehUmnuhay4cWw=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="site" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlAutorizacaoDespesa" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.ID_NAD,&#13;&#10;       A.NR_NAD,&#13;&#10;       A.DT_NAD,&#13;&#10;       A.ID_APROVADOR,&#13;&#10;       A.ID_CENTRO_CONSUMO,&#13;&#10;       A.ID_SOLICITANTE,&#13;&#10;       A.ID_CONVENIO,&#13;&#10;       A.VL_NAD,&#13;&#10;       trim(A.HISTORICO) as HISTORICO,&#13;&#10;       case when A.TP_REGIME = 0 then 'Normal'&#13;&#10;            else 'Adiantamento' end as TP_REGIME,&#13;&#10;       A.ID_DIVIDA,&#13;&#10;       A.ID_RESERVA,&#13;&#10;       trim(C.DS_CENTRO_CONSUMO) as DS_CENTRO_CONSUMO,&#13;&#10;       C.CD_CENTRO_CONSUMO,&#13;&#10;       trim(UA.DS_UNIDADE_ADM) as DS_UNIDADE_ADM,&#13;&#10;       UA.ID_UNIDADE_ADM,&#13;&#10;       UA.CD_UNIDADE_ADM,&#13;&#10;       trim(UC.SIGLA)             AS SIGLA_UNIDADE_COMPRA,&#13;&#10;       trim(UC.DS_UNIDADE_COMPRA) AS DS_UNIDADE_COMPRA,&#13;&#10;       trim(AA.ds_usuario)              AS NOME_SOLICITANTE,&#13;&#10;       trim(AA.NOME_USUARIO)     AS NOME_COMPLETO_SOLICITANTE,&#13;&#10;       trim(BB.ds_usuario)              AS NOME_APROVADOR,&#13;&#10;       trim(BB.NOME_USUARIO)     AS NOME_COMPLETO_APROVADOR,&#13;&#10;       trim(SP.NOME_RAZAO)        AS FORNECEDOR,&#13;&#10;       CAST(SUBSTRING(TRIM(CO.NR_CONTRATO) FROM 1 FOR 12) AS VARCHAR(12) ) AS NR_CONVENIO,&#13;&#10;       CO.ANO_CONTRATO AS ANO_CONVENIO,&#13;&#10;       CD.NR_DIVIDA,&#13;&#10;       trim(CD.DS_DIVIDA) as DS_DIVIDA ,&#13;&#10;       CAST(PF.dotacao AS VARCHAR(255)) AS DOTACAO&#13;&#10;  FROM SUP_NAD A&#13;&#10;       LEFT JOIN API_DOTACAO_POR_ID(A.ID_CONTA_FUNCIONAL_1, A.ID_CONTA, A.ID_APLICACAO, A.ID_CENTRO_CUSTO, A.ID_TIPO_DESPESA, A.ID_RESPONSAVEL) G ON 1 = 1&#13;&#10;       LEFT join PEC_FICHA_VIEW     PF ON PF.id_ficha                = G.id_ficha_despesa&#13;&#10;       left join SIS_USUARIO        AA on AA.ID_USUARIO              = A.ID_SOLICITANTE&#13;&#10;       left join SIS_USUARIO        BB on BB.ID_USUARIO              = A.ID_APROVADOR&#13;&#10;/*       LEFT JOIN AAC_USUARIOS       AA ON AA.CODIGO_USUARIO          = A.ID_SOLICITANTE&#13;&#10;       LEFT JOIN AAC_USUARIOS       BB ON BB.CODIGO_USUARIO          = A.ID_APROVADOR*/&#13;&#10;       LEFT JOIN SUP_CENTRO_CONSUMO C  ON C.ID_CENTRO_CONSUMO        = A.ID_CENTRO_CONSUMO&#13;&#10;       LEFT JOIN SUP_UNIDADE_ADM    UA ON UA.ID_UNIDADE_ADM          = C.ID_UNIDADE_ADM&#13;&#10;       LEFT JOIN SUP_UNIDADE_COMPRA UC ON UC.ID_UNIDADE_COMPRA       = A.ID_UNIDADE_COMPRA          &#13;&#10;--     LEFT JOIN SUP_FORNECEDOR     F  ON F.ID_FORNECEDOR            = A.ID_FORNECEDOR&#13;&#10;       LEFT JOIN SIS_PESSOA         SP ON SP.ID_PESSOA               = A.id_fornecedor /*F.ID_CREDOR*/&#13;&#10;       LEFT JOIN GCC_CONTRATO       CO ON CO.ID_CONTRATO             = A.ID_CONVENIO&#13;&#10;       LEFT JOIN API_DIVIDA         CD ON CD.ID_DIVIDA               = A.ID_DIVIDA&#13;&#10;&#13;&#10; WHERE A.ID_NAD = :ID_NAD&#13;&#10;&#13;&#10;">
+        <Column Name="id_nad" DataType="System.Int32"/>
+        <Column Name="nr_nad" DataType="System.Int32"/>
+        <Column Name="dt_nad" DataType="System.DateTime"/>
+        <Column Name="id_aprovador" DataType="System.Int32"/>
+        <Column Name="id_centro_consumo" DataType="System.Int32"/>
+        <Column Name="id_solicitante" DataType="System.Int32"/>
+        <Column Name="id_convenio" DataType="System.Int32"/>
+        <Column Name="vl_nad" DataType="System.Double"/>
+        <Column Name="historico" DataType="System.String"/>
+        <Column Name="tp_regime" DataType="System.String"/>
+        <Column Name="id_divida" DataType="System.Int32"/>
+        <Column Name="id_reserva" DataType="System.Int32"/>
+        <Column Name="ds_centro_consumo" DataType="System.String"/>
+        <Column Name="cd_centro_consumo" DataType="System.Int32"/>
+        <Column Name="ds_unidade_adm" DataType="System.String"/>
+        <Column Name="id_unidade_adm" DataType="System.Int32"/>
+        <Column Name="cd_unidade_adm" DataType="System.Int32"/>
+        <Column Name="sigla_unidade_compra" DataType="System.String"/>
+        <Column Name="ds_unidade_compra" DataType="System.String"/>
+        <Column Name="nome_solicitante" DataType="System.String"/>
+        <Column Name="nome_completo_solicitante" DataType="System.String"/>
+        <Column Name="nome_aprovador" DataType="System.String"/>
+        <Column Name="nome_completo_aprovador" DataType="System.String"/>
+        <Column Name="fornecedor" DataType="System.String"/>
+        <Column Name="nr_convenio" DataType="System.String"/>
+        <Column Name="ano_convenio" DataType="System.Int16"/>
+        <Column Name="nr_divida" DataType="System.Int32"/>
+        <Column Name="ds_divida" DataType="System.String"/>
+        <Column Name="dotacao" DataType="System.String"/>
+        <CommandParameter Name="ID_NAD" DataType="9" Expression="[IdAutorizacaoDespesa]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlItem" DataType="System.Int32" Enabled="true" SelectCommand="SELECT C.ID_NAD_ITEM AS ID_EMPENHO_IT,&#13;&#10;       C.CD_ITEM     AS CD_EMPENHO_IT,&#13;&#10;       trim(C.DS_ITEM)     AS DS_EMPENHO_IT,&#13;&#10;       C.QTD,&#13;&#10;       C.VL_TOTAL,&#13;&#10;       (C.VL_TOTAL / C.QTD) AS VL_UNITARIO ,&#13;&#10;       trim(C.UN) as UN,&#13;&#10;       case when C.SERVICO = 0 then 'Material'&#13;&#10;            else 'Serviço'end  AS ID_TP_EMPENHO_IT,&#13;&#10;       C.ID_NAD,&#13;&#10;       C.ORDEM&#13;&#10;  FROM SUP_NAD_ITEM C&#13;&#10; WHERE C.ID_NAD = :ID_NAD">
+        <Column Name="id_empenho_it" DataType="System.Int32"/>
+        <Column Name="cd_empenho_it" DataType="System.String"/>
+        <Column Name="ds_empenho_it" DataType="System.String"/>
+        <Column Name="qtd" DataType="System.Double"/>
+        <Column Name="vl_total" DataType="System.Double"/>
+        <Column Name="vl_unitario" DataType="System.Double"/>
+        <Column Name="un" DataType="System.String"/>
+        <Column Name="id_tp_empenho_it" DataType="System.String"/>
+        <Column Name="id_nad" DataType="System.Int32"/>
+        <Column Name="ordem" DataType="System.Int32"/>
+        <CommandParameter Name="ID_NAD" DataType="9" Expression="[IdAutorizacaoDespesa]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Nota de Autorização de Despesa (NAD)&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" AsString=""/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idAutorizacaoDespesa" DataType="System.Int64" AsString=""/>
+    <Total Name="Total" Expression="[SqlItem.vl_total]"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho" Top="20">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="134.5">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="BndCabecalhoDetalhe" ZOrder="-1" Top="173.4" Width="718.2" Height="47.48">
+          <TextObject Name="Text1" Left="0.76" Top="24.8" Width="204.88" Height="22.68" Border.Lines="All" Fill.Color="53, 103, 149" Text="NAD [SqlAutorizacaoDespesa.nr_nad]/[SqlAutorizacaoDespesa.dt_nad]" VertAlign="Center" Font="Arial, 11pt, style=Bold" TextFill.Color="White">
+            <Formats>
+              <CustomFormat Format="00000"/>
+              <CustomFormat Format="yyyy"/>
+            </Formats>
+          </TextObject>
+          <LineObject Name="Line3" Left="0.45" Top="9.45" Width="718.2"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <DataBand Name="BndAutorizacaoDespesa" ZOrder="0" Top="240.88" Width="718.2" Height="198.45" DataSource="Table">
+      <TextObject Name="Text43" Left="235.25" Width="66.15" Height="18.9" Border.Lines="Right, Top, Bottom" Text="Solicitante:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text3" Left="127.85" Width="113.4" Height="18.9" Border.Lines="Right, Top, Bottom" Fill.Color="ButtonFace" Text="[SqlAutorizacaoDespesa.dt_nad]" Format="Date" Format.Format="d" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text6" Left="0.76" Top="18.9" Width="300.89" Height="18.9" Border.Lines="Left, Top, Bottom" Text="Aprovador:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text7" Left="298.85" Top="18.9" Width="417.69" Height="18.9" Border.Lines="All" Fill.Color="ButtonFace" Text="[Trim([SqlAutorizacaoDespesa.nome_completo_aprovador])] - [Trim([SqlAutorizacaoDespesa.nome_aprovador])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text2" Left="0.76" Width="126.63" Height="18.9" Border.Lines="All" Text="Data da solicitação:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt"/>
+      <TextObject Name="Text5" Left="299" Width="417.69" Height="18.9" Border.Lines="All" Fill.Color="ButtonFace" Text="[Trim([SqlAutorizacaoDespesa.nome_completo_solicitante])] - [Trim([SqlAutorizacaoDespesa.nome_solicitante])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text8" Left="0.76" Top="37.8" Width="126.63" Height="18.9" Border.Lines="All" Text="Unidade administrativa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text9" Left="127.3" Top="37.8" Width="588.92" Height="18.9" Border.Lines="All" Fill.Color="ButtonFace" Text="[Trim([SqlAutorizacaoDespesa.ds_unidade_adm])] - ([SqlAutorizacaoDespesa.cd_unidade_adm])" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text10" Left="0.76" Top="56.7" Width="126.63" Height="18.9" Border.Lines="All" Text="Centro de consumo:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text11" Left="127.3" Top="56.7" Width="588.92" Height="18.9" Border.Lines="All" Fill.Color="ButtonFace" Text="[Trim([SqlAutorizacaoDespesa.ds_centro_consumo])] - ([SqlAutorizacaoDespesa.cd_centro_consumo])" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text12" Left="0.76" Top="75.6" Width="126.63" Height="18.9" Border.Lines="All" Text="Unidade de compra:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text13" Left="127.3" Top="75.6" Width="588.92" Height="18.9" Border.Lines="All" Fill.Color="ButtonFace" Text="[Trim([SqlAutorizacaoDespesa.ds_unidade_compra])] - ([SqlAutorizacaoDespesa.sigla_unidade_compra])" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text14" Left="0.76" Top="94.5" Width="126.63" Height="18.9" Border.Lines="All" Text="Regime da despesa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text15" Left="127.3" Top="94.5" Width="588.92" Height="18.9" Border.Lines="All" Text="[SqlAutorizacaoDespesa.tp_regime]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text16" Left="0.76" Top="113.4" Width="126.63" Height="18.9" Border.Lines="All" Text="Fornecedor:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text17" Left="127.3" Top="113.4" Width="588.92" Height="18.9" Border.Lines="All" Text="[SqlAutorizacaoDespesa.fornecedor]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text18" Left="0.76" Top="132.3" Width="126.63" Height="18.9" Border.Lines="All" Text="Convênio:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text19" Left="127.3" Top="132.3" Width="588.92" Height="18.9" Border.Lines="All" Text="[SqlAutorizacaoDespesa.nr_convenio]  [IIf([SqlAutorizacaoDespesa.ano_convenio] &lt;=0,&quot;&quot;,&quot;/&quot;)]  [IIf([SqlAutorizacaoDespesa.ano_convenio] &lt;=0,&quot;&quot;,[SqlAutorizacaoDespesa.ano_convenio])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text20" Left="0.76" Top="151.2" Width="126.63" Height="18.9" Border.Lines="All" Text="Dívida:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text21" Left="127.3" Top="151.2" Width="588.92" Height="18.9" Border.Lines="All" Text="[IIf([SqlAutorizacaoDespesa.nr_divida] &lt;= 0, &quot; &quot;,[SqlAutorizacaoDespesa.nr_divida])][IIf([SqlAutorizacaoDespesa.nr_divida] &lt;=0, &quot; &quot;, &quot;-&quot;)][SqlAutorizacaoDespesa.ds_divida]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="Text22" Left="0.76" Top="170.1" Width="126.63" Height="18.9" Border.Lines="All" Text="Dotação:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text23" Left="127.3" Top="170.1" Width="588.92" Height="18.9" Border.Lines="All" Text="[SqlAutorizacaoDespesa.dotacao]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <ChildBand Name="BndJustificativa" Top="459.33" Width="718.2" Height="67.28">
+        <TextObject Name="Text24" Top="7.9" Width="199.96" Height="20.03" Fill.Color="ButtonFace" Text="Observação:" VertAlign="Center" Font="Tahoma, 10pt, style=Bold"/>
+        <TextObject Name="Text25" Top="28.35" Width="718.2" Height="38.93" Border.Lines="All" CanGrow="true" GrowToBottom="true" Text="[SqlAutorizacaoDespesa.historico]" Padding="2, 2, 2, 2" VertAlign="Center" Font="Tahoma, 8pt"/>
+      </ChildBand>
+    </DataBand>
+    <DataBand Name="Data1" ZOrder="1" Top="606.08" Width="718.2" Height="18.9" CanGrow="true" DataSource="Table1">
+      <TextObject Name="Text33" Width="35.15" Height="18.9" Border.Lines="Left, Bottom" Fill.Color="53, 103, 149" Text="[Format(&quot;{0:0000}&quot;,[SqlItem.ordem])]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text34" Left="34.8" Width="413.15" Height="18.9" Border.Lines="Left, Bottom" CanGrow="true" GrowToBottom="true" Text="&lt;u&gt;[SqlItem.id_tp_empenho_it] - [SqlItem.cd_empenho_it]&lt;/u&gt;&#13;&#10;&lt;b&gt;[SqlItem.ds_empenho_it]&lt;/b&gt;" VertAlign="Center" Font="Tahoma, 8pt" TextRenderType="HtmlParagraph"/>
+      <TextObject Name="Text35" Left="447.6" Width="74.84" Height="18.9" Border.Lines="Left, Right, Bottom" GrowToBottom="true" Text="[IIf([SqlItem.qtd] &lt;= 0, &quot;---&quot;, [SqlItem.qtd])]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text36" Left="522.75" Width="35.15" Height="18.9" Border.Lines="Right, Bottom" GrowToBottom="true" Text="[IIf([SqlItem.un] == &quot; &quot;, &quot;---&quot;, [SqlItem.un])]" HorzAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text37" Left="557.55" Width="80.14" Height="18.9" Border.Lines="Right, Bottom" GrowToBottom="true" Text="[IIf([SqlItem.vl_unitario] &lt;= 0, &quot;---&quot;, [SqlItem.vl_unitario])]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" Font="Tahoma, 8pt"/>
+      <TextObject Name="Text38" Left="637.6" Width="80.14" Height="18.9" Border.Lines="Right, Bottom" GrowToBottom="true" Text="[IIf([SqlItem.vl_total] &lt;= 0, &quot;---&quot;, [SqlItem.vl_total])]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.NegativePattern="1" HorzAlign="Right" Font="Tahoma, 8pt"/>
+      <DataHeaderBand Name="BndItemCabecalho" Top="546.61" Width="718.2" Height="39.47">
+        <TextObject Name="Text26" Top="9.45" Width="35.15" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" Text="ITEM" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text27" Left="34.8" Top="9.45" Width="413.15" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" Text="CLASSIFICAÇÃO E DESCRIÇÃO" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text28" Left="447.6" Top="9.45" Width="74.84" Height="29.86" Border.Lines="Left, Top, Bottom" Fill.Color="ButtonFace" Text="QUANTIDADE" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text29" Left="522.75" Top="9.45" Width="35.15" Height="29.86" Border.Lines="All" Fill.Color="ButtonFace" Text="UN" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text30" Left="557.55" Top="9.45" Width="160.27" Height="15.12" Border.Lines="All" Fill.Color="ButtonFace" Text="VALOR ESTIMADO" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text31" Left="557.55" Top="24.35" Width="80.14" Height="15.12" Border.Lines="All" Fill.Color="ButtonFace" Text="UNITÁRIO" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text32" Left="638.6" Top="24.35" Width="79.38" Height="15.12" Border.Lines="Right, Top, Bottom" Fill.Color="ButtonFace" Text="TOTAL" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+      </DataHeaderBand>
+      <DataFooterBand Name="BndItemSumario" Top="644.98" Width="718.2" Height="122.85">
+        <TextObject Name="Text39" Left="35.15" Width="523.15" Height="20.03" Text="TOTAL:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text40" Left="558.31" Width="159.89" Height="20.03" Border.Lines="All" Border.Width="0.5" Fill.Color="53, 103, 149" Text="[Total]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="9" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" TextFill.Color="White"/>
+        <LineObject Name="Line1" Left="37.8" Top="85.05" Width="220" Border.Width="0.5"/>
+        <TextObject Name="Text41" Left="37.8" Top="86.05" Width="220" Height="28.35" Text="SOLICITANTE&#13;&#10;[Trim([SqlAutorizacaoDespesa.nome_completo_solicitante])]" HorzAlign="Center" Font="Tahoma, 8pt"/>
+        <LineObject Name="Line2" Left="459.75" Top="84.05" Width="220" Border.Width="0.5"/>
+        <TextObject Name="Text42" Left="459.75" Top="85.05" Width="220" Height="28.35" Text="APROVADOR&#13;&#10;[Trim([SqlAutorizacaoDespesa.nome_completo_aprovador])]" HorzAlign="Center" Font="Tahoma, 8pt"/>
+      </DataFooterBand>
+    </DataBand>
+    <inherited Name="BndRodape" Top="787.83">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

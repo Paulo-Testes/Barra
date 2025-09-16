@@ -1,0 +1,492 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="..\..\..\..\..\..\PESSOAS\gsr-reports\base\paisagem.frx" BaseReportAbsolutePath="..\..\..\..\..\..\PESSOAS\gsr-reports\base\paisagem.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="09/01/2025 11:21:19" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+    
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }    
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }
+    
+    private void DefinirFisicoFinanceiro(TextObject AMemQtde, TextObject AMemValor)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;FisicoFinanceiro&quot;).ToString(), out int fisicoFinanceiro);
+    
+      if (fisicoFinanceiro == 1)
+      {
+        AMemQtde.Width = 70;
+        AMemValor.Visible = true;
+      }
+      else
+      {
+        AMemQtde.Width = 140;
+        AMemValor.Visible = false;
+      }
+    }
+
+    private void GroupHeader1_BeforePrint(object sender, EventArgs e)
+    {
+      DefinirFisicoFinanceiro(memQtAnteriorCab, memVlAnteriorCab);
+      DefinirFisicoFinanceiro(memQtEntradaCab, memVlEntradaCab);
+      DefinirFisicoFinanceiro(memQtSaidaCab, memVlSaidaCab);
+      DefinirFisicoFinanceiro(memQtFinalCab, memVlFinalCab);
+    }
+
+    private void bndN01_BeforePrint(object sender, EventArgs e)
+    {
+      bndN01.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.NIVEL&quot;) == 1);
+
+      DefinirFisicoFinanceiro(memQtAnterior01, memVlAnterior01);
+      DefinirFisicoFinanceiro(memQtEntrada01, memVlEntrada01);
+      DefinirFisicoFinanceiro(memQtSaida01, memVlSaida01);
+      DefinirFisicoFinanceiro(memQtFinal01, memVlFinal01);
+    }
+
+    private void bndN02_BeforePrint(object sender, EventArgs e)
+    {
+      bndN02.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.NIVEL&quot;) == 2);
+
+      DefinirFisicoFinanceiro(memQtAnterior02, memVlAnterior02);
+      DefinirFisicoFinanceiro(memQtEntrada02, memVlEntrada02);
+      DefinirFisicoFinanceiro(memQtSaida02, memVlSaida02);
+      DefinirFisicoFinanceiro(memQtFinal02, memVlFinal02);
+    }
+
+    private void bndN03_BeforePrint(object sender, EventArgs e)
+    {
+      bndN03.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.NIVEL&quot;) == 3);
+
+      DefinirFisicoFinanceiro(memQtAnterior03, memVlAnterior03);
+      DefinirFisicoFinanceiro(memQtEntrada03, memVlEntrada03);
+      DefinirFisicoFinanceiro(memQtSaida03, memVlSaida03);
+      DefinirFisicoFinanceiro(memQtFinal03, memVlFinal03);
+    }
+
+    private void bndN04_BeforePrint(object sender, EventArgs e)
+    {
+      bndN04.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.NIVEL&quot;) == 4);
+
+      DefinirFisicoFinanceiro(memQtAnterior04, memVlAnterior04);
+      DefinirFisicoFinanceiro(memQtEntrada04, memVlEntrada04);
+      DefinirFisicoFinanceiro(memQtSaida04, memVlSaida04);
+      DefinirFisicoFinanceiro(memQtFinal04, memVlFinal04);
+    }
+
+    private void bndN05_BeforePrint(object sender, EventArgs e)
+    {
+      bndN05.Visible = ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.NIVEL&quot;) == 5);
+
+      DefinirFisicoFinanceiro(memQtAnterior05, memVlAnterior05);
+      DefinirFisicoFinanceiro(memQtEntrada05, memVlEntrada05);
+      DefinirFisicoFinanceiro(memQtSaida05, memVlSaida05);
+      DefinirFisicoFinanceiro(memQtFinal05, memVlFinal05);
+    }
+
+    private void memDetalhamentoN05_BeforePrint(object sender, EventArgs e)
+    {
+      if (Convert.ToInt32(Report.GetVariableValue(&quot;tpDetalhamento&quot;)) == 3)
+      {
+        memDetalhamentoN05.Text = memDetalhamentoN05.Text.Replace(&quot;\n&quot;, &quot;\n\n&quot;);
+      }
+    }
+
+    private void bndN09_BeforePrint(object sender, EventArgs e)
+    {
+      int.TryParse(Report.GetParameterValue(&quot;FisicoFinanceiro&quot;).ToString(), out int fisicoFinanceiro);
+    
+      if ((Int32)Report.GetColumnValue(&quot;SqlPrincipal.NIVEL&quot;) == 9 &amp;&amp; fisicoFinanceiro == 1)
+      {
+        bndN09.Visible = true;
+      }
+      else
+      {
+        bndN09.Visible = false;
+      }
+      DefinirFisicoFinanceiro(memQtAnterior09, memVlAnterior09);
+      DefinirFisicoFinanceiro(memQtEntrada09, memVlEntrada09);
+      DefinirFisicoFinanceiro(memQtSaida09, memVlSaida09);
+      DefinirFisicoFinanceiro(memQtFinal09, memVlFinal09);
+    }
+
+    private void memAgrupamentoN02_BeforePrint(object sender, EventArgs e)
+    {
+      if (Convert.ToInt32(Report.GetVariableValue(&quot;tpTotalizacao&quot;)) == 3)
+      {
+        memAgrupamentoN02.Text = memAgrupamentoN02.Text.Replace(&quot;\n&quot;, &quot;\n\n&quot;);
+      }
+    }
+
+    private void ReportSummary1_BeforePrint(object sender, EventArgs e)
+    {
+      string nome1 = Report.GetColumnValue(&quot;SqlAssinante.NOME1&quot;)?.ToString().Trim();
+      string nome2 = Report.GetColumnValue(&quot;SqlAssinante.NOME2&quot;)?.ToString().Trim();
+
+      ReportSummary1.Visible = !string.IsNullOrEmpty(nome1) || !string.IsNullOrEmpty(nome2);
+    }
+
+    private void SqlAssinanteNOME1_BeforePrint(object sender, EventArgs e)
+    {
+      string nome1 = Report.GetColumnValue(&quot;SqlAssinante.NOME1&quot;)?.ToString().Trim();
+      SqlAssinanteNOME1.Visible = !string.IsNullOrEmpty(nome1);
+
+    }
+
+    private void SqlAssinanteNOME2_BeforePrint(object sender, EventArgs e)
+    {
+      string nome2 = Report.GetColumnValue(&quot;SqlAssinante.NOME2&quot;)?.ToString().Trim();
+      SqlAssinanteNOME2.Visible = !string.IsNullOrEmpty(nome2);
+    }
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAf45SGh+1JQ06HfUCwVjdXLyOtFr5FbmNWNqr1W8I2tPRGoPzSsFGNAQf85ceZvCGogRGJncwLI0VhpBoFVj/qSQKkbhjw8vK4wcDZgU0qxeUaJJ9lR4wkE/M6LDIQl60=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" PropName="Table" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" PropName="Table2" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" PropName="Table1" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlPeriodo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT UDF_ENCDATE(:ANO_INI, :MES_INI, :DIA_INI) AS DT_INICIO&#13;&#10;     , UDF_ENCDATE(:ANO_FIN, :MES_FIN, :DIA_FIN) AS DT_FINAL&#13;&#10;  FROM SIS_SEQUENCIA A&#13;&#10; WHERE A.ID_SEQUENCIA = 1">
+        <Column Name="dt_inicio" DataType="System.DateTime"/>
+        <Column Name="dt_final" DataType="System.DateTime"/>
+        <CommandParameter Name="ANO_INI" DataType="22" Expression="ExtractYear([dataInicial])"/>
+        <CommandParameter Name="MES_INI" DataType="22" Expression="ExtractMonth([dataInicial])"/>
+        <CommandParameter Name="DIA_INI" DataType="22" Expression="ExtractDay([dataInicial])"/>
+        <CommandParameter Name="ANO_FIN" DataType="22" Expression="ExtractYear([dataFinal])"/>
+        <CommandParameter Name="MES_FIN" DataType="22" Expression="ExtractMonth([dataFinal])"/>
+        <CommandParameter Name="DIA_FIN" DataType="22" Expression="ExtractDay([dataFinal])"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlAlmoxarifado" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_ALMOXARIFADO&#13;&#10;     , TRIM(A.DS_ALMOXARIFADO) AS DS_ALMOXARIFADO              &#13;&#10;  FROM SUP_ALMOXARIFADO A&#13;&#10; WHERE A.ID_ALMOXARIFADO = :ID_ALMOXARIFADO">
+        <Column Name="cd_almoxarifado" DataType="System.Int32"/>
+        <Column Name="ds_almoxarifado" DataType="System.String"/>
+        <CommandParameter Name="ID_ALMOXARIFADO" DataType="22" Expression="[idAlmoxarifado]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlGrupo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_GRUPO&#13;&#10;     , TRIM(A.DS_GRUPO) AS DS_GRUPO              &#13;&#10;  FROM SUP_GRUPO A&#13;&#10; WHERE A.ID_GRUPO = :ID_GRUPO_PAI">
+        <Column Name="cd_grupo" DataType="System.Int32"/>
+        <Column Name="ds_grupo" DataType="System.String"/>
+        <CommandParameter Name="ID_GRUPO_PAI" DataType="22" Expression="[idGrupoPai]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlPrincipal" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;  case when ss.id_sequencia = 9 then 1 else 0 end ordem,&#13;&#10;CAST(CASE &#13;&#10;  when ss.id_sequencia = 9 then 'TOTAL'&#13;&#10;  WHEN CAST(:TP_TOTALIZACAO AS INTEGER)   = 1 AND SS.ID_SEQUENCIA  = 1 THEN LPAD(CAST(A2.CD_GRUPO    AS VARCHAR(20)), 20, '0')&#13;&#10;                 WHEN CAST(:TP_TOTALIZACAO AS INTEGER)   = 1 AND SS.ID_SEQUENCIA  = 3 THEN LPAD(CAST(A2.CD_GRUPO    AS VARCHAR(20)), 20, '0') || RPAD(A2.ORDENACAO, 120, '-')&#13;&#10;&#13;&#10;                 WHEN CAST(:TP_TOTALIZACAO AS INTEGER)   = 2 AND SS.ID_SEQUENCIA  = 1 THEN LPAD(CAST(A2.CD_SUBGRUPO AS VARCHAR(20)), 20, '0')&#13;&#10;                 WHEN CAST(:TP_TOTALIZACAO AS INTEGER)   = 2 AND SS.ID_SEQUENCIA  = 3 THEN LPAD(CAST(A2.CD_SUBGRUPO AS VARCHAR(20)), 20, '0') || RPAD(A2.ORDENACAO, 120, '-')&#13;&#10;&#13;&#10;                 WHEN CAST(:TP_TOTALIZACAO AS INTEGER)   = 3 AND SS.ID_SEQUENCIA  = 1 THEN LPAD(CAST(A2.CD_GRUPO    AS VARCHAR(20)), 20, '0')&#13;&#10;                 WHEN CAST(:TP_TOTALIZACAO AS INTEGER)   = 3 AND SS.ID_SEQUENCIA  = 2 THEN LPAD(CAST(A2.CD_GRUPO    AS VARCHAR(20)), 20, '0') || LPAD(CAST(A2.CD_SUBGRUPO AS VARCHAR(20)), 20, '0')&#13;&#10;                 WHEN CAST(:TP_TOTALIZACAO AS INTEGER)   = 3 AND SS.ID_SEQUENCIA &gt;= 3 THEN LPAD(CAST(A2.CD_GRUPO    AS VARCHAR(20)), 20, '0') || LPAD(CAST(A2.CD_SUBGRUPO AS VARCHAR(20)), 20, '0') || RPAD(A2.ORDENACAO, 120, '-')&#13;&#10;&#13;&#10;                 WHEN CAST(:TP_TOTALIZACAO AS INTEGER)  &lt;= 0                          THEN RPAD(A2.ORDENACAO, 120, '-')&#13;&#10;                 &#13;&#10;            END&#13;&#10;            ||&#13;&#10;            CASE WHEN CAST(:TP_DETALHAMENTO AS INTEGER)  = 1 AND SS.ID_SEQUENCIA  = 4 THEN LPAD(CAST(A2.CD_ALMOXARIFADO    AS VARCHAR(20)), 20, '0')&#13;&#10;                 WHEN CAST(:TP_DETALHAMENTO AS INTEGER)  = 2 AND SS.ID_SEQUENCIA  = 5 THEN LPAD(CAST(A2.CD_UNIDADE_ESTOQUE AS VARCHAR(20)), 20, '0')&#13;&#10;                 WHEN CAST(:TP_DETALHAMENTO AS INTEGER)  = 3 AND SS.ID_SEQUENCIA  = 4 THEN LPAD(CAST(A2.CD_ALMOXARIFADO    AS VARCHAR(20)), 20, '0')&#13;&#10;                 WHEN CAST(:TP_DETALHAMENTO AS INTEGER)  = 3 AND SS.ID_SEQUENCIA  = 5 THEN LPAD(CAST(A2.CD_ALMOXARIFADO    AS VARCHAR(20)), 20, '0') || LPAD(CAST(A2.CD_UNIDADE_ESTOQUE AS VARCHAR(20)), 20, '0')&#13;&#10;                 ELSE ''&#13;&#10;            END&#13;&#10;                 AS VARCHAR(500))                                                                   AS CHAVE&#13;&#10;&#13;&#10;     , SS.ID_SEQUENCIA                                                                              AS NIVEL&#13;&#10;&#13;&#10;     , CAST(CASE WHEN SS.ID_SEQUENCIA = 1 THEN CAST(A2.CD_GRUPO    AS VARCHAR(20)) || ' - ' || A2.DS_GRUPO&#13;&#10;                 WHEN SS.ID_SEQUENCIA = 2 THEN CAST(A2.CD_SUBGRUPO AS VARCHAR(20)) || ' - ' || A2.DS_SUBGRUPO&#13;&#10;                 ELSE NULL&#13;&#10;            END AS VARCHAR(500))                                                                    AS AGRUPAMENTO&#13;&#10;&#13;&#10;     , CAST(CASE WHEN SS.ID_SEQUENCIA = 3 THEN A2.CD_CLASSIFICACAO ELSE NULL END AS VARCHAR(120))   AS CD_CLASSIFICACAO&#13;&#10;     , CAST(CASE WHEN SS.ID_SEQUENCIA = 3 THEN A2.DS_MATERIAL      ELSE NULL END AS VARCHAR(120))   AS DS_MATERIAL&#13;&#10;     , CAST(CASE WHEN SS.ID_SEQUENCIA = 3 THEN A2.UN_MATERIAL      ELSE NULL END AS CHAR(3))        AS UN_MATERIAL&#13;&#10;&#13;&#10;     , CAST(CASE WHEN SS.ID_SEQUENCIA = 4 THEN CAST(A2.CD_ALMOXARIFADO    AS VARCHAR(20)) || ' - ' || A2.DS_ALMOXARIFADO&#13;&#10;                 WHEN SS.ID_SEQUENCIA = 5 THEN CAST(A2.CD_UNIDADE_ESTOQUE AS VARCHAR(20)) || ' - ' || A2.DS_UNIDADE_ESTOQUE&#13;&#10;                 ELSE NULL&#13;&#10;            END AS VARCHAR(500))    AS DETALHAMENTO&#13;&#10;&#13;&#10;     , ROUND(SUM(A2.QTD_ANTERIOR), 4) AS QTD_ANTERIOR&#13;&#10;     , ROUND(SUM(A2.VL_ANTERIOR),  2) AS VL_ANTERIOR&#13;&#10;     , ROUND(SUM(A2.QTD_ENTRADA),  4) AS QTD_ENTRADA&#13;&#10;     , ROUND(SUM(A2.VL_ENTRADA),   2) AS VL_ENTRADA&#13;&#10;     , ROUND(SUM(A2.QTD_SAIDA),    4) AS QTD_SAIDA&#13;&#10;     , ROUND(SUM(A2.VL_SAIDA),     2) AS VL_SAIDA&#13;&#10;     , ROUND(SUM(A2.QTD_FINAL),    4) AS QTD_FINAL&#13;&#10;     , ROUND(SUM(A2.VL_FINAL),     2) AS VL_FINAL&#13;&#10;  FROM (&#13;&#10;  &#13;&#10;        SELECT A1.CD_ALMOXARIFADO&#13;&#10;             , A1.DS_ALMOXARIFADO&#13;&#10;             , A1.CD_UNIDADE_ESTOQUE&#13;&#10;             , A1.DS_UNIDADE_ESTOQUE   &#13;&#10;        &#13;&#10;             , CAST(     CAST(B1.TP_MATERIAL AS CHAR(1))               || '.' ||&#13;&#10;                    LPAD(CAST(D1.CD_GRUPO    AS VARCHAR(20)), 3, '0')  || '.' ||&#13;&#10;                    LPAD(CAST(C1.CD_GRUPO    AS VARCHAR(20)), 3, '0')  || '.' ||&#13;&#10;                    LPAD(CAST(B1.CD_MATERIAL AS VARCHAR(20)), 6, '0')&#13;&#10;                    AS VARCHAR(120) )                                           AS CD_CLASSIFICACAO&#13;&#10;             , D1.CD_GRUPO&#13;&#10;             , D1.DS_GRUPO&#13;&#10;             , C1.CD_GRUPO                                                      AS CD_SUBGRUPO&#13;&#10;             , C1.DS_GRUPO                                                      AS DS_SUBGRUPO&#13;&#10;&#13;&#10;             , B1.CD_MATERIAL&#13;&#10;             , B1.TP_MATERIAL&#13;&#10;             , B1.DS_MATERIAL&#13;&#10;             , B1.ATIVO&#13;&#10;             , B1.UN_MATERIAL&#13;&#10;             , CAST(CASE WHEN 1 = :TP_ORDENACAO THEN      CAST(B1.TP_MATERIAL AS CHAR(1))               ||&#13;&#10;                                                     LPAD(CAST(D1.CD_GRUPO    AS VARCHAR(20)), 3, '0')  ||&#13;&#10;                                                     LPAD(CAST(C1.CD_GRUPO    AS VARCHAR(20)), 3, '0')  ||&#13;&#10;                                                     LPAD(CAST(B1.CD_MATERIAL AS VARCHAR(20)), 6, '0')&#13;&#10;                         WHEN 2 = :TP_ORDENACAO THEN LPAD(CAST(B1.CD_MATERIAL AS VARCHAR(20)), 20, '0')&#13;&#10;                         WHEN 3 = :TP_ORDENACAO THEN B1.DS_MATERIAL&#13;&#10;                         ELSE ''&#13;&#10;                    END AS VARCHAR(120))                                        AS ORDENACAO&#13;&#10;&#13;&#10;             , A1.QTD_ANTERIOR&#13;&#10;             , A1.VL_ANTERIOR&#13;&#10;             , A1.QTD_ENTRADA&#13;&#10;             , A1.VL_ENTRADA&#13;&#10;             , A1.QTD_SAIDA&#13;&#10;             , A1.VL_SAIDA&#13;&#10;             , A1.QTD_FINAL&#13;&#10;             , A1.VL_FINAL&#13;&#10;          FROM (&#13;&#10;                SELECT H.CD_ALMOXARIFADO&#13;&#10;                     , H.DS_ALMOXARIFADO&#13;&#10;                     , I.CD_UNIDADE_ESTOQUE&#13;&#10;                     , I.DS_UNIDADE_ESTOQUE                &#13;&#10;                     , B.ID_MATERIAL&#13;&#10;                     &#13;&#10;                     , SUM(CASE WHEN A.CP_ANO  &lt; :CP_ANO&#13;&#10;                                  OR (A.CP_ANO = :CP_ANO AND A.DT_LANCAMENTO &lt; :DT_INICIAL)&#13;&#10;                                THEN B.QTD&#13;&#10;                                ELSE 0&#13;&#10;                           END         )                                        AS QTD_ANTERIOR&#13;&#10;                     , SUM(CASE WHEN A.CP_ANO  &lt; :CP_ANO&#13;&#10;                                  OR (A.CP_ANO = :CP_ANO AND A.DT_LANCAMENTO &lt; :DT_INICIAL)&#13;&#10;                                THEN B.VL_TOTAL&#13;&#10;                                ELSE 0&#13;&#10;                           END         )                                        AS VL_ANTERIOR&#13;&#10;&#13;&#10;                     , SUM(CASE WHEN A.CP_ANO  = :CP_ANO&#13;&#10;                                 AND A.DT_LANCAMENTO &gt;= :DT_INICIAL&#13;&#10;                                 AND A.TP_LANCAMENTO = 0&#13;&#10;                                THEN B.QTD&#13;&#10;                                ELSE 0&#13;&#10;                           END         )                                        AS QTD_ENTRADA&#13;&#10;                     , SUM(CASE WHEN A.CP_ANO  = :CP_ANO&#13;&#10;                                 AND A.DT_LANCAMENTO &gt;= :DT_INICIAL&#13;&#10;                                 AND A.TP_LANCAMENTO = 0&#13;&#10;                                THEN B.VL_TOTAL&#13;&#10;                                ELSE 0&#13;&#10;                           END         )                                        AS VL_ENTRADA&#13;&#10;                     , SUM(CASE WHEN A.CP_ANO  = :CP_ANO&#13;&#10;                                 AND A.DT_LANCAMENTO &gt;= :DT_INICIAL&#13;&#10;                                 AND A.TP_LANCAMENTO = 1&#13;&#10;                                THEN B.QTD&#13;&#10;                                ELSE 0&#13;&#10;                           END         )                                        AS QTD_SAIDA&#13;&#10;                     , SUM(CASE WHEN A.CP_ANO  = :CP_ANO&#13;&#10;                                 AND A.DT_LANCAMENTO &gt;= :DT_INICIAL&#13;&#10;                                 AND A.TP_LANCAMENTO = 1&#13;&#10;                                THEN B.VL_TOTAL&#13;&#10;                                ELSE 0&#13;&#10;                           END         )                                        AS VL_SAIDA&#13;&#10;                &#13;&#10;                     , SUM(COALESCE(B.QTD     , 0))                             AS QTD_FINAL&#13;&#10;                     , SUM(COALESCE(B.VL_TOTAL, 0))                             AS VL_FINAL                &#13;&#10;                  FROM (&#13;&#10;                          SELECT SRF.ID_FILTRO&#13;&#10;                            FROM SIS_RELATORIO_FILTRO SRF&#13;&#10;                           WHERE SRF.ID_RELATORIO_FILTRO = :ID_RELATORIO_FILTRO&#13;&#10;                       ) S&#13;&#10;                       RIGHT JOIN SUP_LANCAMENTO            A ON A.CP_ANO              &lt;= :CP_ANO   &#13;&#10;                       LEFT JOIN SUP_LANCAMENTO_IT          B ON B.ID_LANCAMENTO        = A.ID_LANCAMENTO&#13;&#10;                                                             /*FILTRO_MATERIAL*/&#13;&#10;                       &#13;&#10;                       LEFT JOIN SUP_USUARIO                G ON G.ID_USUARIO           = :ID_USUARIO&#13;&#10;                       LEFT JOIN SUP_ACESSO_ALMOXARIFADO    E ON E.ID_ALMOXARIFADO      = A.ID_ALMOXARIFADO&#13;&#10;                                                             AND E.ID_GRUPO_USUARIO     = G.ID_GRUPO_USUARIO&#13;&#10;                       LEFT JOIN SUP_ALMOXARIFADO           H ON H.ID_ALMOXARIFADO      = A.ID_ALMOXARIFADO&#13;&#10;                       LEFT JOIN SUP_UNIDADE_ESTOQUE        I ON I.ID_UNIDADE_ESTOQUE   = A.ID_UNIDADE_ESTOQUE&#13;&#10;                                            &#13;&#10;                WHERE (A.CP_ANO &lt; :CP_ANO OR (A.CP_ANO = :CP_ANO AND A.DT_LANCAMENTO &lt;= :DT_FINAL) )&#13;&#10;                  AND (A.ID_ALMOXARIFADO       = :ID_ALMOXARIFADO      OR -1 = :ID_ALMOXARIFADO    )&#13;&#10;                  AND (A.ID_UNIDADE_ESTOQUE    = :ID_UNIDADE_ESTOQUE   OR -1 = :ID_UNIDADE_ESTOQUE ) &#13;&#10;                  /*FILTRO_MATERIAL*/         &#13;&#10;                  AND (E.ALMOXARIFE            = 1                     OR  1 = E.CONSULTAR         ) &#13;&#10;                  &#13;&#10;                GROUP BY 1,2,3,4,5                           &#13;&#10;                  &#13;&#10;               ) A1&#13;&#10;               LEFT JOIN SUP_MATERIAL B1 ON B1.ID_MATERIAL = A1.ID_MATERIAL&#13;&#10;               LEFT JOIN SUP_GRUPO    C1 ON C1.ID_GRUPO    = B1.ID_GRUPO&#13;&#10;               LEFT JOIN SUP_GRUPO    D1 ON D1.ID_GRUPO    = C1.ID_GRUPO_PAI&#13;&#10;               &#13;&#10;         WHERE (B1.ID_GRUPO       = :ID_GRUPO      OR -1 = :ID_GRUPO     )&#13;&#10;           AND (B1.TP_MATERIAL    = :TP_MATERIAL   OR -1 = :TP_MATERIAL  )  &#13;&#10;           AND (B1.ATIVO          = :ST_MATERIAL   OR -1 = :ST_MATERIAL  )&#13;&#10;           AND (B1.INVENTARIAVEL  = :INVENTARIAVEL or  1 &lt;&gt; :INVENTARIAVEL)&#13;&#10;           AND (C1.ID_GRUPO_PAI   = :ID_GRUPO_PAI  OR -1 = :ID_GRUPO_PAI )&#13;&#10;           &#13;&#10;       ) A2&#13;&#10;       LEFT JOIN SIS_SEQUENCIA SS ON (SS.ID_SEQUENCIA &lt;= 5 OR SS.ID_SEQUENCIA = 9)                       &#13;&#10; WHERE ( ( SS.ID_SEQUENCIA = 1 AND CAST(:TP_TOTALIZACAO  AS INTEGER) IN (1,3) ) OR&#13;&#10;         ( SS.ID_SEQUENCIA = 2 AND CAST(:TP_TOTALIZACAO  AS INTEGER) IN (2,3) ) OR&#13;&#10;         ( SS.ID_SEQUENCIA IN(3,9)                                                ) OR&#13;&#10;         ( SS.ID_SEQUENCIA = 4 AND CAST(:TP_DETALHAMENTO AS INTEGER) IN (1,3) ) OR&#13;&#10;         ( SS.ID_SEQUENCIA = 5 AND CAST(:TP_DETALHAMENTO AS INTEGER) IN (2,3) )   )&#13;&#10; GROUP BY&#13;&#10;       1,2,3,4,5,6,7,8&#13;&#10;&#13;&#10;HAVING ( (:TP_SALDO_MOVIMENTACAO = 1 AND (ROUND(SUM(A2.QTD_FINAL), 4) &lt;&gt; 0 OR  ROUND(SUM(A2.QTD_ENTRADA), 4) &lt;&gt; 0 OR ROUND(SUM(A2.QTD_SAIDA), 4) &lt;&gt; 0) ) OR&#13;&#10;         (:TP_SALDO_MOVIMENTACAO = 2 AND (ROUND(SUM(A2.QTD_FINAL), 4) &lt;&gt; 0                                                                           ) ) OR&#13;&#10;         (:TP_SALDO_MOVIMENTACAO = 3 AND (                                     ROUND(SUM(A2.QTD_ENTRADA), 4) &lt;&gt; 0 OR ROUND(SUM(A2.QTD_SAIDA), 4) &lt;&gt; 0) ) OR&#13;&#10;         (:TP_SALDO_MOVIMENTACAO = 4 AND ROUND(SUM(A2.QTD_FINAL), 4) = 0 AND ( ROUND(SUM(A2.QTD_ENTRADA), 4) &lt;&gt; 0 OR ROUND(SUM(A2.QTD_SAIDA), 4) &lt;&gt; 0) )   )&#13;&#10;         or ss.id_sequencia = 9&#13;&#10;&#13;&#10; ORDER BY&#13;&#10;       1,2">
+        <Column Name="ordem" DataType="System.Int32"/>
+        <Column Name="chave" DataType="System.String"/>
+        <Column Name="nivel" DataType="System.Int32"/>
+        <Column Name="agrupamento" DataType="System.String"/>
+        <Column Name="cd_classificacao" DataType="System.String"/>
+        <Column Name="ds_material" DataType="System.String"/>
+        <Column Name="un_material" DataType="System.String"/>
+        <Column Name="detalhamento" DataType="System.String"/>
+        <Column Name="qtd_anterior" DataType="System.Double"/>
+        <Column Name="vl_anterior" DataType="System.Double"/>
+        <Column Name="qtd_entrada" DataType="System.Double"/>
+        <Column Name="vl_entrada" DataType="System.Double"/>
+        <Column Name="qtd_saida" DataType="System.Double"/>
+        <Column Name="vl_saida" DataType="System.Double"/>
+        <Column Name="qtd_final" DataType="System.Double"/>
+        <Column Name="vl_final" DataType="System.Double"/>
+        <CommandParameter Name="TP_TOTALIZACAO" DataType="22" Expression="[tpTotalizacao]"/>
+        <CommandParameter Name="TP_DETALHAMENTO" DataType="22" Expression="[tpDetalhamento]"/>
+        <CommandParameter Name="TP_ORDENACAO" DataType="22" Expression="[tpOrdenacao]"/>
+        <CommandParameter Name="CP_ANO" DataType="22" Expression="[cpAno]"/>
+        <CommandParameter Name="DT_INICIAL" DataType="7" Expression="[SqlPeriodo.dt_inicio]"/>
+        <CommandParameter Name="ID_RELATORIO_FILTRO" DataType="9" Expression="[idRelatorioFiltro]"/>
+        <CommandParameter Name="ID_USUARIO" DataType="9" Expression="[idUsuario]"/>
+        <CommandParameter Name="DT_FINAL" DataType="7" Expression="[SqlPeriodo.dt_final]"/>
+        <CommandParameter Name="ID_ALMOXARIFADO" DataType="22" Expression="[idAlmoxarifado]"/>
+        <CommandParameter Name="ID_UNIDADE_ESTOQUE" DataType="22" Expression="[idUnidadeEstoque]"/>
+        <CommandParameter Name="ID_GRUPO" DataType="22" Expression="[idGrupo]"/>
+        <CommandParameter Name="TP_MATERIAL" DataType="22" Expression="[tpMaterial]"/>
+        <CommandParameter Name="ST_MATERIAL" DataType="22" Expression="[stMaterial]"/>
+        <CommandParameter Name="INVENTARIAVEL" DataType="22" Expression="[somenteInventariavel]"/>
+        <CommandParameter Name="ID_GRUPO_PAI" DataType="22" Expression="[idGrupoPai]"/>
+        <CommandParameter Name="TP_SALDO_MOVIMENTACAO" DataType="22" Expression="[tpSaldoMovimento]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="SqlUnidadeEstoque" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_UNIDADE_ESTOQUE&#13;&#10;     , TRIM(A.DS_UNIDADE_ESTOQUE) AS DS_UNIDADE_ESTOQUE              &#13;&#10;  FROM SUP_UNIDADE_ESTOQUE A&#13;&#10; WHERE A.ID_UNIDADE_ESTOQUE = :ID_UNIDADE_ESTOQUE">
+        <Column Name="cd_unidade_estoque" DataType="System.Int32"/>
+        <Column Name="ds_unidade_estoque" DataType="System.String"/>
+        <CommandParameter Name="ID_UNIDADE_ESTOQUE" DataType="22" Expression="[idUnidadeEstoque]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table5" Alias="SqlSubGrupo" DataType="System.Int32" Enabled="true" SelectCommand="SELECT A.CD_GRUPO AS CD_SUBGRUPO&#13;&#10;     , TRIM(A.DS_GRUPO) AS DS_SUBGRUPO&#13;&#10;  FROM SUP_GRUPO A&#13;&#10; WHERE A.ID_GRUPO = :ID_GRUPO">
+        <Column Name="cd_subgrupo" DataType="System.Int32"/>
+        <Column Name="ds_subgrupo" DataType="System.String"/>
+        <CommandParameter Name="ID_GRUPO" DataType="22" Expression="[idGrupo]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table6" Alias="SqlAssinante" DataType="System.Int32" Enabled="true" SelectCommand="SELECT cast(:NOME1 as varchar(255)) AS NOME1&#13;&#10;     , cast(:CARGO1 as varchar(255)) AS CARGO1&#13;&#10;     , cast(:NOME2 as varchar(255)) AS NOME2&#13;&#10;     , cast(:CARGO2 as varchar(255)) AS CARGO2&#13;&#10;  FROM SIS_LICENCIADO">
+        <Column Name="nome1" DataType="System.String"/>
+        <Column Name="cargo1" DataType="System.String"/>
+        <Column Name="nome2" DataType="System.String"/>
+        <Column Name="cargo2" DataType="System.String"/>
+        <CommandParameter Name="NOME1" DataType="22" Expression="[nome1]"/>
+        <CommandParameter Name="CARGO1" DataType="22" Expression="[cargo1]"/>
+        <CommandParameter Name="NOME2" DataType="22" Expression="[nome2]"/>
+        <CommandParameter Name="CARGO2" DataType="22" Expression="[cargo2]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Estoque físico&quot; + IIf([fisicoFinanceiro] == &quot;1&quot;, &quot; - financeiro&quot;, &quot;&quot;)"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="62"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="2602"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="cpAno" DataType="System.String" Expression="&quot;2025&quot;"/>
+    <Parameter Name="dataInicial" DataType="System.String" Expression="&quot;01/08/2025&quot;"/>
+    <Parameter Name="dataFinal" DataType="System.String" Expression="&quot;28/08/2025&quot;"/>
+    <Parameter Name="idAlmoxarifado" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idUnidadeEstoque" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idGrupo" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="idGrupoPai" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="tpMaterial" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="stMaterial" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="somenteInventariavel" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="tpSaldoMovimento" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="tpTotalizacao" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="tpDetalhamento" DataType="System.String" Expression="&quot;-1&quot;"/>
+    <Parameter Name="tpOrdenacao" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="fisicoFinanceiro" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="nome1" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="cargo1" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="nome2" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="cargo2" DataType="System.String" Expression="&quot;&quot;"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro" Top="97.75">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child1" ZOrder="-1" Top="119.9" Width="1047.06" Height="20.79">
+          <TextObject Name="childFiltro" Top="3" Width="1047.06" Height="11.34" Border.Lines="All" Border.Color="White" Fill.Color="129, 245, 230, 207" CanGrow="true" Text="Período entre &lt;b&gt;[Format(&quot;{0:dd/MM/yyyy}&quot;,[SqlPeriodo.DT_INICIO])]&lt;/b&gt; e &lt;b&gt;[Format(&quot;{0:dd/MM/yyyy}&quot;,[SqlPeriodo.DT_FINAL])]&lt;/b&gt;[IIf([idAlmoxarifado] != &quot;-1&quot;, Format(&quot; | Almoxarifado: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlAlmoxarifado.CD_ALMOXARIFADO], [SqlAlmoxarifado.DS_ALMOXARIFADO]), &quot;&quot;)][IIf([idUnidadeEstoque] != &quot;-1&quot;, Format(&quot; | Un. estoque: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlUnidadeEstoque.CD_UNIDADE_ESTOQUE], [SqlUnidadeEstoque.DS_UNIDADE_ESTOQUE]), &quot;&quot;)][IIf([idGrupoPai] != &quot;-1&quot;, Format(&quot; | Grupo: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlGrupo.CD_GRUPO], [SqlGrupo.DS_GRUPO]), &quot;&quot;)][IIf([idGrupo] != &quot;-1&quot;, Format(&quot; | Subgrupo: &lt;b&gt;{0} - {1}&lt;/b&gt;&quot;, [SqlSubgrupo.CD_SUBGRUPO], [SqlSubgrupo.DS_SUBGRUPO]), &quot;&quot;)][IIf(ToInt32([somenteInventariavel]) == 1, &quot; | Somente materiais &lt;b&gt;inventariáveis&lt;/b&gt;&quot;, &quot;&quot;)][IIf(ToInt32([stMaterial]) != -1, IIf(ToInt32([stMaterial]) == 1, &quot; | Somente &lt;b&gt;ativos&lt;/b&gt;&quot;, &quot; | Somente &lt;b&gt;inativos&lt;/b&gt;&quot;), &quot;&quot;)][IIf(ToInt32([tpMaterial]) != -1, IIf(ToInt32([tpMaterial]) == 1, &quot; | Somente &lt;b&gt;materiais de consumo&lt;/b&gt;&quot;, &quot; | Somente &lt;b&gt;materiais permanentes&lt;/b&gt;&quot;), &quot;&quot;)]" VertAlign="Center" Font="Tahoma, 6pt, style=Bold" TextRenderType="HtmlTags"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="GroupHeader1" ZOrder="0" Top="143.95" Width="1047.06" Height="30.24" BeforePrintEvent="GroupHeader1_BeforePrint" RepeatOnEveryPage="true" Condition="[SqlEntidade.nome]">
+      <TextObject Name="Text1" Top="15.12" Width="80.14" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Classificação" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text2" Left="80.14" Top="15.12" Width="367.04" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Descrição" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text3" Left="447.17" Top="15.12" Width="40.07" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="U.M." HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="memQtAnteriorCab" Left="486.86" Top="15.12" Width="69.93" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Quantidade" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="memVlAnteriorCab" Left="557.17" Top="15.12" Width="69.93" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Valor" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="memQtEntradaCab" Left="627.1" Top="15.12" Width="69.93" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Quantidade" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="memVlEntradaCab" Left="697.03" Top="15.12" Width="69.93" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Valor" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="memQtSaidaCab" Left="766.96" Top="15.12" Width="69.93" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Quantidade" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="memVlSaidaCab" Left="836.89" Top="15.12" Width="69.93" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Valor" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="memVlFinalCab" Left="977.13" Top="15.12" Width="69.93" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Valor" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="memQtFinalCab" Left="907.2" Top="15.12" Width="69.93" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Quantidade" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text12" Width="486.86" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Material" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text13" Left="486.86" Width="139.86" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Saldo Anterior" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text14" Left="766.96" Width="139.86" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Saídas" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text16" Left="627.1" Width="139.86" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Entradas" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <TextObject Name="Text15" Left="907.2" Width="139.86" Height="15.12" Border.Lines="All" Border.Color="White" Fill.Color="42, 82, 118" Text="Saldo Seguinte" HorzAlign="Center" VertAlign="Center" Font="Arial, 7pt, style=Bold" TextFill.Color="White"/>
+      <DataBand Name="Data1" Top="177.44" Width="1047.06" DataSource="Table3">
+        <ChildBand Name="bndN01" Top="180.69" Width="1047.06" Height="12.1" BeforePrintEvent="bndN01_BeforePrint">
+          <TextObject Name="memQtEntrada01" Left="627.1" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.qtd_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+          <TextObject Name="Text123" Left="447.17" Width="40.07" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.un_material]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+          <TextObject Name="memQtAnterior01" Left="486.86" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.qtd_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+          <TextObject Name="memVlAnterior01" Left="557.17" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.vl_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+          <TextObject Name="memVlEntrada01" Left="697.03" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.vl_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+          <TextObject Name="memQtSaida01" Left="766.85" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.qtd_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+          <TextObject Name="memVlSaida01" Left="836.78" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.vl_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+          <TextObject Name="memVlFinal01" Left="977.02" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.vl_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+          <TextObject Name="memQtFinal01" Left="907.09" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.qtd_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+          <TextObject Name="Text131" Width="447.17" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.agrupamento]" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+          <ChildBand Name="bndN02" Top="196.04" Width="1047.06" Height="12.1" BeforePrintEvent="bndN02_BeforePrint">
+            <TextObject Name="memQtEntrada02" Left="627.1" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="ButtonFace" Text="[SqlPrincipal.qtd_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            <TextObject Name="Text103" Left="447.17" Width="40.07" Height="12.1" Border.Color="Transparent" Fill.Color="ButtonFace" Text="[SqlPrincipal.un_material]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            <TextObject Name="memQtAnterior02" Left="486.86" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="ButtonFace" Text="[SqlPrincipal.qtd_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            <TextObject Name="memVlAnterior02" Left="557.17" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="ButtonFace" Text="[SqlPrincipal.vl_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            <TextObject Name="memVlEntrada02" Left="697.03" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="ButtonFace" Text="[SqlPrincipal.vl_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            <TextObject Name="memQtSaida02" Left="766.85" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="ButtonFace" Text="[SqlPrincipal.qtd_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            <TextObject Name="memVlSaida02" Left="836.78" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="ButtonFace" Text="[SqlPrincipal.vl_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            <TextObject Name="memVlFinal02" Left="977.02" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="ButtonFace" Text="[SqlPrincipal.vl_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            <TextObject Name="memQtFinal02" Left="907.09" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="ButtonFace" Text="[SqlPrincipal.qtd_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            <TextObject Name="memAgrupamentoN02" Width="447.17" Height="12.1" Border.Color="Transparent" Fill.Color="ButtonFace" BeforePrintEvent="memAgrupamentoN02_BeforePrint" Text="[SqlPrincipal.agrupamento]" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+            <ChildBand Name="bndN03" Top="211.39" Width="1047.06" Height="12.1" BeforePrintEvent="bndN03_BeforePrint">
+              <TextObject Name="memQtEntrada03" Left="627.08" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt"/>
+              <TextObject Name="Text92" Left="447.15" Width="40.07" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.un_material]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 6pt"/>
+              <TextObject Name="memQtAnterior03" Left="486.84" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt"/>
+              <TextObject Name="memVlAnterior03" Left="557.15" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt"/>
+              <TextObject Name="memVlEntrada03" Left="697.01" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt"/>
+              <TextObject Name="memQtSaida03" Left="766.94" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt"/>
+              <TextObject Name="memVlSaida03" Left="836.87" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt"/>
+              <TextObject Name="memVlFinal03" Left="977.11" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt"/>
+              <TextObject Name="memQtFinal03" Left="907.18" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt"/>
+              <TextObject Name="Text100" Left="80.14" Width="367.04" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.ds_material]" VertAlign="Center" WordWrap="false" Font="Arial, 6pt"/>
+              <TextObject Name="Text101" Width="80.14" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.cd_classificacao]" VertAlign="Center" Font="Arial, 6pt"/>
+              <ChildBand Name="bndN04" Top="226.75" Width="1047.06" Height="12.1" BeforePrintEvent="bndN04_BeforePrint">
+                <TextObject Name="memQtEntrada04" Left="627.08" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                <TextObject Name="Text81" Left="447.15" Width="40.07" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.un_material]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                <TextObject Name="memQtAnterior04" Left="486.84" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                <TextObject Name="memVlAnterior04" Left="557.15" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                <TextObject Name="memVlEntrada04" Left="697.01" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                <TextObject Name="memQtSaida04" Left="766.94" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                <TextObject Name="memVlSaida04" Left="836.87" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                <TextObject Name="memVlFinal04" Left="977.11" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                <TextObject Name="memQtFinal04" Left="907.18" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                <TextObject Name="Text89" Left="80.14" Width="367.04" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.detalhamento]" VertAlign="Center" WordWrap="false" Font="Arial, 6pt, style=Italic"/>
+                <TextObject Name="Text90" Width="80.14" Height="12.1" Border.Color="Transparent" HorzAlign="Center" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                <ChildBand Name="bndN05" Top="242.1" Width="1047.06" Height="12.1" BeforePrintEvent="bndN05_BeforePrint">
+                  <TextObject Name="memQtEntrada05" Left="627.08" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                  <TextObject Name="Text48" Left="447.15" Width="40.07" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.un_material]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                  <TextObject Name="memQtAnterior05" Left="486.84" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                  <TextObject Name="memVlAnterior05" Left="557.15" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                  <TextObject Name="memVlEntrada05" Left="697.01" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                  <TextObject Name="memQtSaida05" Left="766.94" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                  <TextObject Name="memVlSaida05" Left="836.87" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                  <TextObject Name="memVlFinal05" Left="977.11" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.vl_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                  <TextObject Name="memQtFinal05" Left="907.18" Width="69.93" Height="12.1" Border.Color="Transparent" Text="[SqlPrincipal.qtd_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Italic"/>
+                  <TextObject Name="memDetalhamentoN05" Left="80.14" Width="367.04" Height="12.1" Border.Color="Transparent" BeforePrintEvent="memDetalhamentoN05_BeforePrint" Text="[SqlPrincipal.detalhamento]" VertAlign="Center" WordWrap="false" Font="Arial, 6pt, style=Italic"/>
+                  <TextObject Name="Text79" Width="80.14" Height="12.1" Border.Color="Transparent" HorzAlign="Center" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                  <ChildBand Name="bndN09" Top="257.45" Width="1047.06" Height="12.1" BeforePrintEvent="bndN09_BeforePrint">
+                    <TextObject Name="memQtEntrada09" Left="627.1" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.qtd_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                    <TextObject Name="Text113" Left="447.17" Width="40.07" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Center" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                    <TextObject Name="memQtAnterior09" Left="486.86" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.qtd_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                    <TextObject Name="memVlAnterior09" Left="557.17" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.vl_anterior]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                    <TextObject Name="memVlEntrada09" Left="697.03" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.vl_entrada]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                    <TextObject Name="memQtSaida09" Left="766.85" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.qtd_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                    <TextObject Name="memVlSaida09" Left="836.78" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.vl_saida]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                    <TextObject Name="memVlFinal09" Left="977.02" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.vl_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                    <TextObject Name="memQtFinal09" Left="907.09" Width="69.93" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="[SqlPrincipal.qtd_final]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="4" HorzAlign="Right" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                    <TextObject Name="Text121" Width="447.17" Height="12.1" Border.Color="Transparent" Fill.Color="210, 210, 210" Text="TOTAL:" VertAlign="Center" Font="Arial, 6pt, style=Bold"/>
+                  </ChildBand>
+                </ChildBand>
+              </ChildBand>
+            </ChildBand>
+          </ChildBand>
+        </ChildBand>
+        <Sort>
+          <Sort Expression="[SqlPrincipal.ordem]"/>
+          <Sort Expression="[SqlPrincipal.chave]"/>
+        </Sort>
+      </DataBand>
+    </GroupHeaderBand>
+    <ReportSummaryBand Name="ReportSummary1" ZOrder="-1" Top="272.8" Width="1047.06" Height="73.71" BeforePrintEvent="ReportSummary1_BeforePrint">
+      <TextObject Name="SqlAssinanteNOME1" Left="60.1" Top="49.14" Width="399.92" Height="12.85" Border.Lines="Top" BeforePrintEvent="SqlAssinanteNOME1_BeforePrint" Text="[SqlAssinante.nome1]" HorzAlign="Center" Font="Tahoma, 6pt"/>
+      <TextObject Name="SqlAssinanteNOME2" Left="582.12" Top="49.14" Width="399.92" Height="12.85" Border.Lines="Top" BeforePrintEvent="SqlAssinanteNOME2_BeforePrint" Text="[SqlAssinante.nome2]" HorzAlign="Center" Font="Tahoma, 6pt"/>
+      <TextObject Name="SqlAssinanteCARGO1" Left="60.1" Top="60.86" Width="399.92" Height="12.85" Text="[SqlAssinante.cargo1]" HorzAlign="Center" Font="Tahoma, 6pt"/>
+      <TextObject Name="SqlAssinanteCARGO2" Left="582.12" Top="60.86" Width="399.92" Height="12.85" Text="[SqlAssinante.cargo2]" HorzAlign="Center" Font="Tahoma, 6pt"/>
+    </ReportSummaryBand>
+    <inherited Name="BndRodape" Top="349.76">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>

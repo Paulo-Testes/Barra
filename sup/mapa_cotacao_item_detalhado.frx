@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="09/11/2025 15:27:41" ReportInfo.Modified="09/11/2025 15:28:04" ReportInfo.CreatorVersion="2025.1.10.0">
+  <Dictionary/>
+  <ReportPage Name="Page1" Watermark.Font="Arial, 60pt">
+    <DataBand Name="Data1" Width="718.2" Height="179.55" Fill.Color="255, 255, 128"/>
+    <PageFooterBand Name="PageFooter1" Top="183.82" Width="718.2" Height="18.9"/>
+  </ReportPage>
+</Report>

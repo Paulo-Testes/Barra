@@ -1,0 +1,7 @@
+apuracao_ponto RCDATA "apuracao_ponto.fr3"
+apuracao_ponto_mtb RCDATA "apuracao_ponto_mtb.fr3"
+apuracao_ponto_obs RCDATA "apuracao_ponto_obs.fr3"
+apuracao_ponto_simplificado RCDATA "apuracao_ponto_simplificado.fr3"
+escala RCDATA "escala.fr3"
+escala_funcionario RCDATA "escala_funcionario.fr3"
+pontos_registrados RCDATA "pontos_registrados.fr3"

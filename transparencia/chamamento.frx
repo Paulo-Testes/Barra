@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="C:\Users\Embras\Desktop\FAST\Pessoas sg\retrato.frx" BaseReportAbsolutePath="C:\Users\Embras\Desktop\FAST\Pessoas sg\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/06/2025 12:36:44" ReportInfo.CreatorVersion="2025.1.10.0">
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8E+ZDa9Ad9YImM+XDJvP1O4ZicKbLQvMFtTsMTgNDAKM=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlInstrumento" DataType="System.Int32" Enabled="true" SelectCommand="SELECT&#13;&#10;    gec.id_edital_chamamento,&#13;&#10;    gec.nr_edital_chamamento,&#13;&#10;    gec.ano_edital_chamamento,&#13;&#10;    gec.dt_limite,&#13;&#10;    gec.dt_publicacao,&#13;&#10;    gec.objeto,&#13;&#10;    gaa.ds_area_atuacao,&#13;&#10;    z.ds_anexo,&#13;&#10;    COUNT(gea.id_edital_chamamento) as qtd_anexos&#13;&#10;FROM&#13;&#10;    gcc_edital_chamamento gec&#13;&#10;    LEFT OUTER JOIN gcc_area_atuacao gaa ON gaa.id_area_atuacao = gec.id_area_atuacao&#13;&#10;    LEFT OUTER JOIN gcc_edital_anexo gea ON gea.id_edital_chamamento = gec.id_edital_chamamento AND gea.publica = 1&#13;&#10;    LEFT JOIN LATERAL(&#13;&#10;    	select &#13;&#10;             string_agg(sa.ds_anexo, ' | ')     as ds_anexo&#13;&#10;        from gcc_edital_anexo  gea2 &#13;&#10;        left join gcc_anexo    ga on ga.id_anexo = gea2.id_anexo&#13;&#10;        left join gcc_tp_anexo gta on gta.id_tp_anexo = ga.id_tp_anexo&#13;&#10;        left join sis_anexo    sa on sa.id_anexo = gea2.id_anexo&#13;&#10;        where &#13;&#10;            gea2.id_edital_chamamento = gea.id_edital_chamamento and &#13;&#10;            gea2.publica = 1&#13;&#10;    ) z on true&#13;&#10;WHERE&#13;&#10;    gec.id_edital_chamamento = :id_edital_chamamento     &#13;&#10;    AND gec.dt_publicacao &lt;= CURRENT_DATE      &#13;&#10;GROUP BY&#13;&#10;    gec.id_edital_chamamento,&#13;&#10;    gec.nr_edital_chamamento,&#13;&#10;    gec.ano_edital_chamamento,&#13;&#10;    gec.dt_limite,&#13;&#10;    gec.dt_publicacao,&#13;&#10;    gec.objeto,&#13;&#10;    gaa.ds_area_atuacao,&#13;&#10;    z.ds_anexo&#13;&#10;ORDER BY&#13;&#10;    gec.nr_edital_chamamento,&#13;&#10;    gec.ano_edital_chamamento;">
+        <Column Name="id_edital_chamamento" DataType="System.Int32"/>
+        <Column Name="nr_edital_chamamento" DataType="System.Int32"/>
+        <Column Name="ano_edital_chamamento" DataType="System.Int32"/>
+        <Column Name="dt_limite" DataType="System.DateTime"/>
+        <Column Name="dt_publicacao" DataType="System.DateTime"/>
+        <Column Name="objeto" DataType="System.String"/>
+        <Column Name="ds_area_atuacao" DataType="System.String"/>
+        <Column Name="ds_anexo" DataType="System.String"/>
+        <Column Name="qtd_anexos" DataType="System.Int64"/>
+        <CommandParameter Name="ID_EDITAL_CHAMAMENTO" DataType="9" Expression="[idEditalChamamento]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlAnexos" DataType="System.Int32" Enabled="true" SelectCommand="select &#13;&#10;     sa.ds_anexo     as ds_anexo&#13;&#10;    ,coalesce(gta.ds_tp_anexo, 'Documento') as ds_tp_anexo&#13;&#10;from gcc_edital_anexo  gea &#13;&#10;left join gcc_anexo    ga on ga.id_anexo = gea.id_anexo&#13;&#10;left join gcc_tp_anexo gta on gta.id_tp_anexo = ga.id_tp_anexo&#13;&#10;left join sis_anexo    sa on sa.id_anexo = gea.id_anexo&#13;&#10;where &#13;&#10;    gea.id_edital_chamamento = :id_edital_chamamento and &#13;&#10;    gea.publica = 1&#13;&#10;order by&#13;&#10;	   gea.ordem">
+        <Column Name="ds_anexo" DataType="System.String"/>
+        <Column Name="ds_tp_anexo" DataType="System.String"/>
+        <CommandParameter Name="ID_EDITAL_CHAMAMENTO" DataType="9" Expression="[idEditalChamamento]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Chamamento&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idEditalChamamento" DataType="System.Int32" Expression="9"/>
+    <Parameter Name="tipo" DataType="System.String" Expression="&quot;csv&quot;"/>
+  </Dictionary>
+  <inherited Name="MainPage" VisibleExpression="[tipo] == &quot;pdf&quot;">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child1" ZOrder="-1" Top="173.4" Width="718.2" Height="37.8">
+          <TextObject Name="Text1" Top="9.45" Width="718.2" Height="18.9" Border.Lines="Bottom" Text="CHAMAMENTO  DO TERCEIRO SETOR" HorzAlign="Center" Font="Arial, 9pt, style=Bold"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <DataBand Name="MasterData1" ZOrder="0" Top="231.2" Width="718.2" Height="122.85" Border.Lines="All" Fill.Color="WhiteSmoke" CanGrow="true" DataSource="Table">
+      <TextObject Name="Text2" Left="6.05" Top="7.56" Width="170.1" Height="18.9" Text="Chamamento" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="Text3" Left="179.93" Top="7.56" Width="170.1" Height="18.9" Text="Data limite" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="Text4" Left="353.81" Top="7.56" Width="170.1" Height="18.9" Text="Data da publicação" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="Text5" Left="527.69" Top="7.56" Width="170.1" Height="18.9" Text="Área de atuação" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="Text6" Left="6.05" Top="26.46" Width="94.5" Height="18.9" Text="[SqlInstrumento.nr_edital_chamamento]/[SqlInstrumento.ano_edital_chamamento]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text7" Left="86.95" Top="28.35" Width="56.7" Height="15.12" Fill.Color="186, 211, 254" Text="[SqlInstrumento.qtd_anexos] Anexos" VertAlign="Center" Font="Arial, 8pt, style=Bold"/>
+      <TextObject Name="Text8" Left="179.93" Top="26.46" Width="170.1" Height="18.9" Text="[SqlInstrumento.dt_limite]" Format="Date" Format.Format="d" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text9" Left="353.81" Top="26.46" Width="170.1" Height="18.9" Text="[SqlInstrumento.dt_publicacao]" Format="Date" Format.Format="d" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text10" Left="527.69" Top="26.46" Width="170.1" Height="18.9" Text="[SqlInstrumento.ds_area_atuacao]" VertAlign="Center" Font="Arial, 8pt"/>
+      <TextObject Name="Text11" Left="6.05" Top="49.14" Width="170.1" Height="18.9" Text="Objeto" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="Text12" Left="6.05" Top="66.91" Width="703.08" Height="41.58" CanGrow="true" Text="[SqlInstrumento.objeto]" Font="Arial, 8pt"/>
+    </DataBand>
+    <DataBand Name="DetailData1" ZOrder="1" Top="441.79" Width="718.2" Height="47.25" Border.Lines="All" DataSource="Table1">
+      <TextObject Name="Text32" Width="718.2" Height="47.25" Border.Lines="All" VertAlign="Center" Font="Arial, 8.5pt, style=Bold">
+        <Highlight>
+          <Condition Expression="[Row#] %2 == 1" Fill.Color="WhiteSmoke" Font="Arial, 10pt" ApplyFill="true" ApplyTextFill="false"/>
+        </Highlight>
+      </TextObject>
+      <TextObject Name="Text14" Left="3.78" Top="6.05" Width="343.98" Height="18.9" Text="Arquivo" Font="Arial, 9pt, style=Bold"/>
+      <TextObject Name="Text15" Left="3.78" Top="19.66" Width="706.86" Height="26.46" CanGrow="true" Text="[IIf([SqlAnexos.ds_anexo] == &quot; &quot;, &quot; -- --&quot;,[SqlAnexos.ds_anexo])]" Font="Arial, 8pt"/>
+      <DataHeaderBand Name="DataHeader1" Top="374.05" Width="718.2" Height="47.74">
+        <TextObject Name="Text13" Top="28.84" Width="170.1" Height="18.9" Border.Lines="All" Border.Width="0.5" Fill.Color="41, 82, 118" Text="ANEXOS" VertAlign="Center" Font="Arial, 10pt, style=Bold" TextFill.Color="WhiteSmoke"/>
+      </DataHeaderBand>
+    </DataBand>
+    <inherited Name="BndRodape" Top="509.04">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+  <ReportPage Name="CSV" ZOrder="1" VisibleExpression="[tipo] == &quot;csv&quot;" Watermark.Font="Arial, 60pt">
+    <DataBand Name="MasterData2" Top="58.9" Width="718.2" Height="37.8" DataSource="Table">
+      <TextObject Name="Text21" Width="90.72" Height="18.9" Text="[SqlInstrumento.nr_edital_chamamento]/[SqlInstrumento.ano_edital_chamamento]" Font="Arial, 10pt"/>
+      <TextObject Name="Text22" Left="90.72" Width="94.5" Height="18.9" Text="[SqlInstrumento.dt_limite]" Font="Arial, 10pt"/>
+      <TextObject Name="Text23" Left="185.22" Width="124.74" Height="18.9" Text="[SqlInstrumento.dt_publicacao]" Font="Arial, 10pt"/>
+      <TextObject Name="Text24" Left="309.96" Width="105.84" Height="18.9" Text="[SqlInstrumento.ds_area_atuacao]" Font="Arial, 10pt"/>
+      <TextObject Name="Text25" Left="415.8" Width="321.3" Height="18.9" Text="[SqlInstrumento.objeto]" Font="Arial, 10pt"/>
+      <DataHeaderBand Name="DataHeader2" Top="20" Width="718.2" Height="18.9">
+        <TextObject Name="Text16" Width="90.72" Height="18.9" Text="Chamamento" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text17" Left="90.72" Width="94.5" Height="18.9" Text="Data limite" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text18" Left="185.22" Width="124.74" Height="18.9" Text="Data da publicação" Font="Arial, 9pt, style=Bold"/>
+        <TextObject Name="Text19" Left="309.96" Width="105.84" Height="18.9" Text="Área de atuação&#13;&#10;" Font="Arial, 10pt, style=Bold"/>
+        <TextObject Name="Text20" Left="415.8" Width="94.5" Height="18.9" Text="Objeto" Font="Arial, 10pt, style=Bold"/>
+      </DataHeaderBand>
+    </DataBand>
+    <DataBand Name="DetailData2" Top="225.15" Width="718.2" Height="37.8" DataSource="Table1">
+      <TextObject Name="Text29" Left="117.18" Top="0.76" Width="94.5" Height="18.9" Text="[SqlAnexos.ds_tp_anexo]" Font="Arial, 10pt"/>
+      <TextObject Name="Text30" Left="415.8" Top="0.76" Width="294.84" Height="18.9" Text="[SqlInstrumento.ds_anexo]" Font="Arial, 10pt"/>
+      <DataHeaderBand Name="DataHeader3" Top="116.7" Width="718.2" Height="88.45">
+        <TextObject Name="Text26" Left="3.78" Top="27.97" Width="94.5" Height="18.9" Text="ANEXOS" Font="Arial, 10pt"/>
+        <TextObject Name="Text27" Left="117.18" Top="69.55" Width="94.5" Height="18.9" Text="Tipo" Font="Arial, 10pt"/>
+        <TextObject Name="Text28" Left="415.8" Top="69.55" Width="94.5" Height="18.9" Text="Arquivo" Font="Arial, 10pt"/>
+      </DataHeaderBand>
+    </DataBand>
+  </ReportPage>
+</inherited>

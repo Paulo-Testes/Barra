@@ -1,0 +1,316 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/27/2025 12:22:22" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;Filtro&quot;));
+    }  
+    
+   private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }  
+    }        
+
+ //=====================================================================================================================================
+    
+    private void Text11_BeforePrint(object sender, EventArgs e)
+    {
+      // Obtém o valor do campo SQL e converte para string
+      string cpfCnpj = Report.GetColumnValue(&quot;SqlDados.cpf_cnpj_vendedor&quot;).ToString().Trim();                   
+      // Aplica a formatação correta para CPF ou CNPJ
+      if (cpfCnpj.Length == 11)
+      {
+        Text11.Text = cpfCnpj.Insert(3, &quot;.&quot;).Insert(7, &quot;.&quot;).Insert(11, &quot;-&quot;);
+      }
+      else if (cpfCnpj.Length == 14)
+      {
+        Text11.Text = cpfCnpj.Insert(2, &quot;.&quot;).Insert(6, &quot;.&quot;).Insert(10, &quot;/&quot;).Insert(15, &quot;-&quot;);
+      }
+      else
+      {
+        Text11.Text = cpfCnpj; // Mantém o valor original se não for CPF/CNPJ válido
+      }
+    }
+     
+//=====================================================================================================================================
+    
+    private void Text12_BeforePrint(object sender, EventArgs e)
+    {
+      // Obtém o valor do campo SQL e converte para string
+      string cpfCnpj = Report.GetColumnValue(&quot;SqlDados.cpf_cnpj_comprador&quot;).ToString().Trim();                   
+      // Aplica a formatação correta para CPF ou CNPJ
+      if (cpfCnpj.Length == 11)
+      {
+        Text12.Text = cpfCnpj.Insert(3, &quot;.&quot;).Insert(7, &quot;.&quot;).Insert(11, &quot;-&quot;);
+      }
+      else if (cpfCnpj.Length == 14)
+      {
+        Text12.Text = cpfCnpj.Insert(2, &quot;.&quot;).Insert(6, &quot;.&quot;).Insert(10, &quot;/&quot;).Insert(15, &quot;-&quot;);
+      }
+      else
+      {
+        Text12.Text = cpfCnpj; // Mantém o valor original se não for CPF/CNPJ válido
+      } 
+    }
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAf45SGh+1JQ06HfUCwVjdXLyOtFr5FbmNWNqr1W8I2tPRGoPzSsFGNAQf85ceZvCGogRGJncwLI0VhpBoFVj/qSQKkbhjw8vK4wcDZgU0qxejfSDW9JRcEKK4dHQFJNd8=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" DataType="System.String"/>
+        <Column Name="site" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlDadosCertidao" DataType="System.Int32" Enabled="true" SelectCommand="SELECT&#13;&#10;    LPAD(EXTRACT(DAY FROM ADE.data)::TEXT, 2, '0') || '/' ||&#13;&#10;    LPAD(EXTRACT(MONTH FROM ADE.data)::TEXT, 2, '0') || '/' ||&#13;&#10;    LPAD(EXTRACT(YEAR FROM ADE.data)::TEXT, 4, '0') AS DATA,&#13;&#10;&#13;&#10;    LPAD(EXTRACT(HOUR FROM ADE.data)::TEXT, 2, '0') || ':' ||&#13;&#10;    LPAD(EXTRACT(MINUTE FROM ADE.data)::TEXT, 2, '0') || ':' ||&#13;&#10;    LPAD(EXTRACT(SECOND FROM ADE.data)::INT::TEXT, 2, '0') AS HORA,&#13;&#10;    &#13;&#10;    LPAD(EXTRACT(DAY FROM   (ADE.data + (ADE.dias_validade || ' days')::INTERVAL))::TEXT, 2, '0') || '/' ||&#13;&#10;    LPAD(EXTRACT(MONTH FROM (ADE.data + (ADE.dias_validade || ' days')::INTERVAL))::TEXT, 2, '0') || '/' ||&#13;&#10;    LPAD(EXTRACT(YEAR FROM  (ADE.data + (ADE.dias_validade || ' days')::INTERVAL))::TEXT, 4, '0') AS VALIDADE,&#13;&#10;&#13;&#10;    ADE.numero,&#13;&#10;    ADE.ano,&#13;&#10;    ADE.dias_validade,&#13;&#10;    ADE.referencial&#13;&#10;&#13;&#10;FROM AAC_DOCUMENTOS_EMISSAO ADE&#13;&#10;WHERE ADE.referencial = :IdReferencial;">
+        <Column Name="data" DataType="System.String"/>
+        <Column Name="hora" DataType="System.String"/>
+        <Column Name="validade" DataType="System.DateTime"/>
+        <Column Name="numero" DataType="System.Int32"/>
+        <Column Name="ano" DataType="System.String"/>
+        <Column Name="dias_validade" DataType="System.Int32"/>
+        <Column Name="referencial" DataType="System.Int32"/>
+        <CommandParameter Name="IdReferencial" DataType="9" Expression="[SqlCrypt.refcertidao]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlCrypt" DataType="System.Int32" Enabled="true" SelectCommand="select CODIGO,REFCERTIDAO from ADE_CRYPT(&#13;&#10;:referencial,&#13;&#10;'CQI',&#13;&#10;4,&#13;&#10;'IPTU',&#13;&#10;-1,&#13;&#10;'')">
+        <Column Name="codigo" DataType="System.String"/>
+        <Column Name="refcertidao" DataType="System.Int32"/>
+        <CommandParameter Name="referencial" DataType="9" Expression="[referencial]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlCertidao" DataType="System.Int32" Enabled="true" SelectCommand="SELECT &#13;&#10;cast(:ipAcessado as varchar(30)) as ip_acessado, &#13;&#10;ID_CARNE,&#13;&#10;ID_LANCAMENTO,&#13;&#10;CAMPOS&#13;&#10;FROM IPTU_ITBI_WEB&#13;&#10;WHERE ID_CARNE = :idCarne                                                                 &#13;&#10;          &#13;&#10;">
+        <Column Name="id_carne" DataType="System.Int32"/>
+        <Column Name="id_lancamento" DataType="System.Int32"/>
+        <Column Name="campos" DataType="System.String"/>
+        <Column Name="ip_acessado" DataType="System.String"/>
+        <CommandParameter Name="ipAcessado" DataType="22" Expression="[ipAcessado]"/>
+        <CommandParameter Name="idCarne" DataType="22" Expression="[idCarne]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="SqlCarne" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10; 	D.I000,&#13;&#10; 	D.REFERENCIAL_IMOVEIS as REF_ORIGEM,&#13;&#10; 	lpad(cast(extract(day from C.DATA_CRIACAO) as text), 2, '0') || '/' || lpad(cast(extract(month from C.DATA_CRIACAO) as text), 2, '0') ||'/' || lpad(cast(extract(year from C.DATA_CRIACAO) as text), 4, '0') as DATA_CRIACAO,&#13;&#10; 	lpad(cast(extract(day from Z.DATA_PAGTO)   as text), 2, '0') || '/' || lpad(cast(extract(month from Z.DATA_PAGTO)   as text), 2, '0') ||'/' || lpad(cast(extract(year from Z.DATA_PAGTO)   as text), 4, '0') as DATA_QUITACAO,&#13;&#10; 	substring(C.COMPETENCIA from 1 for 4) as EXERCICIO,&#13;&#10; 	C.STATUS as STATUS_CARNE,&#13;&#10;  Z.VL_PARCELA as VL_PARCELA,&#13;&#10;  Z.VLR_PAGO   as VLR_PAGO&#13;&#10;from 	IPTU_CARNES C&#13;&#10;left join&#13;&#10; 	IPTU_DADOS_ANUAIS D on D.REFERENCIAL = C.REFERENCIAL_DADOS&#13;&#10;left join LATERAL(&#13;&#10;&#13;&#10;	select &#13;&#10;    	max(P.DATA_PAGTO) as DATA_PAGTO,&#13;&#10;     sum(P.VALOR)      as VL_PARCELA,&#13;&#10;     sum(P.VLR_PAGO)   as VLR_PAGO &#13;&#10;    from IPTU_PARCELAS P &#13;&#10;    where &#13;&#10;    	P.REFERENCIAL_CARNE = C.REFERENCIAL &#13;&#10;        and P.STATUS in (4,5,6)&#13;&#10;	&#13;&#10;) Z on true&#13;&#10;where&#13;&#10;	C.REFERENCIAL = :referencial and&#13;&#10;	C.STATUS in (10,8)">
+        <Column Name="i000" DataType="System.String"/>
+        <Column Name="ref_origem" DataType="System.Int32"/>
+        <Column Name="data_criacao" DataType="System.String"/>
+        <Column Name="data_quitacao" DataType="System.String"/>
+        <Column Name="exercicio" DataType="System.String"/>
+        <Column Name="status_carne" DataType="System.Int32"/>
+        <Column Name="vl_parcela" DataType="System.Double"/>
+        <Column Name="vlr_pago" DataType="System.Double"/>
+        <CommandParameter Name="referencial" DataType="9" Expression="[SqlCertidao.id_carne]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="SqlExtenso" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;(select sis_retorna_extenso(:vlr_pago, 'S')) as vlr_pago,&#13;&#10;(select sis_retorna_extenso(:vlr_parcela, 'S'))as vlr&#13;&#10;&#13;&#10;">
+        <Column Name="vlr_pago" DataType="System.String"/>
+        <Column Name="vlr" DataType="System.String"/>
+        <CommandParameter Name="vlr_pago" DataType="9" Expression="[SqlCarne.vlr_pago]"/>
+        <CommandParameter Name="vlr_parcela" DataType="9" Expression="[SqlCarne.vl_parcela]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table5" Alias="SqlDados" DataType="System.Int32" Enabled="true" SelectCommand="   WITH campos_extraidos AS (&#13;&#10;    SELECT &#13;&#10;        nome_campo,&#13;&#10;        SUBSTRING(w.campos FROM POSITION(nome_campo IN w.campos) + LENGTH(nome_campo) + 2 &#13;&#10;                  FOR POSITION(chr(13) || chr(10) IN SUBSTRING(w.campos FROM POSITION(nome_campo IN w.campos) + LENGTH(nome_campo) + 2))-1) &#13;&#10;                  AS valor&#13;&#10;    FROM iptu_itbi_web w&#13;&#10;    CROSS JOIN (VALUES&#13;&#10;        ('Nome_vendedor'),&#13;&#10;        ('Nome_comprador'),&#13;&#10;        ('Inscricao_imovel'),&#13;&#10;        ('Cpf_cnpj_vendedor'),&#13;&#10;        ('Cpf_cnpj_comprador'),&#13;&#10;        ('Natureza_transacao'),&#13;&#10;        ('Endereco_imovel'),&#13;&#10;        ('Bairro_imovel'),&#13;&#10;        ('Cep_imovel'),&#13;&#10;        ('Municipio_intermediador'),&#13;&#10;        ('Uf_intermediador'),&#13;&#10;        ('Valor_itbi')&#13;&#10;    ) AS lista_campos(nome_campo)&#13;&#10;    WHERE w.id_lancamento = :id_lancamento&#13;&#10;)&#13;&#10;SELECT &#13;&#10;    MAX(CASE WHEN nome_campo = 'Nome_vendedor' THEN valor END) AS nome_vendedor,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Nome_comprador' THEN valor END) AS nome_comprador,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Inscricao_imovel' THEN valor END) AS inscricao_imovel,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Cpf_cnpj_vendedor' THEN valor END) AS cpf_cnpj_vendedor,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Cpf_cnpj_comprador' THEN valor END) AS cpf_cnpj_comprador,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Natureza_transacao' THEN valor END) AS natureza_transacao,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Endereco_imovel' THEN valor END) AS endereco_imovel,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Bairro_imovel' THEN valor END) AS bairro_imovel,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Cep_imovel' THEN valor END) AS cep_imovel,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Municipio_intermediador' THEN valor END) AS municipio_intermediador,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Uf_intermediador' THEN valor END) AS uf_intermediador,&#13;&#10;    MAX(CASE WHEN nome_campo = 'Valor_itbi' THEN valor END) AS valor_itbi&#13;&#10;FROM campos_extraidos;&#13;&#10;">
+        <Column Name="nome_vendedor" DataType="System.String"/>
+        <Column Name="nome_comprador" DataType="System.String"/>
+        <Column Name="inscricao_imovel" DataType="System.String"/>
+        <Column Name="cpf_cnpj_vendedor" DataType="System.String"/>
+        <Column Name="cpf_cnpj_comprador" DataType="System.String"/>
+        <Column Name="natureza_transacao" DataType="System.String"/>
+        <Column Name="endereco_imovel" DataType="System.String"/>
+        <Column Name="bairro_imovel" DataType="System.String"/>
+        <Column Name="cep_imovel" DataType="System.String"/>
+        <Column Name="municipio_intermediador" DataType="System.String"/>
+        <Column Name="uf_intermediador" DataType="System.String"/>
+        <Column Name="valor_itbi" DataType="System.String"/>
+        <CommandParameter Name="id_lancamento" DataType="9" Expression="[SqlCertidao.id_lancamento]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;Certidão de Quitação de ITBI&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="2"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="referencial" DataType="System.Int64" Expression="14449"/>
+    <Parameter Name="idCarne" DataType="System.String" Expression="&quot;1297195&quot;"/>
+    <Parameter Name="ipAcessado" DataType="System.String" Expression="&quot;&quot;"/>
+  </Dictionary>
+  <ReportPage Name="MainPage" Watermark.Font="Arial, 60pt">
+    <PageHeaderBand Name="BndCabecalho" Restrictions="DontResize, DontDelete" Width="718.2" Height="94.5" BeforePrintEvent="parent_BndCabecalho_BeforePrint" KeepChild="true">
+      <PictureObject Name="ImgBrasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Width="75.6" Height="94.5" DataColumn="SqlEntidade.brasao" ImageAlign="Center_Center"/>
+      <TextObject Name="TxtEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Width="529.2" Height="18.9" Text="[SqlEntidade.nome]" VertAlign="Center" Font="Tahoma, 10pt, style=Bold"/>
+      <PictureObject Name="ImgLogo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="604.8" Width="113.4" Height="94.5" DataColumn="SqlEntidade.logo" ImageAlign="Center_Center"/>
+      <TextObject Name="TxtTituloModulo1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="18.9" Width="529.2" Height="18.9" Text="[SqlModulo.titulo_1]" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="TxtTituloModulo2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="37.8" Width="529.2" Height="18.9" Text="[SqlModulo.titulo_2]" VertAlign="Center" Font="Tahoma, 8pt"/>
+      <TextObject Name="TxtTituloRelatorio" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="56.7" Width="529.2" Height="18.9" Text="[TituloRelatorio]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      <TextObject Name="TxtPeriodo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="75.6" Top="75.6" Width="529.2" Height="18.9" BeforePrintEvent="TxtCompetencia_BeforePrint" Text="[periodo]" VertAlign="Center" Font="Tahoma, 7pt, style=Bold"/>
+      <TextObject Name="Text13" Left="-9450" Top="-9450" Width="94.5" Height="18.9" Text="12305" Font="Arial, 10pt"/>
+      <ChildBand Name="BndFiltro" Restrictions="DontResize, DontDelete" Top="97.2" Width="718.2" Height="18.9" CanGrow="true" BeforePrintEvent="parent_BndFiltro_BeforePrint">
+        <TextObject Name="TxtFiltro" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="3.78" Width="718.2" Height="11.34" Fill.Color="129, 245, 230, 207" Cursor="IBeam" CanGrow="true" Text="[filtro]" Font="Tahoma, 7pt, style=Bold" Wysiwyg="true"/>
+      </ChildBand>
+    </PageHeaderBand>
+    <DataBand Name="Data1" Top="118.81" Width="718.2" Height="88.83" DataSource="Table">
+      <TextObject Name="Text1" Left="0.45" Top="28" Width="718.2" Height="28.35" Border.Color="IndianRed" Text="CERTIDÃO DE QUITAÇÃO DE ITBI&#13;&#10;" HorzAlign="Center" Font="Tahoma, 16pt, style=Bold" TextFill.Color="41, 82, 118"/>
+      <TextObject Name="Text14" Top="56.35" Width="718.2" Height="24.57" Text="Número da Certidão: [SqlDadosCertidao.numero]/[SqlDadosCertidao.ano]&#13;&#10;" HorzAlign="Center" VertAlign="Center" Font="Arial, 14pt"/>
+      <LineObject Name="Line1" Left="7.45" Top="17" Width="699.3" Border.Width="1.5"/>
+    </DataBand>
+    <DataBand Name="Data3" Top="210.34" Width="718.2" Height="539.03" DataSource="Table2">
+      <TextObject Name="Text4" Left="7.18" Top="103.95" Width="306.18" Height="27.97" Border.Color="IndianRed" Fill.Color="ButtonFace" Text="Identificação no Cadastro" VertAlign="Center" Font="Arial, 12pt, style=Bold"/>
+      <TextObject Name="Text5" Left="9.45" Top="132.68" Width="89.59" Height="18.9" Border.Lines="Left, Top, Bottom" Text="Transmitente:" VertAlign="Center" Font="Arial, 10pt"/>
+      <TextObject Name="Text6" Left="99.04" Top="132.68" Width="378" Height="18.9" Border.Lines="All" Fill.Color="ButtonFace" BeforePrintEvent="Text6_BeforePrint" Text="[SqlDados.nome_vendedor]" VertAlign="Center" Font="Arial, 10pt, style=Bold"/>
+      <TextObject Name="Text7" Left="9.45" Top="151.58" Width="89.59" Height="18.9" Border.Lines="Left, Top, Bottom" Text="Adquirente:" VertAlign="Center" Font="Arial, 10pt"/>
+      <TextObject Name="Text8" Left="99.04" Top="151.58" Width="378" Height="18.9" Border.Lines="All" Fill.Color="ButtonFace" Text="[SqlDados.nome_comprador]" VertAlign="Center" Font="Arial, 10pt, style=Bold"/>
+      <TextObject Name="Text9" Left="477.42" Top="132.68" Width="86.18" Height="18.9" Border.Lines="Top, Bottom" Text="CPF / CNPJ" VertAlign="Center" Font="Arial, 10pt"/>
+      <TextObject Name="Text10" Left="477.42" Top="151.58" Width="86.18" Height="18.9" Border.Lines="Top, Bottom" Text="CPF / CNPJ" VertAlign="Center" Font="Arial, 10pt"/>
+      <TextObject Name="Text11" Left="563.22" Top="132.68" Width="149.31" Height="18.9" Border.Lines="All" Fill.Color="ButtonFace" BeforePrintEvent="Text11_BeforePrint" Text="[SqlDados.cpf_cnpj_vendedor]" Format="Custom" Format.Format="00000-0000" VertAlign="Center" Font="Arial, 10pt"/>
+      <TextObject Name="Text12" Left="563.22" Top="151.58" Width="149.31" Height="18.9" Border.Lines="All" Fill.Color="ButtonFace" BeforePrintEvent="Text12_BeforePrint" Text="[SqlDados.cpf_cnpj_comprador]" VertAlign="Center" Font="Arial, 10pt"/>
+      <TextObject Name="Text3" Left="7.18" Top="21.92" Width="700.43" Height="63.88" Border.Color="IndianRed" BeforePrintEvent="Text3_BeforePrint" Text="Certificamos, para os devidos fins, que o imóvel de inscrição nº &lt;B&gt;[SqlDados.inscricao_imovel]&lt;/B&gt; sito à [SqlDados.endereco_imovel], Bairro:[SqlDados.bairro_imovel], CEP: [SqlDados.cep_imovel], [SqlDados.municipio_intermediador] / [SqlDados.uf_intermediador], recebeu um lançamento de &lt;B&gt;ITBI&lt;/B&gt; realizado em &lt;b&gt;[SqlCarne.data_criacao],&lt;/b&gt; no valor de &lt;b&gt;R$[SqlDados.valor_itbi]&lt;/b&gt; ([SqlExtenso.vlr]) entre as partes:" Font="Arial, 10pt" TextRenderType="HtmlTags">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <TextObject Name="Text15" Left="9.45" Top="189" Width="699.3" Height="122.85" Text="O referido lançamento gerou a guia nº &lt;B&gt;[SqlCertidao.id_lancamento] / [SqlDadosCertidao.ano]&lt;/B&gt; com o valor de &lt;B&gt;R$[SqlCarne.vl_parcela]&lt;/B&gt; ([SqlExtenso.vlr]), de natureza de transação &lt;B&gt;[SqlDados.natureza_transacao],&lt;/B&gt; que foi devidamente &lt;b&gt;quitada&lt;/b&gt; na data de &lt;B&gt;[SqlCarne.data_quitacao] &lt;/B&gt; pelo valor pago de &lt;b&gt;R$[SqlCarne.vlr_pago]&lt;/b&gt; ([SqlExtenso.vlr_pago])." VertAlign="Center" Font="Arial, 10pt" TextRenderType="HtmlTags">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <NumberFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <NumberFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <DataFooterBand Name="DataFooter1" Top="752.07" Width="718.2" Height="173.13" PrintOnBottom="true">
+        <TextObject Name="Text16" Left="7.18" Top="7.94" Width="705.35" Height="165.19" Text="Certidão emitida em [date] (data e hora de Brasília).&#13;&#10;Acessada pelo IP: &lt;b&gt;[SqlCertidao.ip_acessado]&lt;/b&gt;&#13;&#10;Código de Controle da Certidão: &lt;b&gt;[Sqlcrypt.codigo]&lt;/b&gt;&#13;&#10;&#13;&#10;A autenticidade desta certidão pode ser confirmada na página da Prefeitura na Internet, no endereço &lt;u&gt;[SqlEntidade.nome]&lt;/u&gt;&#13;&#10;&#13;&#10;&lt;b&gt;OBS:&lt;/b&gt; Os valores de lançamento estão sujeitos a mudança, para mais detalhes entre em contato com a prefeitura.&#13;&#10;" Font="Tahoma, 7pt" TextRenderType="HtmlTags">
+          <Formats>
+            <GeneralFormat/>
+            <GeneralFormat/>
+            <GeneralFormat/>
+            <GeneralFormat/>
+          </Formats>
+        </TextObject>
+      </DataFooterBand>
+    </DataBand>
+    <PageFooterBand Name="BndRodape" Restrictions="DontResize, DontDelete" Top="927.9" Width="718.2" Height="30.24" Border.Lines="Top" CanGrow="true" BeforePrintEvent="parent_BndRodape_BeforePrint">
+      <TextObject Name="TxtRodape" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="18.9" Width="604.8" Height="11.34" Text="TxtRodape" Font="Tahoma, 7pt"/>
+      <TextObject Name="TxtPaginacao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Left="604.8" Top="18.9" Width="113.4" Height="11.34" Text="Página [Page#] de [TotalPages#]" HorzAlign="Right" Font="Tahoma, 7pt">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+      <TextObject Name="TxtEndereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" Top="3.78" Width="718.2" Height="11.34" CanGrow="true" Text="[SqlEntidade.endereco] | Telefone: [SqlEntidade.telefone] | CNPJ: [SqlEntidade.cnpj]" HorzAlign="Justify" Font="Tahoma, 7pt">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </TextObject>
+    </PageFooterBand>
+  </ReportPage>
+</Report>

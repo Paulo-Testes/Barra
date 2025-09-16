@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<inherited ParentReport="Base" PreviewOptions.AllowEdit="False" PreviewOptions.Buttons="1535" ReportOptions.LastChange="43969,487617037" ScriptText.Text="procedure bndCabecalhoOnBeforePrint(Sender: TfrxComponent);&#13;&#10;begin&#13;&#10;  if (Trim(&#60;SqlModulo.&#34;TITULO_1&#34;&#62;) = '') and (Trim(&#60;SqlModulo.&#34;TITULO_2&#34;&#62;) = '') then&#13;&#10;    TxtTituloRelatorio.Top := TxtTitulo1.Top&#13;&#10;  else if (Trim(&#60;SqlModulo.&#34;TITULO_1&#34;&#62;) = '') then&#13;&#10;  begin&#13;&#10;    TxtTituloRelatorio.Top := TxtTitulo2.Top;&#13;&#10;    TxtTitulo2.Top := TxtTitulo1.Top;&#13;&#10;  end&#13;&#10;  else if (Trim(&#60;SqlModulo.&#34;TITULO_2&#34;&#62;) = '') then&#13;&#10;    TxtTituloRelatorio.Top := TxtTitulo2.Top;&#13;&#10;&#13;&#10;  if (&#60;SqlModulo.&#34;USA_IMAGEM&#34;&#62; = 1) or (&#60;SqlModulo.&#34;IMPRIMIR_DATA_HORA_RODAPE&#34;&#62; = 1) then&#13;&#10;  begin&#13;&#10;    TxtData.Visible := False;&#13;&#10;    TxtHora.Visible := False;&#13;&#10;    TxtDataHora.Visible := True;&#13;&#10;&#13;&#10;    if (&#60;SqlModulo.&#34;IMPRIMIR_DATA&#34;&#62; = 1) and (&#60;SqlModulo.&#34;IMPRIMIR_HORA&#34;&#62; = 1) then&#13;&#10;    begin&#13;&#10;      TxtDataHora.Text := '[Now]';&#13;&#10;      TxtDataHora.DisplayFormat.FormatStr := 'dd/MM/yyyy HH:mm:ss';&#13;&#10;    end&#13;&#10;    else if &#60;SqlModulo.&#34;IMPRIMIR_DATA&#34;&#62; = 1 then&#13;&#10;    begin&#13;&#10;      TxtDataHora.Text := '[Date]';&#13;&#10;      TxtDataHora.DisplayFormat.FormatStr := 'dd/MM/yyyy';&#13;&#10;    end&#13;&#10;    else if &#60;SqlModulo.&#34;IMPRIMIR_HORA&#34;&#62; = 1 then&#13;&#10;    begin&#13;&#10;      TxtDataHora.Text := '[Time]';&#13;&#10;      TxtDataHora.DisplayFormat.FormatStr := 'HH:mm:ss';&#13;&#10;    end&#13;&#10;    else&#13;&#10;      TxtDataHora.Visible := False;&#13;&#10;  end&#13;&#10;  else&#13;&#10;  begin&#13;&#10;    TxtData.Visible := &#60;SqlModulo.&#34;IMPRIMIR_DATA&#34;&#62; = 1;&#13;&#10;    TxtHora.Visible := &#60;SqlModulo.&#34;IMPRIMIR_HORA&#34;&#62; = 1;&#13;&#10;    TxtDataHora.Visible := False;&#13;&#10;  end&#13;&#10;end;&#13;&#10;&#13;&#10;procedure bndRodapeOnBeforePrint(Sender: TfrxComponent);&#13;&#10;begin&#13;&#10;  TxtRodape.Text := &#60;SqlCliente.&#34;NOME_REDUZIDO&#34;&#62;;&#13;&#10;&#13;&#10;  if &#60;SqlModulo.&#34;IMPRIMIR_USUARIO&#34;&#62; = 1 then&#13;&#10;    TxtRodape.Lines.Strings[0] := TxtRodape.Lines.Strings[0] + ' | ' + &#60;SqlUsuario.&#34;DS_USUARIO&#34;&#62;;&#13;&#10;&#13;&#10;  if &#60;Personalizado&#62; = 1 then&#13;&#10;    TxtRodape.Lines.Strings[0] := TxtRodape.Lines.Strings[0] + ' | PERSONALIZADO'&#13;&#10;  else if &#60;Personalizado&#62; = 2 then&#13;&#10;    TxtRodape.Lines.Strings[0] := TxtRodape.Lines.Strings[0] + ' | GSR - Construtor de Relatórios';&#13;&#10;end;&#13;&#10;&#13;&#10;begin&#13;&#10;&#13;&#10;end." StoreInDFM="False">
+  <Datasets>
+    <item DataSet="SqlCliente" DataSetName="SqlCliente"/>
+    <item DataSet="SqlUsuario" DataSetName="SqlUsuario"/>
+    <item DataSet="SqlModulo" DataSetName="SqlModulo"/>
+  </Datasets>
+  <Variables>
+    <item InheritedName=" Internas"/>
+    <item InheritedName="IdModulo"/>
+    <item InheritedName="Personalizado"/>
+    <item InheritedName="Formato"/>
+    <item InheritedName="CodigoRelatorio"/>
+    <item InheritedName=" Disponiveis"/>
+    <item InheritedName="IdEntidade"/>
+    <item InheritedName="IdRelatorioFiltro"/>
+    <item InheritedName="Competencia"/>
+    <item InheritedName=" Utilizadas"/>
+    <item InheritedName="IdUsuario"/>
+  </Variables>
+  <inherited Name="Data">
+    <inherited Name="SqlCliente"/>
+    <inherited Name="SqlUsuario"/>
+    <inherited Name="SqlModulo"/>
+  </inherited>
+  <inherited Name="Page1" PaperSize="9">
+    <TfrxPageHeader Name="bndCabecalho" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="70" Left="0" Top="16" Width="718,1107" OnBeforePrint="bndCabecalhoOnBeforePrint">
+      <TfrxPictureView Name="Logo" AllowVectorExport="True" Left="612,28346945" Top="0" Width="105,82677165" Height="52,91342" Restrictions="31" Center="True" DataField="imagem" DataSet="SqlModulo" DataSetName="SqlModulo" Frame.Typ="0" HightQuality="False" Transparent="False" TransparentColor="16777215"/>
+      <TfrxPictureView Name="Brasao" AllowVectorExport="True" Left="0" Top="0" Width="64,2519685" Height="64,2519685" Restrictions="31" Center="True" DataField="LOGOTIPO" DataSet="SqlCliente" DataSetName="SqlCliente" Frame.Typ="0" HightQuality="False" Transparent="False" TransparentColor="16777215"/>
+      <TfrxMemoView Name="TxtNomeCliente" AllowVectorExport="True" Left="68,03149606" Top="0" Width="529,13395591" Height="19" Restrictions="31" DataField="NOME" DataSet="SqlCliente" DataSetName="SqlCliente" Font.Charset="1" Font.Color="0" Font.Height="-13" Font.Name="Tahoma" Font.Style="1" Font.Quality="fqClearTypeNatural" Frame.Typ="0" ParentFont="False" Text="[SqlCliente.&#34;NOME&#34;]"/>
+      <TfrxMemoView Name="TxtTitulo1" AllowVectorExport="True" Left="68,03149606" Top="18,8976378" Width="529,13395591" Height="15,11811024" Restrictions="31" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Font.Quality="fqClearTypeNatural" Frame.Typ="0" ParentFont="False" Text="[SqlModulo.&#34;titulo_1&#34;]"/>
+      <TfrxMemoView Name="TxtTitulo2" AllowVectorExport="True" Left="68,03149606" Top="34,01574803" Width="529,13395591" Height="15,11811024" Restrictions="31" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Tahoma" Font.Style="0" Font.Quality="fqClearTypeNatural" Frame.Typ="0" ParentFont="False" Text="[SqlModulo.&#34;titulo_2&#34;]"/>
+      <TfrxMemoView Name="TxtTituloRelatorio" AllowVectorExport="True" Left="68,03149606" Top="49,13385827" Width="529,13395591" Height="15,11811024" Restrictions="15" Font.Charset="1" Font.Color="0" Font.Height="-11" Font.Name="Tahoma" Font.Style="1" Font.Quality="fqClearTypeNatural" Frame.Typ="0" ParentFont="False" Text="TxtTituloRelatorio"/>
+      <TfrxLineView Name="Line1" Align="baWidth" AllowVectorExport="True" Left="0" Top="68,03149606" Width="718,1107" Height="0" Restrictions="31" Color="0" Frame.Typ="4"/>
+      <TfrxMemoView Name="TxtData" AllowVectorExport="True" Left="634,96069827" Top="0" Width="83,1496063" Height="11,33858268" Restrictions="31" DisplayFormat.FormatStr="dd/MM/yyyy" DisplayFormat.Kind="fkDateTime" Font.Charset="1" Font.Color="0" Font.Height="-8" Font.Name="Tahoma" Font.Style="0" Font.Quality="fqClearTypeNatural" Frame.Typ="0" HAlign="haRight" ParentFont="False" Text="[Date]"/>
+      <TfrxMemoView Name="TxtHora" AllowVectorExport="True" Left="634,96074709" Top="11,33858024" Width="83,1496063" Height="11,33858268" Restrictions="31" DisplayFormat.FormatStr="HH:mm:ss" DisplayFormat.Kind="fkDateTime" Font.Charset="1" Font.Color="0" Font.Height="-8" Font.Name="Tahoma" Font.Style="0" Font.Quality="fqClearTypeNatural" Frame.Typ="0" HAlign="haRight" ParentFont="False" Text="[Time]"/>
+      <TfrxMemoView Name="TxtCompetencia" AllowVectorExport="True" Left="597,16544709" Top="52,91339071" Width="120,94488189" Height="11,33858268" Restrictions="15" Font.Charset="1" Font.Color="0" Font.Height="-8" Font.Name="Tahoma" Font.Style="1" Font.Quality="fqClearTypeNatural" Frame.Typ="0" HAlign="haRight" ParentFont="False" Text="[Competencia]"/>
+    </TfrxPageHeader>
+    <TfrxPageFooter Name="bndRodape" FillType="ftBrush" FillGap.Top="0" FillGap.Left="0" FillGap.Bottom="0" FillGap.Right="0" Frame.Typ="0" Height="11,33858268" Left="0" Top="146" Width="718,1107" OnBeforePrint="bndRodapeOnBeforePrint">
+      <TfrxLineView Name="Line2" Align="baWidth" AllowVectorExport="True" Left="0" Top="0" Width="718,1107" Height="0" Restrictions="31" Color="0" Frame.Typ="4"/>
+      <TfrxMemoView Name="TxtRodape" Align="baWidth" AllowVectorExport="True" Left="0" Top="0" Width="302,362436615" Height="11,33858268" Restrictions="31" Font.Charset="1" Font.Color="0" Font.Height="-8" Font.Name="Tahoma" Font.Style="0" Font.Quality="fqClearTypeNatural" Frame.Typ="0" ParentFont="False" Text="TxtRodape"/>
+      <TfrxMemoView Name="TxtPaginacao" Align="baRight" AllowVectorExport="True" Left="415,74826339" Top="0" Width="302,36243661" Height="11,33859" Restrictions="31" Font.Charset="1" Font.Color="0" Font.Height="-8" Font.Name="Tahoma" Font.Style="0" Font.Quality="fqClearTypeNatural" Frame.Typ="0" HAlign="haRight" ParentFont="False" Text="Página [Page#] de [TotalPages#]"/>
+      <TfrxMemoView Name="TxtDataHora" Align="baCenter" AllowVectorExport="True" Left="302,362436615" Top="0" Width="113,38582677" Height="11,33858268" Restrictions="31" DisplayFormat.FormatStr="dd/MM/yyyy HH:mm:ss" DisplayFormat.Kind="fkDateTime" Font.Charset="1" Font.Color="0" Font.Height="-8" Font.Name="Tahoma" Font.Style="0" Font.Quality="fqClearTypeNatural" Frame.Typ="0" HAlign="haCenter" ParentFont="False" Text="[Now]"/>
+    </TfrxPageFooter>
+  </inherited>
+</inherited>

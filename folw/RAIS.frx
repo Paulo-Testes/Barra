@@ -1,0 +1,586 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="C:\Users\Embras\Desktop\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\Pessoas sg\retrato.frx" BaseReportAbsolutePath="C:\Users\Embras\Desktop\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\FAST\gsr-designer-frx\designer-win-x64\Pessoas sg\retrato.frx" ScriptLanguage="CSharp" ReportInfo.Created="02/01/2024 10:35:21" ReportInfo.Modified="08/06/2025 17:33:14" ReportInfo.CreatorVersion="2025.1.10.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    private void parent_BndCabecalho_BeforePrint(object sender, EventArgs e)
+    {
+      string titulo1 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_1&quot;);
+      string titulo2 = (String)Report.GetColumnValue(&quot;SqlModulo.titulo_2&quot;);
+
+      if (string.IsNullOrWhiteSpace(titulo1) &amp;&amp; string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtTituloRelatorio.Top = TxtTituloModulo1.Top;
+        TxtPeriodo.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo1))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        TxtTituloModulo2.Top = TxtTituloModulo1.Top;
+        BndCabecalho.Height = (float)75.6;
+      } 
+      else if (string.IsNullOrWhiteSpace(titulo2))
+      {
+        TxtPeriodo.Top = TxtTituloRelatorio.Top;
+        TxtTituloRelatorio.Top = TxtTituloModulo2.Top;
+        BndCabecalho.Height = (float)75.6;
+      }
+      
+      ImgBrasao.Height = BndCabecalho.Height;
+      ImgLogo.Height = BndCabecalho.Height;
+    }    
+        
+    private void parent_BndFiltro_BeforePrint(object sender, EventArgs e)
+    {
+      BndFiltro.Visible = !string.IsNullOrWhiteSpace((String)Report.GetParameterValue(&quot;filtro&quot;));
+    }  
+    
+    private void parent_BndRodape_BeforePrint(object sender, EventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace((String)Report.GetColumnValue(&quot;SqlEntidade.endereco&quot;))) 
+      {
+        TxtRodape.Top = TxtEndereco.Top;
+        TxtPaginacao.Top = TxtEndereco.Top;
+        TxtEndereco.Visible = false;
+        BndRodape.Height = (float)15.12; 
+      }
+      
+      TxtRodape.Text = (String)Report.GetColumnValue(&quot;SqlEntidade.sigla&quot;);
+
+      long personalizado = (Int64)Report.GetParameterValue(&quot;personalizado&quot;);
+      long imprimirUsuario = (Int64)Report.GetParameterValue(&quot;imprimirUsuario&quot;);
+      long imprimirData = (Int64)Report.GetParameterValue(&quot;imprimirData&quot;);
+
+      if (imprimirUsuario == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (String)Report.GetColumnValue(&quot;SqlUsuario.nome&quot;) + (String)Report.GetColumnValue(&quot;SqlUsuario.ds_usuario&quot;);
+      }
+
+      if (personalizado == 1)
+      {
+        TxtRodape.Text += &quot; | PERSONALIZADO&quot;;
+      }
+      else if (personalizado == 2)
+      {
+        TxtRodape.Text += &quot; | EXCLUSIVO&quot;;
+      }
+
+      if (imprimirData == 1)
+      {
+        TxtRodape.Text += &quot; | &quot; + (DateTime)Report.GetVariableValue(&quot;Date&quot;);
+      }
+    }   
+//=============================================================================================================================================//
+
+//=============================================================================================================================================//
+    private void Child1_BeforePrint(object sender, EventArgs e)
+    {
+      Child1.Visible = ((Int32)Report.GetColumnValue(&quot;SqlAfast.qtde_dias&quot;)) &lt; 1;
+    }
+//=============================================================================================================================================//
+    
+  }
+}</ScriptText>
+  <Dictionary>
+    <PostgresDataConnection Name="Connection" ConnectionString="rijcmlqiSaocAniJQNoKNFeaTFzMe98Srvu/H0B5rG99iH0rlAD52+0S9jQVqtbGjnQ1fJfcaegeqkp60BrLd+YLnR4XqyfZaBNherXEOpLePTulRqrY+ChMEL6VHdEuu5eaQq8P7uQHIyyz39UKCw5T7zIJmBJP08vnDSOBR+RIsQMPgY=">
+      <TableDataSource Name="SqlEntidade" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select coalesce(enti.ds_entidade, lice.ds_licenciado) as nome&#13;&#10;     , pess.documento_formatado as cnpj&#13;&#10;     , lice.imagem as brasao&#13;&#10;     , coalesce(enti.sigla, lice.sigla) as sigla&#13;&#10;     , enti.imagem as logo&#13;&#10;     , case when enti.id_entidade is not null then ende.endereco end as endereco&#13;&#10;     , fone.contato as telefone&#13;&#10;     , mail.contato as email&#13;&#10;     , site.contato as site&#13;&#10;  from sis_licenciado            lice&#13;&#10;  left join sis_entidade         enti on enti.id_entidade        = :id_entidade&#13;&#10;  left join sis_pessoa           pess on pess.id_pessoa_juridica = enti.id_pessoa_juridica&#13;&#10;  left join sis_pessoa_endereco  ende on ende.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and ende.principal          = 1&#13;&#10;  left join sis_pessoa_contato   fone on fone.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and fone.id_tp_contato      = 2&#13;&#10;                                     and fone.principal          = true&#13;&#10;  left join sis_pessoa_contato   mail on mail.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and mail.id_tp_contato      = 1&#13;&#10;                                     and mail.principal          = true&#13;&#10;  left join sis_pessoa_contato   site on site.id_pessoa          = pess.id_pessoa&#13;&#10;                                     and site.id_tp_contato      = 4&#13;&#10;                                     and site.principal          = true&#13;&#10; limit 1">
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="endereco" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="telefone" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="cnpj" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="brasao" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="sigla" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="logo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Byte[]" BindableControl="Picture"/>
+        <Column Name="email" DataType="System.String"/>
+        <Column Name="site" DataType="System.String"/>
+        <CommandParameter Name="id_entidade" DataType="9" Expression="[idEntidade]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlModulo" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select a.titulo_1&#13;&#10;     , a.titulo_2&#13;&#10;  from sis_modulo a&#13;&#10; where a.id_modulo = :id_modulo">
+        <Column Name="titulo_1" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="titulo_2" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_modulo" DataType="9" Expression="[idModulo]"/>
+      </TableDataSource>
+      <TableDataSource Name="SqlUsuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.Int32" Enabled="true" SelectCommand="select log.nome&#13;&#10;     , case when usu.ds_usuario is not null then ' (' || trim(usu.ds_usuario) || ')' end as ds_usuario &#13;&#10;  from sis_login log &#13;&#10;  left join sis_usuario usu on usu.id_usuario = :id_usuario&#13;&#10; where log.id_login = :id_login&#13;&#10; limit 1">
+        <Column Name="ds_usuario" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <Column Name="nome" Restrictions="DontMove, DontResize, DontModify, DontEdit, DontDelete" DataType="System.String"/>
+        <CommandParameter Name="id_login" DataType="9" Expression="[idLogin]"/>
+        <CommandParameter Name="id_usuario" DataType="9" Expression="[idUsuario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="SqlRaisPref" DataType="System.Int32" Enabled="true" SelectCommand="select &#13;&#10;g_rais.tipo_0_crea_retificado as crea,&#13;&#10;g_rais.tipo_1_cei_vinc_cnpj as cei_vinc,&#13;&#10;g_rais.tipo_0_prefixo_1_estab as prefixo,&#13;&#10;g_rais.tipo_1_uso_empresa as uso_emp,&#13;&#10;g_rais.tipo_1_endereco || ', ' || tipo_1_numero || ', ' || tipo_1_bairro || ', ' || tipo_1_nome_municipio || ' - ' || tipo_1_uf || ' - ' || cast(substring(tipo_1_cep, 1, 2) as varchar) || '.' || cast(substring(tipo_1_cep, 3, 3) as varchar) || '-' || cast(substring(tipo_1_cep, 6, 3) as varchar) as endereco,&#13;&#10;g_rais.tipo_1_cod_municipio as codigo,&#13;&#10;'(' || g_rais.tipo_1_telefone_ddd || ') ' || cast(substring(g_rais.tipo_1_telefone_num,1,4) as varchar) || '-' || cast(substring(g_rais.tipo_1_telefone_num,4,4) as varchar) as tel,&#13;&#10;g_rais.tipo_1_e_mail as email,&#13;&#10;substring(cast(g_rais.tipo_1_cnae as varchar),1,2) || '.' || substring(cast(g_rais.tipo_1_cnae as varchar),3,2) || '-' || substring(cast(g_rais.tipo_1_cnae as varchar),5,1) || '/' || substring(cast(g_rais.tipo_1_cnae as varchar),6,2) as n_cnae,&#13;&#10;substring(cast(g_rais.tipo_1_natureza_juridica as varchar),1,3) || '-' || substring(cast(g_rais.tipo_1_natureza_juridica as varchar),4,1) as n_nat_juri,&#13;&#10;'0' || g_rais.tipo_1_data_base as data_base,&#13;&#10;g_rais.tipo_1_num_proprietarios as n_socios,&#13;&#10;case &#13;&#10;	when tipo_1_optante_simples = 2 then 'Não'&#13;&#10;    else 'Sim'&#13;&#10;end as optante_simples,&#13;&#10;case &#13;&#10;	when tipo_1_participa_pat = 2 then 'Não'&#13;&#10;    else 'Sim'&#13;&#10;end as participa_pat,&#13;&#10;case &#13;&#10;	when tipo_1_porte_empresa = 1 then 'Microempresa'&#13;&#10;    when tipo_1_porte_empresa = 2 then 'Empresa de Pequeno Porte'&#13;&#10;    else 'Outros'&#13;&#10;end as porte_emp,&#13;&#10;case &#13;&#10;	when tipo_1_sindicalizada = 1 then 'Sim'&#13;&#10;    else 'Não' &#13;&#10;end as sindicalizada,&#13;&#10;g_rais.tipo_1_porc_serv_proprio || '%' as serv_pro,&#13;&#10;g_rais.tipo_1_porc_cozinhas || '%' as adm_cozinha,&#13;&#10;g_rais.tipo_1_porc_refeicao || '%' as ref_conv,&#13;&#10;g_rais.tipo_1_porc_refeicoes_transp || '%' as ref_transp,&#13;&#10;g_rais.tipo_1_porc_cesta_alimento || '%' as cesta_alim,&#13;&#10;g_rais.tipo_1_porc_alimentacao || '%' as alim_conv,&#13;&#10;g_rais.tipo_1_pat_acima_5_sal as pat_acima,&#13;&#10;g_rais.tipo_1_pat_ate_5_sal as pat_ate,&#13;&#10;coalesce(substring(g_rais.tipo_1_cnpj_associativa,1,2) || '.' || substring(g_rais.tipo_1_cnpj_associativa,3,3) || '.' || substring(g_rais.tipo_1_cnpj_associativa,6,3) || '/' || substring(g_rais.tipo_1_cnpj_associativa,9,4) || '-' || substring(g_rais.tipo_1_cnpj_associativa,13,2),'') as associativa,&#13;&#10;coalesce(round(g_rais.tipo_1_cnpj_associativa_vlr,2),0.00) as associ_vlr,&#13;&#10;coalesce(substring(g_rais.tipo_1_cnpj_sindical,1,2) || '.' || substring(g_rais.tipo_1_cnpj_sindical,3,3) || '.' || substring(g_rais.tipo_1_cnpj_sindical,6,3) || '/' || substring(g_rais.tipo_1_cnpj_sindical,9,4) || '-' || substring(g_rais.tipo_1_cnpj_sindical,13,2),'') as sindical,&#13;&#10;coalesce(round(g_rais.tipo_1_cnpj_sindical_vlr,2),0.00) as sind_vlr,&#13;&#10;coalesce(substring(g_rais.tipo_1_cnpj_assistencial,1,2) || '.' || substring(g_rais.tipo_1_cnpj_assistencial,3,3) || '.' || substring(g_rais.tipo_1_cnpj_assistencial,6,3) || '/' || substring(g_rais.tipo_1_cnpj_assistencial,9,4) || '-' || substring(g_rais.tipo_1_cnpj_assistencial,13,2),'') as assistencial,&#13;&#10;coalesce(round(g_rais.tipo_1_cnpj_assistencial_vlr,2),0.00) as assis_vlr,&#13;&#10;coalesce(substring(g_rais.tipo_1_cnpj_confederativa,1,2) || '.' || substring(g_rais.tipo_1_cnpj_confederativa,3,3) || '.' || substring(g_rais.tipo_1_cnpj_confederativa,6,3) || '/' || substring(g_rais.tipo_1_cnpj_confederativa,9,4) || '-' || substring(g_rais.tipo_1_cnpj_confederativa,13,2),'') as confederativa,&#13;&#10;coalesce(round(g_rais.tipo_1_cnpj_confederativa_vlr,2),0.00) as confe_vlr,&#13;&#10;coalesce(substring(g_rais.tipo_1_cnpj_centralizadora,1,2) || '.' || substring(g_rais.tipo_1_cnpj_centralizadora,3,3) || '.' || substring(g_rais.tipo_1_cnpj_centralizadora,6,3) || '/' || substring(g_rais.tipo_1_cnpj_centralizadora,9,4) || '-' || substring(g_rais.tipo_1_cnpj_centralizadora,13,2),'') as centralizadora,&#13;&#10;'(' || g_rais.tipo_0_telefone_ddd || ') ' || cast(substring(g_rais.tipo_0_telefone_num,1,4) as varchar) || '-' || cast(substring(g_rais.tipo_0_telefone_num,4,4) as varchar) as tel_resp,&#13;&#10;tipo_0_e_mail as email_resp,&#13;&#10;tipo_0_cpf_responsavel as cpf_resp,&#13;&#10;tipo_0_dtnasc_resp as dtnasc_resp,&#13;&#10;tipo_0_nome_responsavel as nome_resp&#13;&#10;&#13;&#10;from grh_remessa_fixo_rais g_rais">
+        <Column Name="crea" DataType="System.String"/>
+        <Column Name="cei_vinc" DataType="System.String"/>
+        <Column Name="prefixo" DataType="System.String"/>
+        <Column Name="uso_emp" DataType="System.String"/>
+        <Column Name="endereco" DataType="System.String"/>
+        <Column Name="codigo" DataType="System.Int32"/>
+        <Column Name="tel" DataType="System.String"/>
+        <Column Name="email" DataType="System.String"/>
+        <Column Name="n_cnae" DataType="System.String"/>
+        <Column Name="n_nat_juri" DataType="System.String"/>
+        <Column Name="data_base" DataType="System.String"/>
+        <Column Name="n_socios" DataType="System.Int32"/>
+        <Column Name="optante_simples" DataType="System.String"/>
+        <Column Name="participa_pat" DataType="System.String"/>
+        <Column Name="porte_emp" DataType="System.String"/>
+        <Column Name="sindicalizada" DataType="System.String"/>
+        <Column Name="serv_pro" DataType="System.String"/>
+        <Column Name="adm_cozinha" DataType="System.String"/>
+        <Column Name="ref_conv" DataType="System.String"/>
+        <Column Name="ref_transp" DataType="System.String"/>
+        <Column Name="cesta_alim" DataType="System.String"/>
+        <Column Name="alim_conv" DataType="System.String"/>
+        <Column Name="pat_acima" DataType="System.Int32"/>
+        <Column Name="pat_ate" DataType="System.Int32"/>
+        <Column Name="associativa" DataType="System.String"/>
+        <Column Name="associ_vlr" DataType="System.Double"/>
+        <Column Name="sindical" DataType="System.String"/>
+        <Column Name="sind_vlr" DataType="System.Double"/>
+        <Column Name="assistencial" DataType="System.String"/>
+        <Column Name="assis_vlr" DataType="System.Double"/>
+        <Column Name="confederativa" DataType="System.String"/>
+        <Column Name="confe_vlr" DataType="System.Double"/>
+        <Column Name="centralizadora" DataType="System.String"/>
+        <Column Name="tel_resp" DataType="System.String"/>
+        <Column Name="email_resp" DataType="System.String"/>
+        <Column Name="cpf_resp" DataType="System.String"/>
+        <Column Name="dtnasc_resp" DataType="System.DateTime"/>
+        <Column Name="nome_resp" DataType="System.String"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="SqlFuncInfo" DataType="System.Int32" Enabled="true" SelectCommand="  -- Inf. Gerais&#13;&#10;select &#13;&#10;&#13;&#10; dm.competencia             as ano&#13;&#10;,grh.c039                   as ano_chegada_pais&#13;&#10;,case &#13;&#10;	when grh.c171 = 'N' then 'Não'&#13;&#10;    else 'Sim'&#13;&#10;end                         as trabalho_parcial&#13;&#10;,case &#13;&#10;	when grh.c172 = 'N' then 'Não'&#13;&#10;    else 'Sim'&#13;&#10;end                         as teletrabalho&#13;&#10;,case &#13;&#10;	when grh.c173 = 'N' then 'Não'&#13;&#10;    else 'Sim'&#13;&#10;end                                          as trabalho_intermitente&#13;&#10;,grh.c123                                    as aviso_previo&#13;&#10;,grh.c150                                    as associativa_1&#13;&#10;,grh.c151                                    as associativa_2&#13;&#10;,grh.c152                                    as sindical&#13;&#10;,grh.c153                                    as assistencial&#13;&#10;,grh.c154                                    as confederativa&#13;&#10;,case &#13;&#10;	when grh.c084 = 'N' then 'Não'&#13;&#10;    else 'Sim'&#13;&#10;end                                          as alvara&#13;&#10;,cbo.codigo || ' - ' || cbo.descricao        as cbo_descricao&#13;&#10;,coalesce(xx.valor_assistencial, 0.00)       as valor_assistencial&#13;&#10;,coalesce(xx.valor_associativa_1, 0.00)      as valor_associativa_1&#13;&#10;,coalesce(xx.valor_associativa_2, 0.00)      as valor_associativa_2&#13;&#10;,coalesce(xx.valor_confederativa, 0.00)      as valor_confederativa&#13;&#10;,coalesce(xx.valor_sindical, 0.00)           as valor_sindical&#13;&#10;,coalesce(xx.valor_ferias_indenisadas, 0.00) as valor_ferias_indenisadas&#13;&#10;,coalesce(xx.valor_multa_fgts, 0.00)         as valor_multa_fgts&#13;&#10;,coalesce(xx.valor_banco_horas, 0.00)        as valor_banco_horas&#13;&#10;,coalesce(xx.valor_gratificacoes, 0.00)      as valor_gratificacoes                                                                                                                              &#13;&#10;,dm.c001                                     as nome_funcionario&#13;&#10;,dm.c000                                     as matricula_funcionario                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           &#13;&#10;,ti.descricao                                as nacionalidade&#13;&#10;,ti2.descricao                               as instrucao&#13;&#10;,ti3.descricao                               as tipo_adimissao&#13;&#10;,ti4.descricao                               as tipo_vinculo&#13;&#10;,ti5.descricao                               as tipo_salario&#13;&#10;,lt.descricao                                as local_trabalho&#13;&#10;,j.horas_semanais                            as horas_semanais&#13;&#10;,coalesce(td.descricao, '')                  as causa_afastamento&#13;&#10;,case &#13;&#10;	when dm.c055 = '6' then 'Amarela'&#13;&#10;    when dm.c055 = '2' then 'Branca'&#13;&#10;    when dm.c055 = '1' then 'Indígena'&#13;&#10;    when dm.c055 = '4' then 'Negra'&#13;&#10;    when dm.c055 = '9' then 'Não Informado'&#13;&#10;    when dm.c055 = '8' then 'Parda'&#13;&#10;    else ''&#13;&#10;end                        as cor&#13;&#10;,case &#13;&#10;	when dm.c058 = 'N' then 'Não'&#13;&#10;    else 'Sim'&#13;&#10;end                        as deficiencia&#13;&#10;,case &#13;&#10;	when dm.c116 = 'N' then 'Não'&#13;&#10;    else 'Sim'&#13;&#10;end                        as sindicalizado&#13;&#10;,case&#13;&#10;	when dm.c052 = '001' then 'Feminino'&#13;&#10;    else 'Masculino'&#13;&#10;end                                     as sexo&#13;&#10;,dm.c029                                as carteira_trabalho&#13;&#10;,dm.c028                                as serie_carteira&#13;&#10;,dm.c032                                as PIS&#13;&#10;,sis_formata_documento(2, dm.c031)      as func_cpf&#13;&#10;,dm.c007                                as jornada&#13;&#10;,dm.c002                                as data_admissao&#13;&#10;,dm.c012                                as data_demissao&#13;&#10;,m.valor                                as decimo_ter_adiantado&#13;&#10;,m2.valor                               as decimo_ter&#13;&#10;,sal.valor                              as salario_base&#13;&#10;,case&#13;&#10;	when substring(m.competencia from 5 for 2) = '01' then 'Janeiro'&#13;&#10;    when substring(m.competencia from 5 for 2) = '02' then 'Fevereiro'&#13;&#10;    when substring(m.competencia from 5 for 2) = '03' then 'Março'&#13;&#10;    when substring(m.competencia from 5 for 2) = '04' then 'Abril'&#13;&#10;    when substring(m.competencia from 5 for 2) = '05' then 'Maio'&#13;&#10;    when substring(m.competencia from 5 for 2) = '06' then 'Junho'&#13;&#10;    when substring(m.competencia from 5 for 2) = '07' then 'Julho'&#13;&#10;    when substring(m.competencia from 5 for 2) = '08' then 'Agosto'&#13;&#10;    when substring(m.competencia from 5 for 2) = '09' then 'Setembro'&#13;&#10;    when substring(m.competencia from 5 for 2) = '10' then 'Outubro'&#13;&#10;    when substring(m.competencia from 5 for 2) = '11' then 'Novembro'&#13;&#10;    when substring(m.competencia from 5 for 2) = '12' then 'Dezembro'&#13;&#10;    else ''&#13;&#10;end                                     as mes_dec_ter_adiantado&#13;&#10;,mv.vl_jan&#13;&#10;,mv.vl_fev&#13;&#10;,mv.vl_mar&#13;&#10;,mv.vl_abr&#13;&#10;,mv.vl_mai&#13;&#10;,mv.vl_jun&#13;&#10;,mv.vl_jul&#13;&#10;,mv.vl_ago&#13;&#10;,mv.vl_set&#13;&#10;,mv.vl_out&#13;&#10;,mv.vl_nov&#13;&#10;,mv.vl_dez&#13;&#10;,mv.vl_he_jan&#13;&#10;,mv.vl_he_fev&#13;&#10;,mv.vl_he_mar&#13;&#10;,mv.vl_he_abr&#13;&#10;,mv.vl_he_mai&#13;&#10;,mv.vl_he_jun&#13;&#10;,mv.vl_he_jul&#13;&#10;,mv.vl_he_ago&#13;&#10;,mv.vl_he_set&#13;&#10;,mv.vl_he_out&#13;&#10;,mv.vl_he_nov&#13;&#10;,mv.vl_he_dez  &#13;&#10;&#13;&#10;from (select * from grh_dados_mes dm2 where dm2.c000 = :chapas        and dm2.competencia like :ano || '%' and right(dm2.competencia,2) &lt;&gt; '13' order by dm2.competencia desc limit 1) dm&#13;&#10;left join grh_cadastro_funcionarios grh on  grh.c000 = dm.c000&#13;&#10;left join grh_cargos gc                 on  gc.codigo_cargo = grh.c005&#13;&#10;left join grh_cbo_mt cbo                on  cbo.codigo = gc.cbo_mt&#13;&#10;left join grh_movimentos m              on  m.chapa  = dm.c000 and m.conta  = 18 and m.competencia   like :ano || '%'-- 13º adiantado&#13;&#10;left join grh_movimentos m2             on  m2.chapa = dm.c000 and m2.conta = 12 and m2.competencia  like :ano || '%' -- 13º&#13;&#10;left join lateral ( &#13;&#10;                  select  sum(case when right(zz.competencia,2) = '01' and zz.conta = 24 then zz.valor else 0 end) as vl_jan&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '02' and zz.conta = 24 then zz.valor else 0 end) as vl_fev&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '03' and zz.conta = 24 then zz.valor else 0 end) as vl_mar&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '04' and zz.conta = 24 then zz.valor else 0 end) as vl_abr&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '05' and zz.conta = 24 then zz.valor else 0 end) as vl_mai&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '06' and zz.conta = 24 then zz.valor else 0 end) as vl_jun&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '07' and zz.conta = 24 then zz.valor else 0 end) as vl_jul&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '08' and zz.conta = 24 then zz.valor else 0 end) as vl_ago&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '09' and zz.conta = 24 then zz.valor else 0 end) as vl_set&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '10' and zz.conta = 24 then zz.valor else 0 end) as vl_out&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '11' and zz.conta = 24 then zz.valor else 0 end) as vl_nov&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '12' and zz.conta = 24 then zz.valor else 0 end) as vl_dez&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '01' and zz.conta = 26 then zz.valor else 0 end) as vl_he_jan&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '02' and zz.conta = 26 then zz.valor else 0 end) as vl_he_fev&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '03' and zz.conta = 26 then zz.valor else 0 end) as vl_he_mar&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '04' and zz.conta = 26 then zz.valor else 0 end) as vl_he_abr&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '05' and zz.conta = 26 then zz.valor else 0 end) as vl_he_mai&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '06' and zz.conta = 26 then zz.valor else 0 end) as vl_he_jun&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '07' and zz.conta = 26 then zz.valor else 0 end) as vl_he_jul&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '08' and zz.conta = 26 then zz.valor else 0 end) as vl_he_ago&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '09' and zz.conta = 26 then zz.valor else 0 end) as vl_he_set&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '10' and zz.conta = 26 then zz.valor else 0 end) as vl_he_out&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '11' and zz.conta = 26 then zz.valor else 0 end) as vl_he_nov&#13;&#10;                         ,sum(case when right(zz.competencia,2) = '12' and zz.conta = 26 then zz.valor else 0 end) as vl_he_dez                             &#13;&#10;                  from grh_movimentos zz&#13;&#10;                  where zz.suplementar  = 105 &#13;&#10;                       and zz.conta in (24, 26)           &#13;&#10;                       and zz.chapa = dm.c000 --5115 or 23918 (é a do relatório)&#13;&#10;                       and substring(zz.competencia from 5 for 2) &lt;&gt; '13'&#13;&#10;                       and zz.competencia LIKE :ano || '%') mv on true&#13;&#10;left join lateral ( &#13;&#10;                  select  &#13;&#10;                     sum(case when g.classificacao = 118 then coalesce(m.valor, 0.0) else 0.0 end) as valor_sindical&#13;&#10;                    ,sum(case when g.classificacao = 120 then coalesce(m.valor, 0.0) else 0.0 end) as valor_confederativa&#13;&#10;                    ,sum(case when g.classificacao = 119 then coalesce(m.valor, 0.0) else 0.0 end) as valor_assistencial&#13;&#10;                    ,sum(case when g.classificacao = 116 then coalesce(m.valor, 0.0) else 0.0 end) as valor_associativa_1&#13;&#10;                    ,sum(case when g.classificacao = 117 then coalesce(m.valor, 0.0) else 0.0 end) as valor_associativa_2&#13;&#10;                    ,sum(case when g.classificacao = 41 or g.classificacao = 122 then coalesce(m.valor, 0.0) else 0.0 end) as valor_ferias_indenisadas&#13;&#10;                    ,sum(case when g.classificacao = 76 then coalesce(m.valor, 0.0) else 0.0 end) as valor_multa_fgts&#13;&#10;                    ,sum(case when g.classificacao = 11 then coalesce(m.valor, 0.0) else 0.0 end) as valor_banco_horas&#13;&#10;                    ,sum(case when g.classificacao = 49 then coalesce(m.valor, 0.0) else 0.0 end) as valor_gratificacoes&#13;&#10;    &#13;&#10;                  from grh_plano_contas g&#13;&#10;                  left join grh_movimentos m on m.conta = g.numero_conta&#13;&#10;                  where m.chapa = :chapas     &#13;&#10;                        and m.competencia like :ano || '%' -- pegar a competência do relatório do SQL geral&#13;&#10;                        and g.classificacao in (116, 117, 118, 119, 120, 41, 122, 76, 11, 49)&#13;&#10;                  ) xx on true&#13;&#10;left join grh_salarios         sal   on sal.jornada = dm.c007 and sal.referencia = dm.c006 and sal.letra = dm.c008  and sal.competencia = dm.competencia&#13;&#10;left join aac_tabelas_internas ti    on ti.chave    = dm.c038 and ti.tipo        = 'NACION'&#13;&#10;left join aac_tabelas_internas ti2   on ti2.chave   = dm.c040 and ti2.tipo       = 'INSTRUC'&#13;&#10;left join aac_tabelas_internas ti3   on ti3.chave   = dm.c004 and ti3.tipo       = 'TIPO_AD'&#13;&#10;left join aac_tabelas_internas ti4   on ti4.chave   = dm.c063 and ti4.tipo       = 'VINCULO'&#13;&#10;left join aac_tabelas_internas ti5   on ti5.chave   = dm.c047 and ti5.tipo       = 'SALARIO'&#13;&#10;left join aac_tabelas_descritivas td on td.chave    = dm.c070 and td.id          = 122&#13;&#10;left join grh_local_trabalho lt      on lt.codigo   = dm.c065&#13;&#10;left join grh_jornadas j             on j.jornada   = dm.c007 &#13;&#10;&#13;&#10;">
+        <Column Name="ano" DataType="System.String"/>
+        <Column Name="ano_chegada_pais" DataType="System.Int32"/>
+        <Column Name="trabalho_parcial" DataType="System.String"/>
+        <Column Name="teletrabalho" DataType="System.String"/>
+        <Column Name="trabalho_intermitente" DataType="System.String"/>
+        <Column Name="aviso_previo" DataType="System.String"/>
+        <Column Name="associativa_1" DataType="System.Int32"/>
+        <Column Name="associativa_2" DataType="System.Int32"/>
+        <Column Name="sindical" DataType="System.Int32"/>
+        <Column Name="assistencial" DataType="System.Int32"/>
+        <Column Name="confederativa" DataType="System.Int32"/>
+        <Column Name="alvara" DataType="System.String"/>
+        <Column Name="cbo_descricao" DataType="System.String"/>
+        <Column Name="valor_assistencial" DataType="System.Double"/>
+        <Column Name="valor_associativa_1" DataType="System.Double"/>
+        <Column Name="valor_associativa_2" DataType="System.Double"/>
+        <Column Name="valor_confederativa" DataType="System.Double"/>
+        <Column Name="valor_sindical" DataType="System.Double"/>
+        <Column Name="valor_ferias_indenisadas" DataType="System.Double"/>
+        <Column Name="valor_multa_fgts" DataType="System.Double"/>
+        <Column Name="valor_banco_horas" DataType="System.Double"/>
+        <Column Name="valor_gratificacoes" DataType="System.Double"/>
+        <Column Name="nome_funcionario" DataType="System.String"/>
+        <Column Name="matricula_funcionario" DataType="System.Int32"/>
+        <Column Name="nacionalidade" DataType="System.String"/>
+        <Column Name="instrucao" DataType="System.String"/>
+        <Column Name="tipo_adimissao" DataType="System.String"/>
+        <Column Name="tipo_vinculo" DataType="System.String"/>
+        <Column Name="tipo_salario" DataType="System.String"/>
+        <Column Name="local_trabalho" DataType="System.String"/>
+        <Column Name="horas_semanais" DataType="System.Int32"/>
+        <Column Name="causa_afastamento" DataType="System.String"/>
+        <Column Name="cor" DataType="System.String"/>
+        <Column Name="deficiencia" DataType="System.String"/>
+        <Column Name="sindicalizado" DataType="System.String"/>
+        <Column Name="sexo" DataType="System.String"/>
+        <Column Name="carteira_trabalho" DataType="System.String"/>
+        <Column Name="serie_carteira" DataType="System.String"/>
+        <Column Name="pis" DataType="System.String"/>
+        <Column Name="func_cpf" DataType="System.String"/>
+        <Column Name="jornada" DataType="System.Int32"/>
+        <Column Name="data_admissao" DataType="System.DateTime"/>
+        <Column Name="data_demissao" DataType="System.DateTime"/>
+        <Column Name="decimo_ter_adiantado" DataType="System.Double"/>
+        <Column Name="decimo_ter" DataType="System.Double"/>
+        <Column Name="salario_base" DataType="System.Double"/>
+        <Column Name="mes_dec_ter_adiantado" DataType="System.String"/>
+        <Column Name="vl_jan" DataType="System.Double"/>
+        <Column Name="vl_fev" DataType="System.Double"/>
+        <Column Name="vl_mar" DataType="System.Double"/>
+        <Column Name="vl_abr" DataType="System.Double"/>
+        <Column Name="vl_mai" DataType="System.Double"/>
+        <Column Name="vl_jun" DataType="System.Double"/>
+        <Column Name="vl_jul" DataType="System.Double"/>
+        <Column Name="vl_ago" DataType="System.Double"/>
+        <Column Name="vl_set" DataType="System.Double"/>
+        <Column Name="vl_out" DataType="System.Double"/>
+        <Column Name="vl_nov" DataType="System.Double"/>
+        <Column Name="vl_dez" DataType="System.Double"/>
+        <Column Name="vl_he_jan" DataType="System.Double"/>
+        <Column Name="vl_he_fev" DataType="System.Double"/>
+        <Column Name="vl_he_mar" DataType="System.Double"/>
+        <Column Name="vl_he_abr" DataType="System.Double"/>
+        <Column Name="vl_he_mai" DataType="System.Double"/>
+        <Column Name="vl_he_jun" DataType="System.Double"/>
+        <Column Name="vl_he_jul" DataType="System.Double"/>
+        <Column Name="vl_he_ago" DataType="System.Double"/>
+        <Column Name="vl_he_set" DataType="System.Double"/>
+        <Column Name="vl_he_out" DataType="System.Double"/>
+        <Column Name="vl_he_nov" DataType="System.Double"/>
+        <Column Name="vl_he_dez" DataType="System.Double"/>
+        <CommandParameter Name="CHAPAS" DataType="9" Expression="[Tb_dados.chapas]"/>
+        <CommandParameter Name="ANO" DataType="22" Expression="[competencia]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SqlAfast" DataType="System.Int32" Enabled="true" SelectCommand="select &#13;&#10;       gafs.data_inicio                                      as inicio_afast&#13;&#10;     , gafs.data_retorno                                     as termino_afast&#13;&#10;     , case when cast(extract(year from gafs.data_retorno)as varchar) &gt; :ano then cast( :ano || '-12-31' as date) else cast(gafs.data_retorno as date) end &#13;&#10;     - case when cast(extract(year from gafs.data_inicio) as varchar)  &lt; :ano then cast( :ano || '-01-01' as date) else cast(gafs.data_inicio  as date) end + 1 as qtde_dias&#13;&#10;     , gaft.descricao                                        as desc_afast&#13;&#10;&#13;&#10;  from grh_afastamentos gafs&#13;&#10;&#13;&#10;       left  join grh_afastamento_tipos  gaft   on  gaft.chave = gafs.motivo&#13;&#10;&#13;&#10;where  gafs.chapa = :matricula_funcionario &#13;&#10; 	and (cast(extract(year from gafs.data_inicio)as varchar) = :ano or cast(extract(year from gafs.data_retorno)as varchar) = :ano)&#13;&#10;order by gafs.data_inicio desc&#13;&#10;limit 3">
+        <Column Name="inicio_afast" DataType="System.DateTime"/>
+        <Column Name="termino_afast" DataType="System.DateTime"/>
+        <Column Name="qtde_dias" DataType="System.Int32"/>
+        <Column Name="desc_afast" DataType="System.String"/>
+        <CommandParameter Name="ANO" DataType="22" Expression="[competencia]"/>
+        <CommandParameter Name="MATRICULA_FUNCIONARIO" DataType="9" Expression="[SqlFuncInfo.matricula_funcionario]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="Tb_dados" DataType="System.Int32" Enabled="true" SelectCommand="select&#13;&#10;       fil.id_filtro                             as CHAPAS, &#13;&#10;       g.c998                                    as ESTAB_ID&#13;&#10;    from sis_relatorio_filtro fil&#13;&#10;    left join GRH_cadastro_funcionarios g    on (g.c000 = fil.id_filtro)        &#13;&#10;WHERE&#13;&#10;    fil.id_relatorio_filtro = :IdRelatorioFiltro       &#13;&#10;group by 1,2">
+        <Column Name="chapas" DataType="System.Int32"/>
+        <Column Name="estab_id" DataType="System.Int32"/>
+        <CommandParameter Name="IDRELATORIOFILTRO" DataType="9" Expression="[idRelatorioFiltro]"/>
+      </TableDataSource>
+    </PostgresDataConnection>
+    <Parameter Name="tituloRelatorio" DataType="System.String" Expression="&quot;RAIS&quot;"/>
+    <Parameter Name="idEntidade" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="idModulo" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idLogin" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idUsuario" DataType="System.Int64" Expression="-1"/>
+    <Parameter Name="idRelatorioFiltro" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="periodo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="filtro" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="personalizado" DataType="System.Int64" Expression="0"/>
+    <Parameter Name="imprimirUsuario" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="imprimirData" DataType="System.Int64" Expression="1"/>
+    <Parameter Name="competencia" DataType="System.String" Expression="&quot;2024&quot;"/>
+  </Dictionary>
+  <inherited Name="MainPage">
+    <inherited Name="BndCabecalho">
+      <inherited Name="ImgBrasao" ImageAlign="Center_Center"/>
+      <inherited Name="TxtEntidade"/>
+      <inherited Name="ImgLogo" ImageAlign="Center_Center"/>
+      <inherited Name="TxtTituloModulo1"/>
+      <inherited Name="TxtTituloModulo2"/>
+      <inherited Name="TxtTituloRelatorio"/>
+      <inherited Name="TxtPeriodo"/>
+      <inherited Name="BndFiltro">
+        <inherited Name="TxtFiltro"/>
+        <ChildBand Name="Child3" ZOrder="-1" Top="173.4" Width="718.2" Height="35.8" PrintOn="FirstPage">
+          <TextObject Name="Text1" Width="718.2" Height="24.19" Text="RAIS - Relação Anual de Informações Sociais - Ano-Base : [Competencia]" HorzAlign="Center" Font="Arial, 14pt, style=Bold" TextFill.Color="41, 82, 118"/>
+          <LineObject Name="Line1" Top="26.35" Width="718.2" Border.Width="0.5"/>
+        </ChildBand>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="GroupHeader1" ZOrder="0" Top="229.2" Width="718.2" Condition="[Tb_dados.chapas]">
+      <DataBand Name="Data1" Top="249.2" Width="718.2" AfterPrintEvent="Data1_AfterPrint" DataSource="Table3">
+        <DataBand Name="Data2" Top="269.2" Width="718.2" DataSource="Table1">
+          <ChildBand Name="Child2" Top="289.2" Width="718.2" Height="198.45">
+            <TextObject Name="Text2" Top="3" Width="274.05" Height="24.57" Fill.Color="ButtonFace" Text="Informações do Estabelecimento" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+            <TextObject Name="Text3" Top="27.57" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Razão Social:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text4" Top="46.47" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CREA:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text5" Top="65.37" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CEI Vin./CNO" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text6" Top="83.14" Width="131.92" Height="21.17" Border.Lines="All" Fill.Color="41, 82, 118" Text="Prefixo:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text7" Top="103.75" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Para uso da empresa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text8" Top="122.65" Width="131.92" Height="34.4" Border.Lines="All" Fill.Color="41, 82, 118" Text="Endreço:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text9" Top="157.05" Width="131.92" Height="20.03" Border.Lines="All" Fill.Color="41, 82, 118" Text="Código:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text10" Top="176.33" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Telefone:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text11" Left="131.92" Top="27.68" Width="349.65" Height="18.9" Border.Lines="All" Text="[SqlEntidade.nome]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text12" Left="131.92" Top="46.58" Width="585.9" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.crea]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text13" Left="131.92" Top="65.48" Width="349.65" Height="17.77" Border.Lines="Left, Right, Top" Text="[SqlRaisPref.cei_vinc]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text14" Left="132.3" Top="83.14" Width="585.9" Height="21.17" Border.Lines="All" Text="[SqlRaisPref.prefixo]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text15" Left="132.3" Top="104.75" Width="585.9" Height="20.03" Border.Lines="Left, Right, Top" Text="[SqlRaisPref.uso_emp]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text16" Left="131.92" Top="122.76" Width="585.9" Height="34.4" Border.Lines="All" Text="[SqlRaisPref.endereco]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text17" Left="131.92" Top="157.05" Width="585.9" Height="19.28" Border.Lines="All" Text="[SqlRaisPref.codigo]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text18" Left="131.92" Top="176.44" Width="133.06" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.tel]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text19" Left="481.95" Top="27.57" Width="102.82" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ/CAEPF/CEI:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text20" Left="481.95" Top="65.37" Width="103.95" Height="17.77" Border.Lines="All" Fill.Color="41, 82, 118" Text="Total de Vínculos:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text21" Left="264.6" Top="176.33" Width="58.59" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="E-mail:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+            <TextObject Name="Text22" Left="584.77" Top="27.57" Width="133.06" Height="18.9" Border.Lines="All" Text="[SqlEntidade.cnpj]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text23" Left="323.19" Top="176.33" Width="394.63" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.email]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <TextObject Name="Text261" Left="585.9" Top="65.39" Width="131.92" Height="17.77" Border.Lines="All" Text="[SqlEntidade.cnpj]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+            <ChildBand Name="Child4" Top="507.65" Width="718.2" Height="109.63">
+              <TextObject Name="Text24" Top="1.45" Width="274.05" Height="24.57" Fill.Color="ButtonFace" Text="Informações Econômicas" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+              <TextObject Name="Text25" Top="26.47" Width="131.92" Height="27.22" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNAE:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+              <TextObject Name="Text26" Top="53.31" Width="131.92" Height="19.66" Border.Lines="All" Fill.Color="41, 82, 118" Text="Desc. Natureza Jurídica:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+              <TextObject Name="Text27" Top="72.59" Width="131.92" Height="20.03" Border.Lines="All" Fill.Color="41, 82, 118" Text="Porte:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+              <TextObject Name="Text28" Top="90.73" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Optante Simples:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+              <TextObject Name="Text29" Left="131.92" Top="26.47" Width="585.9" Height="27.22" Border.Lines="Left, Right, Top" Text="[SqlRaisPref.n_cnae]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text30" Left="131.92" Top="53.31" Width="585.9" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.n_nat_juri]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text31" Left="131.92" Top="71.83" Width="204.5" Height="20.03" Border.Lines="Left, Right, Bottom" Text="[SqlRaisPref.porte_emp]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text32" Left="131.92" Top="90.73" Width="585.9" Height="18.9" Border.Lines="Left, Right, Bottom" Text="[SqlRaisPref.optante_simples]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text35" Left="336.42" Top="71.83" Width="63.5" Height="20.03" Border.Lines="All" Border.Width="0.5" Fill.Color="41, 82, 118" Text="Data-Base:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+              <TextObject Name="Text36" Left="399.92" Top="71.83" Width="90.34" Height="20.03" Border.Lines="Left, Right, Bottom" Text="[SqlRaisPref.data_base]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <TextObject Name="Text37" Left="490.27" Top="71.83" Width="99.41" Height="20.03" Border.Lines="All" Border.Width="0.5" Fill.Color="41, 82, 118" Text="Número de Sócios:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+              <TextObject Name="Text38" Left="589.3" Top="71.83" Width="128.52" Height="20.03" Border.Lines="Left, Right, Bottom" Text="[SqlRaisPref.n_socios]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+              <ChildBand Name="Child5" Top="637.28" Width="718.2" Height="198.45">
+                <TextObject Name="Text39" Top="2.55" Width="274.05" Height="24.57" Fill.Color="ButtonFace" Text="Informações PAT" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+                <TextObject Name="Text40" Top="26.57" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Serv Próprio:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                <TextObject Name="Text41" Left="131.92" Top="26.57" Width="585.9" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.serv_pro]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text42" Top="45.47" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Adm. Cozinha:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                <TextObject Name="Text43" Left="131.92" Top="45.47" Width="585.9" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.adm_cozinha]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text44" Top="64.37" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Ref. Convênio:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                <TextObject Name="Text45" Left="131.92" Top="64.37" Width="585.9" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.ref_conv]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text46" Top="83.27" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Ref. Transp.:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                <TextObject Name="Text47" Left="131.92" Top="83.27" Width="585.9" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.ref_transp]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text48" Top="102.17" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Cesta Alim.:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                <TextObject Name="Text49" Left="131.92" Top="102.17" Width="585.9" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.cesta_alim]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text50" Top="121.07" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Alim. Conv.:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                <TextObject Name="Text51" Left="131.92" Top="121.07" Width="585.9" Height="18.9" Border.Lines="Left, Right, Top" Text="[SqlRaisPref.alim_conv]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text52" Top="140.52" Width="131.92" Height="48.01" Border.Lines="Left, Right, Bottom" Fill.Color="41, 82, 118" Text="Nº Trab Benef PAT:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                <TextObject Name="Text53" Left="131.92" Top="140.24" Width="585.9" Height="38.56" Border.Lines="All" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text56" Left="131.92" Top="140.35" Width="92.61" Height="19.28" Border.Lines="All" Fill.Color="166, 201, 240" Text="Vinc &gt; 5 SM:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text58" Left="224.53" Top="140.35" Width="493.29" Height="19.28" Border.Lines="All" Text="[SqlRaisPref.pat_acima]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text59" Left="224.53" Top="159.52" Width="493.29" Height="19.28" Border.Lines="Left, Right, Bottom" Text="[SqlRaisPref.pat_ate]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <TextObject Name="Text57" Left="131.92" Top="159.63" Width="92.61" Height="19.28" Border.Lines="All" Fill.Color="166, 201, 240" Text="Vinc &lt;= 5 SM:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+                <TextObject Name="Text54" Top="178.91" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Participante PAT" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                <TextObject Name="Text55" Left="131.92" Top="178.91" Width="585.9" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.participa_pat]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                <ChildBand Name="Child6" Top="855.73" Width="718.2" Height="142.59">
+                  <TextObject Name="Text60" Top="4" Width="274.05" Height="24.57" Fill.Color="ButtonFace" Text="Informações Sindicais" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+                  <TextObject Name="Text61" Top="28.57" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Centralizadora:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                  <TextObject Name="Text62" Left="131.92" Top="28.57" Width="585.9" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.centralizadora]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text63" Top="47.47" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Sindical:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                  <TextObject Name="Text64" Left="131.92" Top="47.47" Width="255.91" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.sindical]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text65" Left="387.83" Top="47.47" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor Total:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                  <TextObject Name="Text66" Left="519.75" Top="47.47" Width="198.07" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.sind_vlr]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text67" Top="65.99" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Associativa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                  <TextObject Name="Text68" Left="131.92" Top="66.37" Width="255.91" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.associativa]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text69" Left="387.83" Top="65.99" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor Total:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                  <TextObject Name="Text70" Left="519.75" Top="66.37" Width="198.07" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.associ_vlr]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text71" Top="84.89" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Assistencial:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                  <TextObject Name="Text72" Left="131.92" Top="84.89" Width="255.91" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.assistencial]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text73" Left="387.83" Top="84.89" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor Total:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                  <TextObject Name="Text74" Left="519.75" Top="84.89" Width="198.07" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.assis_vlr]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text75" Top="102.9" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Confederativa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                  <TextObject Name="Text76" Left="131.92" Top="102.9" Width="255.91" Height="18.9" Border.Lines="Left, Right, Bottom" Text="[SqlRaisPref.confederativa]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text77" Left="387.83" Top="102.9" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor Total:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                  <TextObject Name="Text78" Left="519.75" Top="102.9" Width="198.07" Height="18.9" Border.Lines="Left, Right, Bottom" Text="[SqlRaisPref.confe_vlr]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <TextObject Name="Text79" Top="122.69" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Sindicalizada:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                  <TextObject Name="Text80" Left="131.92" Top="122.69" Width="585.9" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.sindicalizada]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                  <ChildBand Name="Child7" Top="1018.32" Width="718.2" Height="103.95">
+                    <TextObject Name="Text81" Top="2" Width="274.05" Height="24.57" Fill.Color="ButtonFace" Text="Responsável" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+                    <TextObject Name="Text82" Top="26.57" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Razão Social / Nome:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                    <TextObject Name="Text83" Left="131.92" Top="26.57" Width="350.41" Height="18.9" Border.Lines="All" Text="[SqlEntidade.nome]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <TextObject Name="Text84" Left="481.95" Top="26.57" Width="102.82" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ/CAEPF/CEI:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                    <TextObject Name="Text85" Left="584.77" Top="26.57" Width="132.68" Height="18.9" Border.Lines="All" Text="[SqlEntidade.cnpj]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <TextObject Name="Text86" Top="45.47" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Nome do Responsável:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                    <TextObject Name="Text87" Left="131.92" Top="45.47" Width="350.41" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.nome_resp]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <TextObject Name="Text88" Left="481.95" Top="45.47" Width="102.82" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CPF do Responsável:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7.5pt" TextFill.Color="White"/>
+                    <TextObject Name="Text89" Left="584.77" Top="45.47" Width="132.68" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.cpf_resp]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <TextObject Name="Text90" Top="63.99" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Nascimento:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                    <TextObject Name="Text91" Left="131.92" Top="63.99" Width="585.9" Height="18.9" Border.Lines="Left, Right, Bottom" Text="[SqlRaisPref.dtnasc_resp]" Format="Date" Format.Format="d" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <TextObject Name="Text92" Top="82.89" Width="131.92" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Telefone:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                    <TextObject Name="Text93" Left="131.92" Top="82.89" Width="206.01" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.tel_resp]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <TextObject Name="Text94" Left="337.93" Top="82.89" Width="66.91" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="E-mail:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                    <TextObject Name="Text95" Left="404.84" Top="82.89" Width="312.98" Height="18.9" Border.Lines="All" Text="[SqlRaisPref.email_resp]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                    <ChildBand Name="Child8" Top="1142.27" Width="718.2" Height="103.95">
+                      <TextObject Name="Text96" Top="2.45" Width="274.05" Height="24.57" Fill.Color="ButtonFace" Text="Informações do Vínculo" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+                      <TextObject Name="Text97" Top="26.89" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Nome:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                      <TextObject Name="Text98" Left="138.73" Top="26.89" Width="440.75" Height="18.9" Border.Lines="All" Text="[Trim([SqlFuncInfo.nome_funcionario])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                      <TextObject Name="Text99" Left="579.47" Top="26.89" Width="39.69" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CPF:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                      <TextObject Name="Text100" Left="619.16" Top="26.89" Width="98.66" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.func_cpf]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                      <TextObject Name="Text101" Top="45.79" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Nacionalidade:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                      <TextObject Name="Text102" Left="138.73" Top="45.79" Width="440.75" Height="18.9" Border.Lines="All" Text="[Trim([SqlFuncInfo.nacionalidade])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                      <TextObject Name="Text103" Left="579.47" Top="45.79" Width="39.69" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Sexo:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                      <TextObject Name="Text104" Left="619.16" Top="45.79" Width="98.66" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.sexo]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                      <TextObject Name="Text105" Top="64.82" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Raça/Cor:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                      <TextObject Name="Text106" Left="138.73" Top="64.82" Width="579.1" Height="18.9" Border.Lines="All" Text="[Trim([SqlFuncInfo.cor])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                      <TextObject Name="Text107" Top="83.72" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Deficiente:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                      <TextObject Name="Text108" Left="138.73" Top="83.72" Width="579.1" Height="18.9" Border.Lines="All" Text="[Trim([SqlFuncInfo.deficiencia])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                      <ChildBand Name="Child9" Top="1266.22" Width="718.2" Height="122.85">
+                        <TextObject Name="Text109" Top="3.45" Width="274.05" Height="24.57" Fill.Color="ButtonFace" Text="Informações Econômicas" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+                        <TextObject Name="Text110" Top="28.02" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Carteira de Trabalho:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                        <TextObject Name="Text111" Left="138.73" Top="28.02" Width="375.35" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.carteira_trabalho]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text112" Left="514.08" Top="28.02" Width="111.51" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Ano de Chegada:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                        <TextObject Name="Text113" Left="625.59" Top="28.02" Width="92.23" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.ano_chegada_pais]" HideZeros="true" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text114" Top="46.92" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="PIS/PASEP/NIT:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                        <TextObject Name="Text115" Left="138.73" Top="46.92" Width="579.1" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.pis]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text116" Top="65.82" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Série CTPS:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                        <TextObject Name="Text117" Left="138.73" Top="65.82" Width="579.1" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.serie_carteira]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text118" Top="84.72" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Local de Trabalho:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                        <TextObject Name="Text119" Left="138.73" Top="84.72" Width="579.1" Height="18.9" Border.Lines="All" Text="[Trim([SqlFuncInfo.local_trabalho])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <TextObject Name="Text120" Top="103.62" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Instrução:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                        <TextObject Name="Text121" Left="138.73" Top="103.62" Width="579.1" Height="18.9" Border.Lines="All" Text="[Trim([SqlFuncInfo.instrucao])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                        <ChildBand Name="Child10" Top="1409.07" Width="718.2" Height="133.06">
+                          <TextObject Name="Text122" Top="1.9" Width="162.54" Height="24.57" Fill.Color="ButtonFace" Text="Admissão" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+                          <TextObject Name="Text123" Top="26.47" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Salário Contratual:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                          <TextObject Name="Text124" Left="138.35" Top="26.47" Width="215.84" Height="18.9" Border.Lines="All" Text="R$ [SqlFuncInfo.salario_base]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                          <TextObject Name="Text125" Left="353.81" Top="26.47" Width="100.93" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Tipo Salário:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                          <TextObject Name="Text126" Left="454.73" Top="26.47" Width="100.93" Height="18.9" Border.Lines="All" Text="[Trim([SqlFuncInfo.tipo_salario])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                          <TextObject Name="Text127" Left="551.88" Top="26.47" Width="99.41" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Horas Semanais:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                          <TextObject Name="Text128" Left="651.07" Top="26.47" Width="66.91" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.horas_semanais]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                          <TextObject Name="Text129" Top="45.37" Width="138.73" Height="34.4" Border.Lines="All" Fill.Color="41, 82, 118" Text="CBO:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                          <TextObject Name="Text130" Left="138.35" Top="45.37" Width="316.39" Height="34.4" Border.Lines="All" Text="[SqlFuncInfo.cbo_descricao]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                          <TextObject Name="Text131" Left="454.73" Top="45.37" Width="51.79" Height="34.4" Border.Lines="All" Fill.Color="41, 82, 118" Text="Alvará:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                          <TextObject Name="Text132" Left="506.52" Top="45.37" Width="49.14" Height="34.4" Border.Lines="All" Text="[SqlFuncInfo.alvara]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                          <TextObject Name="Text133" Left="551.88" Top="45.37" Width="99.41" Height="34.4" Border.Lines="All" Fill.Color="41, 82, 118" Text="Data de Admissão:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                          <TextObject Name="Text134" Left="651.07" Top="45.37" Width="66.91" Height="34.4" Border.Lines="All" Text="[SqlFuncInfo.data_admissao]" Format="Date" Format.Format="d" VertAlign="Center" Font="Tahoma, 6pt, style=Bold"/>
+                          <TextObject Name="Text135" Top="79.76" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Tipo de Admissão:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                          <TextObject Name="Text136" Left="138.73" Top="79.76" Width="579.1" Height="18.9" Border.Lines="All" Text="[Trim([SqlFuncInfo.tipo_adimissao])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                          <TextObject Name="Text137" Top="98.66" Width="138.73" Height="34.4" Border.Lines="All" Fill.Color="41, 82, 118" Text="Tipo de Vínculo:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                          <TextObject Name="Text138" Left="138.73" Top="98.66" Width="579.1" Height="34.4" Border.Lines="All" Text="[Trim([SqlFuncInfo.tipo_vinculo])]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+                          <ChildBand Name="Child11" Top="1562.13" Width="718.2" Height="47.55">
+                            <TextObject Name="Text139" Top="4.45" Width="162.54" Height="24.57" Fill.Color="ButtonFace" Text="Afastamento" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+                            <TextObject Name="Text140" Top="28.65" Width="93.37" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Data de Início" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                            <TextObject Name="Text141" Left="93.37" Top="28.65" Width="92.61" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Data Final" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                            <TextObject Name="Text142" Left="185.98" Top="28.65" Width="381.4" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Motivo" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                            <TextObject Name="Text143" Left="567.38" Top="28.65" Width="150.82" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Quantidade de  Dias" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+                          </ChildBand>
+                        </ChildBand>
+                      </ChildBand>
+                    </ChildBand>
+                  </ChildBand>
+                </ChildBand>
+              </ChildBand>
+            </ChildBand>
+          </ChildBand>
+        </DataBand>
+        <DataBand Name="Data3" Top="1629.68" Width="718.2" Height="18.9" DataSource="Table2">
+          <TextObject Name="Text257" Left="567.38" Width="150.82" Height="18.9" Border.Lines="All" Text="[SqlAfast.qtde_dias]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text258" Width="93.37" Height="18.9" Border.Lines="All" Text="[SqlAfast.inicio_afast]" Format="Date" Format.Format="d" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text259" Left="93.37" Width="92.61" Height="18.9" Border.Lines="All" Text="[SqlAfast.termino_afast]" Format="Date" Format.Format="d" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="Text260" Left="185.98" Width="381.4" Height="18.9" Border.Lines="All" Text="[SqlAfast.desc_afast]" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <ChildBand Name="Child1" Top="1668.58" Width="718.2" Height="18.9" BeforePrintEvent="Child1_BeforePrint">
+            <TextObject Name="Text147" Left="567.38" Width="150.82" Height="18.9" Border.Lines="All" Text="-" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text144" Width="93.37" Height="18.9" Border.Lines="All" Text="-" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text145" Left="93.37" Width="92.61" Height="18.9" Border.Lines="All" Text="-" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+            <TextObject Name="Text146" Left="185.98" Width="381.4" Height="18.9" Border.Lines="All" Text="-" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+          </ChildBand>
+        </DataBand>
+      </DataBand>
+      <GroupFooterBand Name="GroupFooter1" Top="1707.48" Width="718.2" Height="561.17">
+        <TextObject Name="Text152" Top="4.45" Width="162.54" Height="24.57" Fill.Color="ButtonFace" Text="Desligamento" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+        <TextObject Name="Text159" Top="70.49" Width="228.31" Height="24.57" Fill.Color="ButtonFace" Text="Remunerações e Hora Extras" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+        <TextObject Name="Text220" Top="329.92" Width="220.75" Height="24.57" Fill.Color="ButtonFace" Text="Informações Sindicais" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+        <TextObject Name="Text243" Top="470.42" Width="162.92" Height="24.57" Fill.Color="ButtonFace" Text="Tp. Contrato" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+        <TextObject Name="Text250" Top="517.7" Width="162.92" Height="24.57" Fill.Color="ButtonFace" Text="Indicador" VertAlign="Center" Font="Tahoma, 11pt, style=Bold"/>
+        <TextObject Name="Text174" Top="132.93" Width="79.38" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Hora Extra:" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text175" Left="79" Top="132.93" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_jan]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text176" Left="184.46" Top="132.93" Width="110" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_fev]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text177" Left="294.46" Top="132.93" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_mar]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text178" Left="400.3" Top="132.93" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_abr]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text179" Left="506.14" Top="132.93" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_mai]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text180" Left="611.6" Top="132.93" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_jun]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text181" Top="151.83" Width="79.38" Height="18.9" Border.Lines="Left, Right, Top" Fill.Color="41, 82, 118" Text="Meses:" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text182" Left="79" Top="151.83" Width="105.84" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Julho" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text183" Left="184.46" Top="151.83" Width="110" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Agosto" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text184" Left="294.46" Top="151.83" Width="105.84" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Setembro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text185" Left="400.3" Top="151.83" Width="105.84" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Outubro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text186" Left="506.14" Top="151.83" Width="105.84" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Novembro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text187" Left="611.6" Top="151.83" Width="105.84" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Dezembro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text188" Top="171.11" Width="79.38" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Remuneração:" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text189" Left="79" Top="171.11" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_jul]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text190" Left="184.46" Top="171.11" Width="110" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_ago]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text191" Left="294.46" Top="171.11" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_set]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text192" Left="400.3" Top="171.11" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_out]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text193" Left="506.14" Top="171.11" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_nov]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text194" Left="611.6" Top="171.11" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_dez]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text195" Top="190.01" Width="79.38" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Hora Extra:" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text196" Left="79" Top="190.01" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_jul]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text197" Left="184.46" Top="190.01" Width="110" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_ago]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text198" Left="294.46" Top="190.01" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_set]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text199" Left="400.3" Top="190.01" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_out]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text200" Left="506.14" Top="190.01" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_nov]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text201" Left="611.6" Top="190.01" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_he_dez]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text202" Top="214.16" Width="237.76" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Verbas Pagas na Rescisão" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text203" Left="237.76" Top="214.16" Width="242.3" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text204" Left="480.06" Top="214.16" Width="237.76" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Qtd. Meses" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text205" Top="233.06" Width="237.76" Height="18.9" Border.Lines="All" Text="Férias Indenizadas:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text206" Left="237.76" Top="233.06" Width="242.3" Height="18.9" Border.Lines="All" Text="R$ [SqlFuncInfo.valor_ferias_indenisadas]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text207" Left="480.06" Top="233.06" Width="237.76" Height="18.9" Border.Lines="All" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text208" Top="251.96" Width="237.76" Height="18.9" Border.Lines="All" Text="Multa FGTS:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text209" Left="237.76" Top="251.96" Width="242.3" Height="18.9" Border.Lines="All" Text="R$ [SqlFuncInfo.valor_multa_fgts]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text210" Left="480.06" Top="251.96" Width="237.76" Height="18.9" Border.Lines="All" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text211" Top="270.86" Width="237.76" Height="18.9" Border.Lines="All" Text="Banco de Horas:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text212" Left="237.76" Top="270.86" Width="242.3" Height="18.9" Border.Lines="All" Text="R$ [SqlFuncInfo.valor_banco_horas]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text213" Left="480.06" Top="270.86" Width="237.76" Height="18.9" Border.Lines="All" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text214" Top="289.76" Width="237.76" Height="18.9" Border.Lines="All" Text="Reajuste Coletivo:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text215" Left="237.76" Top="289.76" Width="242.3" Height="18.9" Border.Lines="All" Text="R$ [SqlFuncInfo.valor_gratificacoes]" Format="Number" Format.UseLocale="true" Format.DecimalDigits="2" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text216" Left="480.06" Top="289.76" Width="237.76" Height="18.9" Border.Lines="All" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text217" Top="308.66" Width="237.76" Height="18.9" Border.Lines="All" Text="Gratificações:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text218" Left="237.76" Top="308.66" Width="242.3" Height="18.9" Border.Lines="All" Text="R$ 0,00" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text219" Left="480.06" Top="308.66" Width="237.76" Height="18.9" Border.Lines="All" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt"/>
+        <TextObject Name="Text221" Top="354.87" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Sindical:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text227" Left="138.73" Top="354.87" Width="248.35" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.sindical]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text233" Left="387.45" Top="354.87" Width="92.61" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor Total:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text238" Left="480.06" Top="354.87" Width="237.76" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.sindical]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text222" Top="373.77" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Associativa 1:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text228" Left="138.75" Top="373.57" Width="248.35" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.associativa_1]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text234" Left="387.45" Top="373.39" Width="92.61" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor Total:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text239" Left="480.06" Top="373.39" Width="237.76" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.associativa_1]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text223" Top="392.67" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Associativa 2:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text229" Left="138.75" Top="392.47" Width="248.35" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.associativa_2]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text235" Left="387.45" Top="392.29" Width="92.61" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor Total:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text240" Left="480.06" Top="392.29" Width="237.76" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.associativa_2]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text224" Top="411.57" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Assistencial:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text230" Left="138.75" Top="411.37" Width="248.35" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.assistencial]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text236" Left="387.45" Top="411.19" Width="92.61" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor Total:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text241" Left="480.06" Top="411.19" Width="237.76" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.assistencial]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text225" Top="430.27" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Confederativa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text231" Left="138.75" Top="430.27" Width="248.35" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.confederativa]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text237" Left="387.45" Top="430.09" Width="92.61" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Valor Total:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text242" Left="480.06" Top="430.09" Width="237.76" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.confederativa]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text226" Top="449.17" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="CNPJ Sindicalizada:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text232" Left="138.75" Top="449.17" Width="579.1" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.sindicalizado]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text244" Top="494.99" Width="132.3" Height="20.03" Border.Lines="All" Fill.Color="41, 82, 118" Text="Trabalho Parcial:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text245" Left="132.1" Top="494.99" Width="124.74" Height="20.03" Border.Lines="All" Text="[SqlFuncInfo.trabalho_parcial]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text246" Left="257.04" Top="494.99" Width="140.62" Height="20.03" Border.Lines="All" Fill.Color="41, 82, 118" Text="Trabalho Intermitente:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text247" Left="397.92" Top="494.99" Width="102.82" Height="20.03" Border.Lines="All" Text="[SqlFuncInfo.trabalho_intermitente]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text248" Left="500.47" Top="494.99" Width="86.94" Height="20.03" Border.Lines="All" Fill.Color="41, 82, 118" Text="Teletrabalho:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text249" Left="587.41" Top="494.99" Width="130.41" Height="20.03" Border.Lines="All" Text="[SqlFuncInfo.teletrabalho]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text251" Top="542.27" Width="132.3" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Menor Aprendiz Grávida:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text252" Left="132.1" Top="542.27" Width="585.52" Height="18.9" Border.Lines="All" Text="Não" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text160" Top="95.13" Width="79.38" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Meses:" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text161" Left="79" Top="95.13" Width="105.84" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Janeiro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text162" Left="184.46" Top="95.13" Width="110" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Fevereiro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text163" Left="294.46" Top="95.13" Width="105.84" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Março" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text164" Left="400.3" Top="95.13" Width="105.84" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Abril" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text165" Left="506.14" Top="95.13" Width="105.84" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Maio" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text166" Left="611.6" Top="95.13" Width="105.84" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Junho" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text167" Top="114.03" Width="79.38" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Remuneração:" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text168" Left="79" Top="114.03" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_jan]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text169" Left="184.46" Top="114.03" Width="110" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_fev]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text170" Left="294.46" Top="114.03" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_mar]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text171" Left="400.3" Top="114.03" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_abr]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text172" Left="506.14" Top="114.03" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_mai]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text173" Left="611.6" Top="114.03" Width="105.84" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.vl_jun]" Format="Currency" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="," Format.GroupSeparator="." Format.CurrencySymbol="R$" Format.PositivePattern="2" Format.NegativePattern="11" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text157" Top="47.92" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Causa:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text158" Left="138.73" Top="47.92" Width="579.1" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.causa_afastamento]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text153" Top="29.02" Width="138.73" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Data:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" TextFill.Color="White"/>
+        <TextObject Name="Text154" Left="138.73" Top="29.02" Width="332.26" Height="18.9" Border.Lines="All" Text="[IfNull(&quot;&quot;,[SqlFuncInfo.data_demissao])]" Format="Date" Format.Format="d" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+        <TextObject Name="Text155" Left="470.99" Top="29.02" Width="112.27" Height="18.9" Border.Lines="All" Fill.Color="41, 82, 118" Text="Aviso Prévio:" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 7.5pt" TextFill.Color="White"/>
+        <TextObject Name="Text156" Left="583.63" Top="29.02" Width="133.81" Height="18.9" Border.Lines="All" Text="[SqlFuncInfo.aviso_previo]" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
+      </GroupFooterBand>
+    </GroupHeaderBand>
+    <inherited Name="BndRodape" Top="2288.65">
+      <inherited Name="TxtRodape"/>
+      <inherited Name="TxtPaginacao">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+      <inherited Name="TxtEndereco">
+        <Formats>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+          <GeneralFormat/>
+        </Formats>
+      </inherited>
+    </inherited>
+  </inherited>
+</inherited>
